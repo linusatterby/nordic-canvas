@@ -25,6 +25,7 @@ import EmployerScheduler from "@/app/routes/(employer)/EmployerScheduler";
 import EmployerJobs from "@/app/routes/(employer)/EmployerJobs";
 import EmployerSwipeTalent from "@/app/routes/(employer)/EmployerSwipeTalent";
 import EmployerMatches from "@/app/routes/(employer)/EmployerMatches";
+import EmployerBorrow from "@/app/routes/(employer)/EmployerBorrow";
 
 import NotFound from "./pages/NotFound";
 
@@ -59,7 +60,7 @@ const App = () => (
               <Route path="/employer/matches" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerMatches /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["employer"]}><TalentMatchChat /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/scheduler" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerScheduler /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/borrow" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerDashboard /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/borrow" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerBorrow /></RoleGate></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

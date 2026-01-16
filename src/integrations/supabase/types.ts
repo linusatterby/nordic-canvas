@@ -38,6 +38,88 @@ export type Database = {
         }
         Relationships: []
       }
+      borrow_offers: {
+        Row: {
+          borrow_request_id: string
+          created_at: string
+          id: string
+          responded_at: string | null
+          status: string
+          talent_user_id: string
+        }
+        Insert: {
+          borrow_request_id: string
+          created_at?: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          talent_user_id: string
+        }
+        Update: {
+          borrow_request_id?: string
+          created_at?: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          talent_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "borrow_offers_borrow_request_id_fkey"
+            columns: ["borrow_request_id"]
+            isOneToOne: false
+            referencedRelation: "borrow_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      borrow_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          end_ts: string
+          id: string
+          location: string
+          message: string | null
+          org_id: string
+          role_key: string
+          start_ts: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          end_ts: string
+          id?: string
+          location: string
+          message?: string | null
+          org_id: string
+          role_key: string
+          start_ts: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          end_ts?: string
+          id?: string
+          location?: string
+          message?: string | null
+          org_id?: string
+          role_key?: string
+          start_ts?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "borrow_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employer_talent_swipes: {
         Row: {
           created_at: string
@@ -581,6 +663,15 @@ export type Database = {
       }
     }
     Functions: {
+      accept_borrow_offer: { Args: { p_offer_id: string }; Returns: Json }
+      find_available_talents: {
+        Args: { p_end_ts: string; p_location: string; p_start_ts: string }
+        Returns: {
+          full_name: string
+          legacy_score: number
+          user_id: string
+        }[]
+      }
       has_match_access: {
         Args: { _match_id: string; _user_id: string }
         Returns: boolean

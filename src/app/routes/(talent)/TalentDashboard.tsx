@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
 import { Link } from "react-router-dom";
+import { TalentBorrowOffers } from "@/components/borrow/TalentBorrowOffers";
 
 // Stub data
 const passportData = {
@@ -35,6 +36,11 @@ export function TalentDashboard() {
           <p className="text-muted-foreground mt-1">
             Du är redo för säsongen. Fortsätt bygga ditt rykte.
           </p>
+        </div>
+
+        {/* Incoming Borrow Offers */}
+        <div className="mb-6">
+          <TalentBorrowOffers />
         </div>
 
         {/* Season Passport */}
