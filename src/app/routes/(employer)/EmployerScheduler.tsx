@@ -19,6 +19,7 @@ import { useToasts } from "@/components/delight/Toasts";
 import { format, addDays, isSameDay, parseISO, startOfDay } from "date-fns";
 import { sv } from "date-fns/locale";
 import type { ShiftBookingWithTalent, BusyBlock } from "@/lib/api/scheduler";
+import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 
 const weekDays = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
 
@@ -29,6 +30,7 @@ interface DaySlot {
 }
 
 export function EmployerScheduler() {
+  useDemoCoachToast("scheduler");
   const navigate = useNavigate();
   const { addToast } = useToasts();
   const { data: orgId, isLoading: orgLoading } = useDefaultOrgId();

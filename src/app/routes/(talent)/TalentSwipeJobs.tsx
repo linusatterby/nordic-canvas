@@ -11,8 +11,10 @@ import { useJobsFeed } from "@/hooks/useJobsFeed";
 import { useSwipeTalentJob } from "@/hooks/useSwipes";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 
 export function TalentSwipeJobs() {
+  useDemoCoachToast("swipe-jobs");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: jobs, isLoading, error } = useJobsFeed();

@@ -13,8 +13,10 @@ import { useTalentFeed } from "@/hooks/useTalentFeed";
 import { useDefaultOrgId } from "@/hooks/useOrgs";
 import { useSwipeEmployerTalent } from "@/hooks/useSwipes";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
+import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 
 export function EmployerSwipeTalent() {
+  useDemoCoachToast("swipe-talent");
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { addToast } = useToasts();
