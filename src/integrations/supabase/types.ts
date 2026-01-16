@@ -79,6 +79,7 @@ export type Database = {
           created_by: string
           end_ts: string
           id: string
+          is_demo: boolean
           location: string
           message: string | null
           org_id: string
@@ -91,6 +92,7 @@ export type Database = {
           created_by: string
           end_ts: string
           id?: string
+          is_demo?: boolean
           location: string
           message?: string | null
           org_id: string
@@ -103,6 +105,7 @@ export type Database = {
           created_by?: string
           end_ts?: string
           id?: string
+          is_demo?: boolean
           location?: string
           message?: string | null
           org_id?: string
@@ -167,6 +170,7 @@ export type Database = {
           capacity: number
           created_at: string
           id: string
+          is_demo: boolean
           location: string
           org_id: string | null
           owner_type: string
@@ -179,6 +183,7 @@ export type Database = {
           capacity?: number
           created_at?: string
           id?: string
+          is_demo?: boolean
           location: string
           org_id?: string | null
           owner_type: string
@@ -191,6 +196,7 @@ export type Database = {
           capacity?: number
           created_at?: string
           id?: string
+          is_demo?: boolean
           location?: string
           org_id?: string | null
           owner_type?: string
@@ -257,6 +263,7 @@ export type Database = {
           end_date: string
           housing_offered: boolean | null
           id: string
+          is_demo: boolean
           location: string | null
           org_id: string
           required_badges: string[] | null
@@ -270,6 +277,7 @@ export type Database = {
           end_date: string
           housing_offered?: boolean | null
           id?: string
+          is_demo?: boolean
           location?: string | null
           org_id: string
           required_badges?: string[] | null
@@ -283,6 +291,7 @@ export type Database = {
           end_date?: string
           housing_offered?: boolean | null
           id?: string
+          is_demo?: boolean
           location?: string | null
           org_id?: string
           required_badges?: string[] | null
@@ -305,6 +314,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_demo: boolean
           job_post_id: string
           org_id: string
           status: string | null
@@ -313,6 +323,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_demo?: boolean
           job_post_id: string
           org_id: string
           status?: string | null
@@ -321,6 +332,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_demo?: boolean
           job_post_id?: string
           org_id?: string
           status?: string | null
@@ -405,18 +417,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_demo: boolean
           location: string | null
           name: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_demo?: boolean
           location?: string | null
           name: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_demo?: boolean
           location?: string | null
           name?: string
         }
@@ -454,6 +469,7 @@ export type Database = {
           created_at: string
           end_ts: string
           id: string
+          is_demo: boolean
           org_id: string
           start_ts: string
           talent_user_id: string
@@ -462,6 +478,7 @@ export type Database = {
           created_at?: string
           end_ts: string
           id?: string
+          is_demo?: boolean
           org_id: string
           start_ts: string
           talent_user_id: string
@@ -470,6 +487,7 @@ export type Database = {
           created_at?: string
           end_ts?: string
           id?: string
+          is_demo?: boolean
           org_id?: string
           start_ts?: string
           talent_user_id?: string
@@ -693,6 +711,7 @@ export type Database = {
         Returns: boolean
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
+      reset_demo: { Args: { p_org_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

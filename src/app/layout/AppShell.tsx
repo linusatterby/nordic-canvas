@@ -5,6 +5,9 @@ import { TopNav } from "./TopNav";
 import { MobileNav } from "./MobileNav";
 import type { Role } from "@/lib/constants/roles";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/hooks/useDemo";
+import { DemoBanner } from "@/components/demo/DemoBanner";
+import { DemoGuideModal } from "@/components/demo/DemoGuideModal";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -14,7 +17,21 @@ interface AppShellProps {
 export function AppShell({ children, role }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [guideOpen, setGuideOpen] = React.useState(false);
   const { profile } = useAuth();
+  const { isDemoMode, isLoading: demoLoading } = useDemoMode();
+
+  // Show demo guide on first visit for demo users
+  React.useEffect(() => {
+    if (demoLoading || !isDemoMode) return;
+    
+    const guideSeen = localStorage.getItem("demoGuideSeen");
+    if (!guideSeen) {
+      // Delay to let the page render
+      const timer = setTimeout(() => setGuideOpen(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isDemoMode, demoLoading]);
 
   return (
     <div className="min-h-screen bg-frost">
@@ -56,6 +73,12 @@ export function AppShell({ children, role }: AppShellProps) {
           onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
           isSidebarOpen={mobileMenuOpen}
         />
+        
+        {/* Demo Banner */}
+        {isDemoMode && (
+          <DemoBanner onOpenGuide={() => setGuideOpen(true)} />
+        )}
+        
         <main className="pb-20 lg:pb-8">
           {children}
         </main>
@@ -63,6 +86,9 @@ export function AppShell({ children, role }: AppShellProps) {
 
       {/* Mobile Bottom Nav */}
       <MobileNav role={role} />
+
+      {/* Demo Guide Modal */}
+      <DemoGuideModal open={guideOpen} onOpenChange={setGuideOpen} />
     </div>
   );
 }
