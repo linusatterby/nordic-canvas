@@ -17,7 +17,7 @@ const stubSchedule = [
 
 export function EmployerScheduler() {
   return (
-    <AppShell role="employer" user={{ name: "Åre Ski Resort" }}>
+    <AppShell role="employer">
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-foreground">Schemaläggare</h1>

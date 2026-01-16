@@ -27,7 +27,7 @@ const recentMatches = [
 
 export function TalentDashboard() {
   return (
-    <AppShell role="talent" user={{ name: "Erik Svensson" }}>
+    <AppShell role="talent">
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Header */}
         <div className="mb-8">

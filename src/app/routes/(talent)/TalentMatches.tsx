@@ -35,7 +35,7 @@ export function TalentMatches() {
   const [matches] = React.useState(stubMatches);
 
   return (
-    <AppShell role="talent" user={{ name: "Erik Svensson" }}>
+    <AppShell role="talent">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-foreground">Dina matchningar</h1>

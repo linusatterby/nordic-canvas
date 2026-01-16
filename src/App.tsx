@@ -4,6 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastProvider } from "@/components/delight/Toasts";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RoleGate } from "@/components/auth/RoleGate";
 
 // Public routes
 import Landing from "@/app/routes/(public)/Landing";
@@ -26,33 +29,117 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <ToastProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth/login" element={<Auth />} />
-            <Route path="/auth/signup" element={<Auth />} />
+      <BrowserRouter>
+        <AuthProvider>
+          <ToastProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/login" element={<Auth />} />
+              <Route path="/auth/signup" element={<Auth />} />
 
-            {/* Talent */}
-            <Route path="/talent/dashboard" element={<TalentDashboard />} />
-            <Route path="/talent/profile" element={<TalentProfile />} />
-            <Route path="/talent/swipe-jobs" element={<TalentSwipeJobs />} />
-            <Route path="/talent/matches" element={<TalentMatches />} />
+              {/* Talent (Protected + Role-gated) */}
+              <Route
+                path="/talent/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["talent"]}>
+                      <TalentDashboard />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/talent/profile"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["talent"]}>
+                      <TalentProfile />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/talent/swipe-jobs"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["talent"]}>
+                      <TalentSwipeJobs />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/talent/matches"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["talent"]}>
+                      <TalentMatches />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Employer */}
-            <Route path="/employer/dashboard" element={<EmployerDashboard />} />
-            <Route path="/employer/scheduler" element={<EmployerScheduler />} />
-            <Route path="/employer/jobs" element={<EmployerDashboard />} />
-            <Route path="/employer/swipe-talent" element={<EmployerDashboard />} />
-            <Route path="/employer/borrow" element={<EmployerDashboard />} />
+              {/* Employer (Protected + Role-gated) */}
+              <Route
+                path="/employer/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["employer"]}>
+                      <EmployerDashboard />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/employer/scheduler"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["employer"]}>
+                      <EmployerScheduler />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/employer/jobs"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["employer"]}>
+                      <EmployerDashboard />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/employer/swipe-talent"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["employer"]}>
+                      <EmployerDashboard />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/employer/borrow"
+                element={
+                  <ProtectedRoute>
+                    <RoleGate allow={["employer"]}>
+                      <EmployerDashboard />
+                    </RoleGate>
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </ToastProvider>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

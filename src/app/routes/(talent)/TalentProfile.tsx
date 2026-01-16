@@ -45,7 +45,7 @@ const profileData = {
 
 export function TalentProfile() {
   return (
-    <AppShell role="talent" user={{ name: profileData.name }}>
+    <AppShell role="talent">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Profile Header */}
         <Card variant="elevated" padding="lg" className="mb-6">
