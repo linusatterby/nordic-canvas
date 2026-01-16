@@ -10,6 +10,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFo
 import { Input } from "@/components/ui/input";
 import { WeekRangeSelector, getCurrentWeekRange, type WeekRange } from "@/components/scheduler/WeekRangeSelector";
 import { CreateBookingModal } from "@/components/scheduler/CreateBookingModal";
+import { ReleaseOffersCard } from "@/components/scheduler/ReleaseOffersCard";
 import { Plus, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { useDefaultOrgId, useCreateOrg } from "@/hooks/useOrgs";
@@ -307,6 +308,14 @@ export function EmployerScheduler() {
             <span>Upptagen (annan)</span>
           </div>
         </div>
+
+        {/* Release Offers Section */}
+        {orgId && (
+          <ReleaseOffersCard 
+            orgId={orgId} 
+            bookings={schedulerData?.bookings ?? []} 
+          />
+        )}
       </div>
 
       {/* Create Booking Modal */}
