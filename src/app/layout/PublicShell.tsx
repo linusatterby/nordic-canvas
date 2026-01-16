@@ -14,8 +14,8 @@ export function PublicShell({ children }: PublicShellProps) {
 
   const navLinks = [
     { href: "/", label: "Hem" },
-    { href: "/talent", label: "För Talanger" },
-    { href: "/employer", label: "För Arbetsgivare" },
+    { href: "/for-talanger", label: "För Talanger" },
+    { href: "/for-arbetsgivare", label: "För Arbetsgivare" },
   ];
 
   return (

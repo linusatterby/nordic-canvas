@@ -10,6 +10,8 @@ import { RoleGate } from "@/components/auth/RoleGate";
 
 // Public routes
 import Landing from "@/app/routes/(public)/Landing";
+import ForTalanger from "@/app/routes/(public)/ForTalanger";
+import ForArbetsgivare from "@/app/routes/(public)/ForArbetsgivare";
 import Auth from "@/app/routes/(public)/Auth";
 
 // Talent routes
@@ -42,6 +44,8 @@ const App = () => (
             <Routes>
               {/* Public */}
               <Route path="/" element={<Landing />} />
+              <Route path="/for-talanger" element={<ForTalanger />} />
+              <Route path="/for-arbetsgivare" element={<ForArbetsgivare />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/login" element={<Auth />} />
               <Route path="/auth/signup" element={<Auth />} />
