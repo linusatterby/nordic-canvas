@@ -17,10 +17,14 @@ import TalentDashboard from "@/app/routes/(talent)/TalentDashboard";
 import TalentProfile from "@/app/routes/(talent)/TalentProfile";
 import TalentSwipeJobs from "@/app/routes/(talent)/TalentSwipeJobs";
 import TalentMatches from "@/app/routes/(talent)/TalentMatches";
+import TalentMatchChat from "@/app/routes/(talent)/TalentMatchChat";
 
 // Employer routes
 import EmployerDashboard from "@/app/routes/(employer)/EmployerDashboard";
 import EmployerScheduler from "@/app/routes/(employer)/EmployerScheduler";
+import EmployerJobs from "@/app/routes/(employer)/EmployerJobs";
+import EmployerSwipeTalent from "@/app/routes/(employer)/EmployerSwipeTalent";
+import EmployerMatches from "@/app/routes/(employer)/EmployerMatches";
 
 import NotFound from "./pages/NotFound";
 
@@ -41,99 +45,21 @@ const App = () => (
               <Route path="/auth/login" element={<Auth />} />
               <Route path="/auth/signup" element={<Auth />} />
 
-              {/* Talent (Protected + Role-gated) */}
-              <Route
-                path="/talent/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["talent"]}>
-                      <TalentDashboard />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/talent/profile"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["talent"]}>
-                      <TalentProfile />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/talent/swipe-jobs"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["talent"]}>
-                      <TalentSwipeJobs />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/talent/matches"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["talent"]}>
-                      <TalentMatches />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
+              {/* Talent */}
+              <Route path="/talent/dashboard" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentDashboard /></RoleGate></ProtectedRoute>} />
+              <Route path="/talent/profile" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentProfile /></RoleGate></ProtectedRoute>} />
+              <Route path="/talent/swipe-jobs" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentSwipeJobs /></RoleGate></ProtectedRoute>} />
+              <Route path="/talent/matches" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentMatches /></RoleGate></ProtectedRoute>} />
+              <Route path="/talent/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentMatchChat /></RoleGate></ProtectedRoute>} />
 
-              {/* Employer (Protected + Role-gated) */}
-              <Route
-                path="/employer/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["employer"]}>
-                      <EmployerDashboard />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/employer/scheduler"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["employer"]}>
-                      <EmployerScheduler />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/employer/jobs"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["employer"]}>
-                      <EmployerDashboard />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/employer/swipe-talent"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["employer"]}>
-                      <EmployerDashboard />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/employer/borrow"
-                element={
-                  <ProtectedRoute>
-                    <RoleGate allow={["employer"]}>
-                      <EmployerDashboard />
-                    </RoleGate>
-                  </ProtectedRoute>
-                }
-              />
+              {/* Employer */}
+              <Route path="/employer/dashboard" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerDashboard /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/jobs" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerJobs /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/swipe-talent/:jobId" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerSwipeTalent /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/matches" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerMatches /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["employer"]}><TalentMatchChat /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/scheduler" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerScheduler /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/borrow" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerDashboard /></RoleGate></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
