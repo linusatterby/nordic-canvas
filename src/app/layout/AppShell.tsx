@@ -4,19 +4,17 @@ import { SideNav } from "./SideNav";
 import { TopNav } from "./TopNav";
 import { MobileNav } from "./MobileNav";
 import type { Role } from "@/lib/constants/roles";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AppShellProps {
   children: React.ReactNode;
   role: Role;
-  user?: {
-    name: string;
-    avatarUrl?: string;
-  };
 }
 
-export function AppShell({ children, role, user }: AppShellProps) {
+export function AppShell({ children, role }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const { profile } = useAuth();
 
   return (
     <div className="min-h-screen bg-frost">
@@ -57,7 +55,6 @@ export function AppShell({ children, role, user }: AppShellProps) {
         <TopNav
           onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
           isSidebarOpen={mobileMenuOpen}
-          user={user}
         />
         <main className="pb-20 lg:pb-8">
           {children}

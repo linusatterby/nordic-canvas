@@ -84,7 +84,7 @@ export function TalentSwipeJobs() {
   };
 
   return (
-    <AppShell role="talent" user={{ name: "Erik Svensson" }}>
+    <AppShell role="talent">
       <ConfettiPulse trigger={showConfetti} onComplete={() => setShowConfetti(false)} />
       
       <div className="container mx-auto px-4 py-8 max-w-lg">
