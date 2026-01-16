@@ -17,6 +17,7 @@ export interface MatchDTO {
   job_end_date: string;
   org_name: string;
   talent_name: string | null;
+  talent_legacy_score: number | null;
   last_message: string | null;
 }
 
@@ -100,6 +101,7 @@ export async function listMyMatches(): Promise<{
       job_end_date: job?.end_date ?? "",
       org_name: org?.name ?? "Okänd organisation",
       talent_name: null, // Not needed for talent view
+      talent_legacy_score: null, // Not needed for talent view
       last_message: threadInfo?.last_message ?? null,
     };
   });
@@ -127,9 +129,9 @@ export async function listOrgMatches(orgId: string): Promise<{
     return { matches: [], error: new Error(matchError.message) };
   }
 
-  // Get talent names
+  // Get talent names and legacy scores
   const talentIds = [...new Set((matches ?? []).map((m) => m.talent_user_id))];
-  let talentMap = new Map<string, string>();
+  let talentMap = new Map<string, { name: string | null; legacy_score: number | null }>();
 
   if (talentIds.length > 0) {
     const { data: profiles } = await supabase
@@ -137,10 +139,21 @@ export async function listOrgMatches(orgId: string): Promise<{
       .select("user_id, full_name")
       .in("user_id", talentIds);
 
+    const { data: talentProfiles } = await supabase
+      .from("talent_profiles")
+      .select("user_id, legacy_score_cached")
+      .in("user_id", talentIds);
+
+    const legacyMap = new Map<string, number | null>();
+    talentProfiles?.forEach((tp) => {
+      legacyMap.set(tp.user_id, tp.legacy_score_cached);
+    });
+
     profiles?.forEach((p) => {
-      if (p.full_name) {
-        talentMap.set(p.user_id, p.full_name);
-      }
+      talentMap.set(p.user_id, {
+        name: p.full_name,
+        legacy_score: legacyMap.get(p.user_id) ?? null,
+      });
     });
   }
 
@@ -201,7 +214,8 @@ export async function listOrgMatches(orgId: string): Promise<{
       job_start_date: job?.start_date ?? "",
       job_end_date: job?.end_date ?? "",
       org_name: org?.name ?? "Okänd organisation",
-      talent_name: talentMap.get(m.talent_user_id) ?? null,
+      talent_name: talentMap.get(m.talent_user_id)?.name ?? null,
+      talent_legacy_score: talentMap.get(m.talent_user_id)?.legacy_score ?? null,
       last_message: threadInfo?.last_message ?? null,
     };
   });
@@ -230,10 +244,16 @@ export async function getMatch(matchId: string): Promise<{
     return { match: null, error: new Error(error.message) };
   }
 
-  // Get talent name
+  // Get talent name and legacy score
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name")
+    .eq("user_id", data.talent_user_id)
+    .single();
+
+  const { data: talentProfile } = await supabase
+    .from("talent_profiles")
+    .select("legacy_score_cached")
     .eq("user_id", data.talent_user_id)
     .single();
 
@@ -254,6 +274,7 @@ export async function getMatch(matchId: string): Promise<{
       job_end_date: job?.end_date ?? "",
       org_name: org?.name ?? "Okänd organisation",
       talent_name: profile?.full_name ?? null,
+      talent_legacy_score: talentProfile?.legacy_score_cached ?? null,
       last_message: null,
     },
     error: null,

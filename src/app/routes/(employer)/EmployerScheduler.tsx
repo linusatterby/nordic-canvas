@@ -48,7 +48,7 @@ export function EmployerScheduler() {
     return [...new Set(matches.map((m) => m.talent_user_id))];
   }, [matches]);
 
-  // Build talent options for booking modal
+  // Build talent options for booking modal with real legacy scores
   const talentOptions = React.useMemo(() => {
     if (!matches) return [];
     const seen = new Set<string>();
@@ -61,7 +61,7 @@ export function EmployerScheduler() {
       .map((m) => ({
         user_id: m.talent_user_id,
         full_name: m.talent_name,
-        legacy_score: null, // Could fetch from talent_profiles if needed
+        legacy_score: m.talent_legacy_score,
       }));
   }, [matches]);
 
