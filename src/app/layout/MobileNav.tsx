@@ -1,0 +1,57 @@
+import * as React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { LayoutDashboard, Briefcase, Users, User } from "lucide-react";
+import { cn } from "@/lib/utils/classnames";
+import type { Role } from "@/lib/constants/roles";
+
+interface NavItem {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+}
+
+const talentNavItems: NavItem[] = [
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Hem", href: "/talent/dashboard" },
+  { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
+  { icon: <Users className="h-5 w-5" />, label: "Match", href: "/talent/matches" },
+  { icon: <User className="h-5 w-5" />, label: "Profil", href: "/talent/profile" },
+];
+
+const employerNavItems: NavItem[] = [
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Hem", href: "/employer/dashboard" },
+  { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/employer/jobs" },
+  { icon: <Users className="h-5 w-5" />, label: "Talang", href: "/employer/swipe-talent" },
+  { icon: <User className="h-5 w-5" />, label: "Mer", href: "/employer/scheduler" },
+];
+
+interface MobileNavProps {
+  role: Role;
+}
+
+export function MobileNav({ role }: MobileNavProps) {
+  const location = useLocation();
+  const navItems = role === "talent" ? talentNavItems : employerNavItems;
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border lg:hidden safe-area-bottom">
+      <div className="flex items-center justify-around h-16">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              {item.icon}
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
