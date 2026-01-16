@@ -1,0 +1,71 @@
+import * as React from "react";
+import { cn } from "@/lib/utils/classnames";
+import { SideNav } from "./SideNav";
+import { TopNav } from "./TopNav";
+import { MobileNav } from "./MobileNav";
+import type { Role } from "@/lib/constants/roles";
+
+interface AppShellProps {
+  children: React.ReactNode;
+  role: Role;
+  user?: {
+    name: string;
+    avatarUrl?: string;
+  };
+}
+
+export function AppShell({ children, role, user }: AppShellProps) {
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  return (
+    <div className="min-h-screen bg-frost">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <SideNav
+          role={role}
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+        />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-30 bg-ink/50 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="lg:hidden">
+            <SideNav
+              role={role}
+              isOpen={true}
+              onToggle={() => setMobileMenuOpen(false)}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Main Content */}
+      <div
+        className={cn(
+          "transition-all duration-slow ease-out",
+          "lg:ml-16",
+          sidebarOpen && "lg:ml-64"
+        )}
+      >
+        <TopNav
+          onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+          isSidebarOpen={mobileMenuOpen}
+          user={user}
+        />
+        <main className="pb-20 lg:pb-8">
+          {children}
+        </main>
+      </div>
+
+      {/* Mobile Bottom Nav */}
+      <MobileNav role={role} />
+    </div>
+  );
+}

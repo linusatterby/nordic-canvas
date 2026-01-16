@@ -1,0 +1,125 @@
+/* Seasonal Talent Ecosystem - Nordic Operational Excellence Design Tokens */
+
+:root {
+  /* Core Colors */
+  --c-ink: 216 45% 8%;
+  --c-frost: 220 30% 98%;
+  --c-slate: 220 25% 94%;
+  --c-slate-dark: 220 20% 88%;
+  
+  /* Brand Colors */
+  --c-primary: 220 100% 59%;
+  --c-primary-hover: 220 100% 52%;
+  --c-primary-muted: 220 60% 92%;
+  
+  /* Semantic Colors */
+  --c-verified: 142 71% 45%;
+  --c-verified-bg: 142 60% 94%;
+  --c-delight: 10 100% 62%;
+  --c-delight-bg: 10 100% 96%;
+  --c-warn: 38 92% 50%;
+  --c-warn-bg: 38 92% 94%;
+  --c-busy: 215 16% 62%;
+  --c-busy-bg: 215 16% 94%;
+  --c-error: 0 84% 60%;
+  --c-error-bg: 0 84% 96%;
+  
+  /* Surfaces */
+  --c-surface: 0 0% 100%;
+  --c-surface-elevated: 0 0% 100%;
+  --c-surface-overlay: 216 45% 8% / 0.8;
+  
+  /* Text */
+  --c-text-primary: 216 45% 8%;
+  --c-text-secondary: 215 16% 47%;
+  --c-text-muted: 215 16% 62%;
+  --c-text-inverse: 220 30% 98%;
+  
+  /* Border */
+  --c-border: 220 20% 90%;
+  --c-border-focus: 220 100% 59%;
+  
+  /* Border Radius */
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-card: 14px;
+  --r-lg: 18px;
+  --r-modal: 24px;
+  --r-pill: 999px;
+  
+  /* Spacing Scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  
+  /* Shadows */
+  --sh-soft: 0 1px 3px hsl(216 45% 8% / 0.04), 0 1px 2px hsl(216 45% 8% / 0.06);
+  --sh-card: 0 2px 8px hsl(216 45% 8% / 0.06), 0 1px 2px hsl(216 45% 8% / 0.04);
+  --sh-lift: 0 8px 24px hsl(216 45% 8% / 0.1), 0 4px 8px hsl(216 45% 8% / 0.06);
+  --sh-modal: 0 24px 48px hsl(216 45% 8% / 0.16), 0 8px 16px hsl(216 45% 8% / 0.08);
+  
+  /* Motion */
+  --t-fast: 140ms;
+  --t-base: 200ms;
+  --t-slow: 320ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* Typography Scale */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.25rem;
+  --fs-2xl: 1.5rem;
+  --fs-3xl: 2rem;
+  --fs-4xl: 2.5rem;
+  
+  /* Line Heights */
+  --lh-tight: 1.25;
+  --lh-base: 1.5;
+  --lh-relaxed: 1.625;
+  
+  /* Font Weights */
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  
+  /* Z-Index Scale */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 500;
+  --z-toast: 700;
+  --z-tooltip: 900;
+}
+
+/* Dark mode tokens */
+.dark {
+  --c-ink: 220 30% 98%;
+  --c-frost: 216 45% 8%;
+  --c-slate: 216 35% 14%;
+  --c-slate-dark: 216 35% 18%;
+  
+  --c-surface: 216 40% 10%;
+  --c-surface-elevated: 216 35% 14%;
+  
+  --c-text-primary: 220 30% 98%;
+  --c-text-secondary: 215 16% 70%;
+  --c-text-muted: 215 16% 55%;
+  --c-text-inverse: 216 45% 8%;
+  
+  --c-border: 216 30% 20%;
+  
+  --sh-soft: 0 1px 3px hsl(0 0% 0% / 0.2);
+  --sh-card: 0 2px 8px hsl(0 0% 0% / 0.25);
+  --sh-lift: 0 8px 24px hsl(0 0% 0% / 0.35);
+  --sh-modal: 0 24px 48px hsl(0 0% 0% / 0.5);
+}
