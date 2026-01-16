@@ -856,6 +856,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_circle_partners: {
+        Args: { p_org_id: string }
+        Returns: {
+          partner_location: string
+          partner_org_id: string
+          partner_org_name: string
+        }[]
+      }
       get_trusted_circle_orgs: {
         Args: { p_org_id: string }
         Returns: {
