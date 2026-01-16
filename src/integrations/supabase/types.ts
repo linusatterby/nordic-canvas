@@ -123,6 +123,48 @@ export type Database = {
           },
         ]
       }
+      circle_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          from_org_id: string
+          id: string
+          status: string
+          to_org_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          from_org_id: string
+          id?: string
+          status?: string
+          to_org_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          from_org_id?: string
+          id?: string
+          status?: string
+          to_org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_requests_from_org_id_fkey"
+            columns: ["from_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_requests_to_org_id_fkey"
+            columns: ["to_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employer_talent_swipes: {
         Row: {
           created_at: string
@@ -464,12 +506,62 @@ export type Database = {
         }
         Relationships: []
       }
+      release_offers: {
+        Row: {
+          booking_id: string
+          created_at: string
+          from_org_id: string
+          id: string
+          status: string
+          taken_by_org_id: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          from_org_id: string
+          id?: string
+          status?: string
+          taken_by_org_id?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          from_org_id?: string
+          id?: string
+          status?: string
+          taken_by_org_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "release_offers_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "shift_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "release_offers_from_org_id_fkey"
+            columns: ["from_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "release_offers_taken_by_org_id_fkey"
+            columns: ["taken_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_bookings: {
         Row: {
           created_at: string
           end_ts: string
           id: string
           is_demo: boolean
+          is_released: boolean
           org_id: string
           start_ts: string
           talent_user_id: string
@@ -479,6 +571,7 @@ export type Database = {
           end_ts: string
           id?: string
           is_demo?: boolean
+          is_released?: boolean
           org_id: string
           start_ts: string
           talent_user_id: string
@@ -488,6 +581,7 @@ export type Database = {
           end_ts?: string
           id?: string
           is_demo?: boolean
+          is_released?: boolean
           org_id?: string
           start_ts?: string
           talent_user_id?: string
@@ -582,6 +676,27 @@ export type Database = {
         }
         Relationships: []
       }
+      talent_visibility: {
+        Row: {
+          available_for_extra_hours: boolean
+          scope: string
+          talent_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          available_for_extra_hours?: boolean
+          scope?: string
+          talent_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          available_for_extra_hours?: boolean
+          scope?: string
+          talent_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenant_verifications: {
         Row: {
           employment_verified: boolean | null
@@ -625,6 +740,42 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: true
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trusted_circle_links: {
+        Row: {
+          created_at: string
+          id: string
+          org_a: string
+          org_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          org_a: string
+          org_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_a?: string
+          org_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trusted_circle_links_org_a_fkey"
+            columns: ["org_a"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trusted_circle_links_org_b_fkey"
+            columns: ["org_b"]
+            isOneToOne: false
+            referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
         ]
@@ -682,12 +833,33 @@ export type Database = {
     }
     Functions: {
       accept_borrow_offer: { Args: { p_offer_id: string }; Returns: Json }
+      accept_circle_request: { Args: { p_request_id: string }; Returns: Json }
       find_available_talents: {
         Args: { p_end_ts: string; p_location: string; p_start_ts: string }
         Returns: {
           full_name: string
           legacy_score: number
           user_id: string
+        }[]
+      }
+      find_available_talents_scoped: {
+        Args: {
+          p_end_ts: string
+          p_location: string
+          p_requester_org_id: string
+          p_scope: string
+          p_start_ts: string
+        }
+        Returns: {
+          full_name: string
+          legacy_score: number
+          user_id: string
+        }[]
+      }
+      get_trusted_circle_orgs: {
+        Args: { p_org_id: string }
+        Returns: {
+          org_id: string
         }[]
       }
       has_match_access: {
@@ -712,6 +884,11 @@ export type Database = {
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
       reset_demo: { Args: { p_org_id: string }; Returns: Json }
+      take_release_offer: { Args: { p_offer_id: string }; Returns: Json }
+      toggle_talent_circle_visibility: {
+        Args: { p_extra_hours: boolean; p_scope: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
