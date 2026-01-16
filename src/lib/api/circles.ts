@@ -28,6 +28,13 @@ export interface TrustedCircleLink {
   partner_org_name: string;
 }
 
+// New simpler interface for circle partners from RPC
+export interface CirclePartner {
+  id: string;
+  name: string;
+  location: string | null;
+}
+
 export interface TalentVisibility {
   talent_user_id: string;
   scope: TalentVisibilityScope;
@@ -203,47 +210,59 @@ export async function declineCircleRequest(requestId: string): Promise<{
 // ============================================
 
 /**
- * List trusted circle partners for an org
+ * List trusted circle partners for an org (using SECURITY DEFINER RPC to bypass RLS)
+ */
+export async function listCirclePartners(orgId: string): Promise<{
+  partners: CirclePartner[];
+  error: Error | null;
+}> {
+  const { data, error } = await supabase.rpc("get_circle_partners", {
+    p_org_id: orgId,
+  });
+
+  if (error) {
+    return { partners: [], error: new Error(error.message) };
+  }
+
+  // Map RPC result to CirclePartner interface
+  const partners: CirclePartner[] = (data ?? []).map((p: { partner_org_id: string; partner_org_name: string; partner_location: string | null }) => ({
+    id: p.partner_org_id,
+    name: p.partner_org_name ?? "(namn saknas)",
+    location: p.partner_location,
+  }));
+
+  // Dedupe by id as extra safety
+  const uniquePartners = Array.from(
+    new Map(partners.map((p) => [p.id, p])).values()
+  );
+
+  return { partners: uniquePartners, error: null };
+}
+
+/**
+ * @deprecated Use listCirclePartners instead - kept for backward compatibility
  */
 export async function listTrustedCircle(orgId: string): Promise<{
   partners: TrustedCircleLink[];
   error: Error | null;
 }> {
-  // Get links where org is either org_a or org_b
-  const { data: linksA, error: errA } = await supabase
-    .from("trusted_circle_links")
-    .select(`
-      *,
-      partner:orgs!trusted_circle_links_org_b_fkey ( id, name )
-    `)
-    .eq("org_a", orgId);
-
-  const { data: linksB, error: errB } = await supabase
-    .from("trusted_circle_links")
-    .select(`
-      *,
-      partner:orgs!trusted_circle_links_org_a_fkey ( id, name )
-    `)
-    .eq("org_b", orgId);
-
-  if (errA || errB) {
-    return { partners: [], error: new Error(errA?.message ?? errB?.message ?? "Unknown error") };
+  const { partners, error } = await listCirclePartners(orgId);
+  
+  if (error) {
+    return { partners: [], error };
   }
 
-  const partners: TrustedCircleLink[] = [
-    ...(linksA ?? []).map((l) => ({
-      ...l,
-      partner_org_id: l.org_b,
-      partner_org_name: (l.partner as { name: string } | null)?.name ?? "Okänd",
-    })),
-    ...(linksB ?? []).map((l) => ({
-      ...l,
-      partner_org_id: l.org_a,
-      partner_org_name: (l.partner as { name: string } | null)?.name ?? "Okänd",
-    })),
-  ];
+  // Map to legacy format
+  const legacyPartners: TrustedCircleLink[] = partners.map((p) => ({
+    id: p.id, // Use partner_org_id as id for uniqueness
+    org_a: "",
+    org_b: "",
+    created_at: "",
+    partner_org_id: p.id,
+    partner_org_name: p.name,
+  }));
 
-  return { partners, error: null };
+  return { partners: legacyPartners, error: null };
 }
 
 // ============================================

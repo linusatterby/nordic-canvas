@@ -5,6 +5,7 @@ import {
   acceptCircleRequest,
   declineCircleRequest,
   listTrustedCircle,
+  listCirclePartners,
   getMyVisibility,
   updateMyVisibility,
   createReleaseOffer,
@@ -15,6 +16,7 @@ import {
   getAvailableTalentCounts,
   type TalentVisibilityScope,
   type BorrowScope,
+  type CirclePartner,
 } from "@/lib/api/circles";
 
 // ============================================
@@ -84,6 +86,25 @@ export function useDeclineCircleRequest() {
 // Trusted Circle
 // ============================================
 
+/**
+ * Hook to get circle partners with proper names (uses SECURITY DEFINER RPC)
+ */
+export function useCirclePartners(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ["circlePartners", orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      const { partners, error } = await listCirclePartners(orgId);
+      if (error) throw error;
+      return partners;
+    },
+    enabled: !!orgId,
+  });
+}
+
+/**
+ * @deprecated Use useCirclePartners instead - kept for backward compatibility
+ */
 export function useTrustedCircle(orgId: string | undefined) {
   return useQuery({
     queryKey: ["trustedCircle", orgId],

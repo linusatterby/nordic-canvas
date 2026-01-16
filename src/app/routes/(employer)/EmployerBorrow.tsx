@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDefaultOrgId, useCreateOrg, useMyOrgs } from "@/hooks/useOrgs";
 import { useOrgBorrowRequests, useCreateBorrowRequest, useCloseBorrowRequest } from "@/hooks/useBorrow";
 import {
-  useTrustedCircle,
+  useCirclePartners,
   useCircleRequests,
   useCreateCircleRequest,
   useAcceptCircleRequest,
@@ -74,7 +74,7 @@ export function EmployerBorrow() {
   const { data: orgId, isLoading: orgLoading } = useDefaultOrgId();
   const { data: orgs } = useMyOrgs();
   const { data: requests, isLoading: requestsLoading } = useOrgBorrowRequests(orgId);
-  const { data: trustedCircle } = useTrustedCircle(orgId);
+  const { data: circlePartners } = useCirclePartners(orgId);
   const { data: circleRequests } = useCircleRequests(orgId);
   const createMutation = useCreateBorrowRequest();
   const closeMutation = useCloseBorrowRequest();
@@ -443,17 +443,22 @@ export function EmployerBorrow() {
                   </Button>
                 </div>
                 
-                {trustedCircle && trustedCircle.length > 0 ? (
+                {circlePartners && circlePartners.length > 0 ? (
                   <div className="grid gap-2">
-                    {trustedCircle.map((link) => (
-                      <Card key={link.id} variant="ghost" padding="sm">
+                    {circlePartners.map((partner) => (
+                      <Card key={partner.id} variant="ghost" padding="sm">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-primary/10">
                             <Handshake className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <span className="font-medium text-foreground">{link.partner_org_name}</span>
-                            <p className="text-xs text-muted-foreground">Aktiv partner</p>
+                            <span className="font-medium text-foreground">{partner.name}</span>
+                            {partner.location && (
+                              <p className="text-xs text-muted-foreground">{partner.location}</p>
+                            )}
+                            {!partner.location && (
+                              <p className="text-xs text-muted-foreground">Aktiv partner</p>
+                            )}
                           </div>
                         </div>
                       </Card>
