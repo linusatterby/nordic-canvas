@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   listOrgBookings, 
   listBusyBlocksForTalentIds, 
@@ -13,15 +15,17 @@ interface SchedulerData {
 }
 
 /**
- * Hook to fetch scheduler data for an org
+ * Hook to fetch scheduler data for an org with realtime updates
  */
 export function useScheduler(
   orgId: string | undefined,
   range: { start: string; end: string },
   matchedTalentIds: string[]
 ) {
-  return useQuery({
-    queryKey: ["scheduler", orgId, range.start, range.end, matchedTalentIds],
+  const queryClient = useQueryClient();
+  
+  const query = useQuery({
+    queryKey: ["scheduler", "bookings", orgId, range.start, range.end],
     queryFn: async (): Promise<SchedulerData> => {
       if (!orgId) return { bookings: [], busyBlocks: [] };
 
@@ -40,6 +44,36 @@ export function useScheduler(
     },
     enabled: !!orgId,
   });
+
+  // Subscribe to realtime updates for shift_bookings
+  useEffect(() => {
+    if (!orgId) return;
+
+    const channel = supabase
+      .channel(`shift_bookings:${orgId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "shift_bookings",
+          filter: `org_id=eq.${orgId}`,
+        },
+        () => {
+          // Invalidate to refetch on any change
+          queryClient.invalidateQueries({
+            queryKey: ["scheduler", "bookings", orgId],
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orgId, queryClient]);
+
+  return query;
 }
 
 /**
@@ -62,7 +96,7 @@ export function useCreateBooking() {
     onSuccess: (_data, variables) => {
       // Invalidate scheduler queries for this org
       queryClient.invalidateQueries({ 
-        queryKey: ["scheduler", variables.orgId] 
+        queryKey: ["scheduler", "bookings", variables.orgId] 
       });
     },
   });
