@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
 import { Link } from "react-router-dom";
 import { TalentBorrowOffers } from "@/components/borrow/TalentBorrowOffers";
+import { TalentCircleVisibilityCard } from "@/components/circles/TalentCircleVisibilityCard";
 
 // Stub data
 const passportData = {
@@ -41,6 +42,11 @@ export function TalentDashboard() {
         {/* Incoming Borrow Offers */}
         <div className="mb-6">
           <TalentBorrowOffers />
+        </div>
+
+        {/* Circle Visibility Settings */}
+        <div className="mb-6">
+          <TalentCircleVisibilityCard />
         </div>
 
         {/* Season Passport */}
