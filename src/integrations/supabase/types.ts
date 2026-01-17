@@ -1034,6 +1034,7 @@ export type Database = {
         Returns: undefined
       }
       reset_demo: { Args: { p_org_id: string }; Returns: Json }
+      reset_talent_demo_swipes: { Args: never; Returns: Json }
       take_release_offer: { Args: { p_offer_id: string }; Returns: Json }
       toggle_talent_circle_visibility: {
         Args: { p_extra_hours: boolean; p_scope: string }

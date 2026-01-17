@@ -60,6 +60,7 @@ export function useResetDemo() {
       queryClient.invalidateQueries({ queryKey: ["chat"] });
       queryClient.invalidateQueries({ queryKey: ["thread"] });
       queryClient.invalidateQueries({ queryKey: ["orgJobs"] });
+      queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
     },
   });
 }
