@@ -559,6 +559,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           home_base: string | null
+          is_demo: boolean
           phone: string | null
           type: string
           user_id: string
@@ -567,6 +568,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           home_base?: string | null
+          is_demo?: boolean
           phone?: string | null
           type: string
           user_id: string
@@ -575,6 +577,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           home_base?: string | null
+          is_demo?: boolean
           phone?: string | null
           type?: string
           user_id?: string
