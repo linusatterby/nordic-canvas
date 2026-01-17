@@ -1,14 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listUnswipedJobs, getJob, listOrgJobs, resetTalentDemoSwipes, type JobWithOrg, type JobFilters } from "@/lib/api/jobs";
+import { useDemoMode } from "@/hooks/useDemo";
 
 /**
  * Hook to fetch unswiped published jobs for talent with filters
+ * In demo mode, always shows demo jobs even if all have been swiped
  */
 export function useJobsFeed(filters?: JobFilters) {
+  const { isDemoMode } = useDemoMode();
+  
   return useQuery({
-    queryKey: ["jobs", "unswiped", filters],
+    queryKey: ["jobs", "unswiped", filters, isDemoMode],
     queryFn: async () => {
-      const { jobs, error } = await listUnswipedJobs(filters);
+      const { jobs, error } = await listUnswipedJobs(filters, isDemoMode);
       if (error) throw error;
       return jobs;
     },
@@ -62,8 +66,10 @@ export function useResetTalentDemoSwipes() {
       return success;
     },
     onSuccess: () => {
-      // Invalidate job feed to refresh available jobs
+      // Invalidate all job feed queries (partial match on key prefix)
       queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ["jobs", "unswiped"] });
     },
   });
 }

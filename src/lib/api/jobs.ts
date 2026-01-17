@@ -47,7 +47,7 @@ export async function listPublishedJobs(): Promise<{
 /**
  * List published jobs the user hasn't swiped on yet, with optional filters
  */
-export async function listUnswipedJobs(filters?: JobFilters): Promise<{
+export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolean): Promise<{
   jobs: JobWithOrg[];
   error: Error | null;
 }> {
@@ -114,10 +114,32 @@ export async function listUnswipedJobs(filters?: JobFilters): Promise<{
     return { jobs: [], error: new Error(error.message) };
   }
 
-  const jobs: JobWithOrg[] = (data ?? []).map((job) => ({
+  let jobs: JobWithOrg[] = (data ?? []).map((job) => ({
     ...job,
     org_name: (job.orgs as { name: string } | null)?.name ?? "Okänd",
   }));
+
+  // Demo fallback: if in demo mode and no jobs found, fetch demo jobs ignoring swipes
+  if (isDemoMode && jobs.length === 0) {
+    const { data: demoData, error: demoError } = await supabase
+      .from("job_posts")
+      .select(`
+        *,
+        orgs ( name )
+      `)
+      .eq("status", "published")
+      .eq("is_demo", true)
+      .order("location", { ascending: false }) // Visby first (reverse alphabetical: V > S > Å)
+      .order("created_at", { ascending: false })
+      .limit(6);
+
+    if (!demoError && demoData && demoData.length > 0) {
+      jobs = demoData.map((job) => ({
+        ...job,
+        org_name: (job.orgs as { name: string } | null)?.name ?? "Okänd",
+      }));
+    }
+  }
 
   return { jobs, error: null };
 }
