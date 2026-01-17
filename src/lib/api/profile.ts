@@ -11,6 +11,8 @@ export interface ProfileUpdate {
   phone?: string;
   home_base?: string;
   type?: ProfileType;
+  available_from?: string | null;
+  available_to?: string | null;
 }
 
 /**
