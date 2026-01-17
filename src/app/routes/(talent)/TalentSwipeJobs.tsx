@@ -184,16 +184,26 @@ export function TalentSwipeJobs() {
           <div className="space-y-4">
             <EmptyState
               type="no-matches"
-              title={hasActiveFilters ? "Inga jobb matchar dina filter" : "Du är ikapp!"}
+              title={
+                hasActiveFilters 
+                  ? "Inga jobb matchar dina filter" 
+                  : isDemoMode 
+                    ? "Inga demo-jobb kvar" 
+                    : "Du är ikapp!"
+              }
               message={
                 hasActiveFilters
                   ? "Prova att ändra eller rensa filtren för att se fler jobb."
-                  : "Ändra filter eller uppdatera din tillgänglighet för fler matchningar."
+                  : isDemoMode
+                    ? "Rensa filter eller återställ demo för att se fler jobb."
+                    : "Uppdatera din tillgänglighet i profilen för fler matchningar."
               }
               action={
                 hasActiveFilters
                   ? { label: "Rensa filter", onClick: handleClearFilters }
-                  : { label: "Till profilen", onClick: () => navigate("/talent/profile") }
+                  : isDemoMode
+                    ? { label: "Återställ demo", onClick: handleResetDemoSwipes }
+                    : { label: "Till profilen", onClick: () => navigate("/talent/profile") }
               }
             />
             

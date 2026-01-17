@@ -589,6 +589,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          available_from: string | null
+          available_to: string | null
           created_at: string
           full_name: string | null
           home_base: string | null
@@ -598,6 +600,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          available_from?: string | null
+          available_to?: string | null
           created_at?: string
           full_name?: string | null
           home_base?: string | null
@@ -607,6 +611,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          available_from?: string | null
+          available_to?: string | null
           created_at?: string
           full_name?: string | null
           home_base?: string | null

@@ -46,6 +46,7 @@ export async function listPublishedJobs(): Promise<{
 
 /**
  * List published jobs the user hasn't swiped on yet, with optional filters
+ * In demo mode: if no jobs found, return demo jobs ignoring availability constraints
  */
 export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolean): Promise<{
   jobs: JobWithOrg[];
@@ -69,6 +70,9 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
 
   const swipedJobIds = (swipes ?? []).map((s) => s.job_post_id);
 
+  // Check if user has active date filters set in UI
+  const hasActiveDateFilters = !!(filters?.startDate || filters?.endDate);
+
   // Build query with filters
   let query = supabase
     .from("job_posts")
@@ -78,23 +82,28 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
     `)
     .eq("status", "published");
 
-  // Apply filters
+  // Apply location filter
   if (filters?.location && filters.location !== "all") {
     query = query.eq("location", filters.location);
   }
 
+  // Apply role filter
   if (filters?.roleKey && filters.roleKey !== "all") {
     query = query.eq("role_key", filters.roleKey);
   }
 
-  if (filters?.startDate) {
-    query = query.gte("end_date", filters.startDate);
+  // Apply date filters only if user actively set them in UI
+  // In demo mode without active date filters, skip date filtering entirely
+  if (hasActiveDateFilters) {
+    if (filters?.startDate) {
+      query = query.gte("end_date", filters.startDate);
+    }
+    if (filters?.endDate) {
+      query = query.lte("start_date", filters.endDate);
+    }
   }
 
-  if (filters?.endDate) {
-    query = query.lte("start_date", filters.endDate);
-  }
-
+  // Apply housing filter
   if (filters?.housingOnly) {
     query = query.eq("housing_offered", true);
   }
@@ -119,9 +128,10 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
     org_name: (job.orgs as { name: string } | null)?.name ?? "Okänd",
   }));
 
-  // Demo fallback: if in demo mode and no jobs found, fetch demo jobs ignoring swipes
+  // Demo fallback: if in demo mode and no jobs found, fetch demo jobs ignoring all filters except swipes
   if (isDemoMode && jobs.length === 0) {
-    const { data: demoData, error: demoError } = await supabase
+    // First try: get demo jobs user hasn't swiped on
+    let demoQuery = supabase
       .from("job_posts")
       .select(`
         *,
@@ -129,15 +139,42 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
       `)
       .eq("status", "published")
       .eq("is_demo", true)
-      .order("location", { ascending: false }) // Visby first (reverse alphabetical: V > S > Å)
+      .order("location", { ascending: false }) // Visby first (reverse alphabetical)
       .order("created_at", { ascending: false })
       .limit(6);
+
+    // Only exclude swiped jobs if there are some
+    if (swipedJobIds.length > 0) {
+      demoQuery = demoQuery.not("id", "in", `(${swipedJobIds.join(",")})`);
+    }
+
+    const { data: demoData, error: demoError } = await demoQuery;
 
     if (!demoError && demoData && demoData.length > 0) {
       jobs = demoData.map((job) => ({
         ...job,
         org_name: (job.orgs as { name: string } | null)?.name ?? "Okänd",
       }));
+    } else if (isDemoMode && jobs.length === 0) {
+      // Second fallback: return ANY demo jobs (even already swiped) if all have been swiped
+      const { data: allDemoData, error: allDemoError } = await supabase
+        .from("job_posts")
+        .select(`
+          *,
+          orgs ( name )
+        `)
+        .eq("status", "published")
+        .eq("is_demo", true)
+        .order("location", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (!allDemoError && allDemoData && allDemoData.length > 0) {
+        jobs = allDemoData.map((job) => ({
+          ...job,
+          org_name: (job.orgs as { name: string } | null)?.name ?? "Okänd",
+        }));
+      }
     }
   }
 
