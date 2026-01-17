@@ -240,6 +240,24 @@ export type Database = {
           },
         ]
       }
+      demo_accounts: {
+        Row: {
+          created_at: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       employer_talent_swipes: {
         Row: {
           created_at: string
@@ -994,6 +1012,7 @@ export type Database = {
         Returns: boolean
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
+      mark_me_as_demo: { Args: { p_role?: string }; Returns: Json }
       remove_circle_member: {
         Args: { p_circle_id: string; p_member_org_id: string }
         Returns: undefined

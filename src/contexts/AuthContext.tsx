@@ -15,6 +15,26 @@ interface AuthContextValue {
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
 
+/**
+ * Check if email matches demo patterns
+ */
+function isDemoEmail(email: string | undefined): boolean {
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  return lower.includes("+demo") || lower.startsWith("demo.") || lower.includes(".demo@");
+}
+
+/**
+ * Mark user as demo in the database (silent, fire-and-forget)
+ */
+async function markUserAsDemo(role?: string): Promise<void> {
+  try {
+    await supabase.rpc("mark_me_as_demo", { p_role: role ?? null });
+  } catch (err) {
+    console.warn("Failed to mark user as demo:", err);
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
   const [session, setSession] = React.useState<Session | null>(null);
@@ -28,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { profile: p } = await getMyProfile();
     setProfile(p);
     setProfileLoading(false);
+    return p;
   }, []);
 
   const bootstrapProfile = React.useCallback(async (defaultType: ProfileType = "talent") => {
@@ -35,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { profile: p } = await ensureMyProfile(defaultType);
     setProfile(p);
     setProfileLoading(false);
+    return p;
   }, []);
 
   // Load demo org IDs for the user
@@ -53,16 +75,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener FIRST
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, currentSession) => {
+    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
 
       // Bootstrap profile after sign in (deferred to avoid deadlock)
       if (event === "SIGNED_IN" && currentSession?.user) {
-        setTimeout(() => {
-          bootstrapProfile();
-          loadDemoOrgs();
+        setTimeout(async () => {
+          const p = await bootstrapProfile();
+          await loadDemoOrgs();
+          
+          // Auto-mark as demo if email matches pattern and not already marked
+          if (isDemoEmail(currentSession.user.email) && !p?.is_demo) {
+            await markUserAsDemo(p?.type === "employer" ? "employer" : "talent");
+            // Reload profile to get updated is_demo flag
+            await loadProfile();
+          }
         }, 0);
       }
 
@@ -74,16 +103,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
       setLoading(false);
 
       // Load profile if already logged in
       if (existingSession?.user) {
-        setTimeout(() => {
-          loadProfile();
-          loadDemoOrgs();
+        setTimeout(async () => {
+          const p = await loadProfile();
+          await loadDemoOrgs();
+          
+          // Auto-mark as demo if email matches pattern and not already marked
+          if (isDemoEmail(existingSession.user.email) && !p?.is_demo) {
+            await markUserAsDemo(p?.type === "employer" ? "employer" : "talent");
+            // Reload profile to get updated is_demo flag
+            await loadProfile();
+          }
         }, 0);
       }
     });
@@ -105,8 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (demoOrgIds.length > 0) {
       return true;
     }
-    // Email contains +demo
-    if (user?.email?.includes("+demo")) {
+    // Email contains demo pattern (fallback while profile updates)
+    if (isDemoEmail(user?.email)) {
       return true;
     }
     return false;
