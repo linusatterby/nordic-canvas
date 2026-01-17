@@ -40,7 +40,7 @@ export function useTalentBorrowOffers() {
 }
 
 /**
- * Mutation to create a borrow request
+ * Mutation to create a borrow request with scope and circle support
  */
 export function useCreateBorrowRequest() {
   const queryClient = useQueryClient();
@@ -57,14 +57,20 @@ export function useCreateBorrowRequest() {
         start_ts: string;
         end_ts: string;
         message?: string;
+        scope?: "internal" | "circle" | "local";
+        circle_id?: string | null;
       };
     }) => {
-      // Create the request
+      // Create the request with scope
       const { request, error } = await createBorrowRequest(orgId, payload);
       if (error || !request) throw error || new Error("Failed to create request");
 
-      // Compute and create offers
-      const { count, error: offerError } = await computeAndCreateOffers(request);
+      // Compute and create offers (uses scope from request)
+      const { count, error: offerError } = await computeAndCreateOffers({
+        ...request,
+        scope: payload.scope,
+        circle_id: payload.circle_id,
+      });
       if (offerError) {
         console.warn("Failed to create offers:", offerError);
       }

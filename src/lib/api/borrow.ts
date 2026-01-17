@@ -43,8 +43,10 @@ export interface AvailableTalent {
   legacy_score: number;
 }
 
+export type BorrowScope = "internal" | "circle" | "local";
+
 /**
- * Create a new borrow request
+ * Create a new borrow request with scope and optional circle_id
  */
 export async function createBorrowRequest(
   orgId: string,
@@ -54,6 +56,8 @@ export async function createBorrowRequest(
     start_ts: string;
     end_ts: string;
     message?: string;
+    scope?: BorrowScope;
+    circle_id?: string | null;
   }
 ): Promise<{ request: BorrowRequest | null; error: Error | null }> {
   const {
@@ -63,6 +67,10 @@ export async function createBorrowRequest(
   if (!user) {
     return { request: null, error: new Error("Not authenticated") };
   }
+
+  const scope = payload.scope ?? "local";
+  // Only include circle_id when scope is 'circle', otherwise must be null for CHECK constraint
+  const circleId = scope === "circle" ? payload.circle_id ?? null : null;
 
   const { data, error } = await supabase
     .from("borrow_requests")
@@ -74,6 +82,8 @@ export async function createBorrowRequest(
       start_ts: payload.start_ts,
       end_ts: payload.end_ts,
       message: payload.message || null,
+      scope,
+      circle_id: circleId,
     })
     .select()
     .single();
@@ -86,13 +96,35 @@ export async function createBorrowRequest(
 }
 
 /**
- * Find available talents for a borrow request using the SQL function
+ * Find available talents for a borrow request using the SQL function (with scope support)
  */
 export async function findAvailableTalents(
   location: string,
   startTs: string,
-  endTs: string
+  endTs: string,
+  scope?: BorrowScope,
+  requesterOrgId?: string,
+  circleId?: string | null
 ): Promise<{ talents: AvailableTalent[]; error: Error | null }> {
+  // Use scoped version if we have scope and org
+  if (scope && requesterOrgId) {
+    const { data, error } = await supabase.rpc("find_available_talents_scoped", {
+      p_location: location,
+      p_start_ts: startTs,
+      p_end_ts: endTs,
+      p_scope: scope,
+      p_requester_org_id: requesterOrgId,
+      p_circle_id: scope === "circle" ? circleId ?? null : null,
+    });
+
+    if (error) {
+      return { talents: [], error: new Error(error.message) };
+    }
+
+    return { talents: data ?? [], error: null };
+  }
+
+  // Legacy: use basic function
   const { data, error } = await supabase.rpc("find_available_talents", {
     p_location: location,
     p_start_ts: startTs,
@@ -137,15 +169,21 @@ export async function createOffersForTalents(
 
 /**
  * Compute and create offers for a borrow request
- * This is the main flow: find talents, create offers
+ * This is the main flow: find talents based on scope, create offers
  */
 export async function computeAndCreateOffers(
-  request: BorrowRequest
+  request: BorrowRequest & { scope?: string; circle_id?: string | null }
 ): Promise<{ count: number; error: Error | null }> {
+  const scope = (request.scope as BorrowScope) ?? "local";
+  const circleId = request.circle_id ?? null;
+  
   const { talents, error: findError } = await findAvailableTalents(
     request.location,
     request.start_ts,
-    request.end_ts
+    request.end_ts,
+    scope,
+    request.org_id,
+    circleId
   );
 
   if (findError) {

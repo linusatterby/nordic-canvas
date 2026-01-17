@@ -9,6 +9,13 @@ import { EmptyState } from "@/components/delight/EmptyStates";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useDefaultOrgId, useCreateOrg, useMyOrgs } from "@/hooks/useOrgs";
 import { useOrgBorrowRequests, useCreateBorrowRequest, useCloseBorrowRequest } from "@/hooks/useBorrow";
 import {
@@ -18,9 +25,11 @@ import {
   useAcceptCircleRequest,
   useDeclineCircleRequest,
   useAvailableTalentCounts,
+  useMyCircles,
 } from "@/hooks/useCircles";
 import { useToasts } from "@/components/delight/Toasts";
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFooter } from "@/components/ui/Modal";
+import { CircleManagementModal } from "@/components/circles/CircleManagementModal";
 import {
   Plus,
   Users,
@@ -34,12 +43,13 @@ import {
   Send,
   Check,
   XCircle,
+  Settings,
 } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { sv } from "date-fns/locale";
 import { cn } from "@/lib/utils/classnames";
 import type { BorrowRequestWithOffers } from "@/lib/api/borrow";
-import type { BorrowScope } from "@/lib/api/circles";
+import type { BorrowScope, Circle } from "@/lib/api/circles";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 
 const roleOptions = [
@@ -76,6 +86,7 @@ export function EmployerBorrow() {
   const { data: requests, isLoading: requestsLoading } = useOrgBorrowRequests(orgId);
   const { data: circlePartners } = useCirclePartners(orgId);
   const { data: circleRequests } = useCircleRequests(orgId);
+  const { data: myCircles } = useMyCircles(orgId);
   const createMutation = useCreateBorrowRequest();
   const closeMutation = useCloseBorrowRequest();
   const createCircleMutation = useCreateCircleRequest();
@@ -87,6 +98,22 @@ export function EmployerBorrow() {
   const tomorrow = addDays(today, 1);
   const currentOrg = orgs?.find((o) => o.id === orgId);
   const defaultLocation = currentOrg?.location ?? "Visby";
+
+  // Selected circle state
+  const [selectedCircleId, setSelectedCircleId] = React.useState<string | null>(null);
+  const [showCircleManagement, setShowCircleManagement] = React.useState(false);
+
+  // Auto-select first circle when circles load
+  React.useEffect(() => {
+    if (myCircles && myCircles.length > 0 && !selectedCircleId) {
+      setSelectedCircleId(myCircles[0].id);
+    }
+  }, [myCircles, selectedCircleId]);
+
+  const selectedCircle = React.useMemo(() => {
+    if (!myCircles || !selectedCircleId) return null;
+    return myCircles.find((c) => c.id === selectedCircleId) ?? null;
+  }, [myCircles, selectedCircleId]);
 
   const { data: talentCounts } = useAvailableTalentCounts(
     defaultLocation,
@@ -149,13 +176,16 @@ export function EmployerBorrow() {
       return;
     }
 
+    // Validate circle selection when scope is circle
+    if (selectedScope === "circle" && !selectedCircleId) {
+      addToast({ type: "error", title: "Fel", message: "Välj en cirkel först." });
+      return;
+    }
+
     const startTs = new Date(`${startDate}T${startTime}`).toISOString();
     const endTs = new Date(`${endDate}T${endTime}`).toISOString();
 
     try {
-      // Note: scope filtering is handled by find_available_talents_scoped in the backend
-      // For MVP, we pass the scope info in the message
-      const scopeLabel = scopeLabels[selectedScope].label;
       const { offerCount } = await createMutation.mutateAsync({
         orgId,
         payload: {
@@ -163,7 +193,9 @@ export function EmployerBorrow() {
           role_key: roleKey,
           start_ts: startTs,
           end_ts: endTs,
-          message: message.trim() ? `[${scopeLabel}] ${message.trim()}` : `[${scopeLabel}]`,
+          message: message.trim() || undefined,
+          scope: selectedScope,
+          circle_id: selectedScope === "circle" ? selectedCircleId : null,
         },
       });
 
@@ -584,6 +616,60 @@ export function EmployerBorrow() {
               <p className="text-xs text-muted-foreground">{scopeLabels[selectedScope].description}</p>
             </div>
 
+            {/* Circle Selection - only visible when scope is circle */}
+            {selectedScope === "circle" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Välj Trusted Circle</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowCircleManagement(true)}
+                    className="h-7 text-xs"
+                  >
+                    <Settings className="h-3 w-3 mr-1" />
+                    Hantera
+                  </Button>
+                </div>
+                {myCircles && myCircles.length > 0 ? (
+                  <>
+                    <Select
+                      value={selectedCircleId ?? ""}
+                      onValueChange={(value) => setSelectedCircleId(value)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Välj cirkel..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        {myCircles.map((circle) => (
+                          <SelectItem key={circle.id} value={circle.id}>
+                            {circle.name} ({circle.memberCount} {circle.memberCount === 1 ? "medlem" : "medlemmar"})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Endast medlemmar i den här cirkeln får förfrågan.
+                    </p>
+                  </>
+                ) : (
+                  <Card variant="ghost" padding="sm" className="text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Du har inga cirklar ännu.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowCircleManagement(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Skapa cirkel
+                    </Button>
+                  </Card>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Ort *</Label>
               <Input
@@ -703,6 +789,18 @@ export function EmployerBorrow() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Circle Management Modal */}
+      <CircleManagementModal
+        open={showCircleManagement}
+        onOpenChange={setShowCircleManagement}
+        orgId={orgId ?? ""}
+        circle={selectedCircle}
+        onCircleCreated={(circleId) => {
+          setSelectedCircleId(circleId);
+          setShowCircleManagement(false);
+        }}
+      />
     </AppShell>
   );
 }
