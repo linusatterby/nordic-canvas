@@ -25,6 +25,23 @@ function isDemoEmail(email: string | undefined): boolean {
 }
 
 /**
+ * Check if email is in the demo allowlist (DB check)
+ */
+async function checkDemoAllowlist(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.rpc("is_demo_allowlisted", { p_email: email });
+    if (error) {
+      console.warn("Failed to check demo allowlist:", error);
+      return false;
+    }
+    return data === true;
+  } catch (err) {
+    console.warn("Failed to check demo allowlist:", err);
+    return false;
+  }
+}
+
+/**
  * Mark user as demo in the database (silent, fire-and-forget)
  */
 async function markUserAsDemo(role?: string): Promise<void> {
@@ -71,6 +88,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Helper to check and mark demo user (pattern OR allowlist)
+  const checkAndMarkDemo = React.useCallback(async (email: string | undefined, currentProfile: Profile | null) => {
+    if (!email || currentProfile?.is_demo) return;
+    
+    // Check pattern first (fast)
+    let shouldMarkDemo = isDemoEmail(email);
+    
+    // If pattern doesn't match, check allowlist (DB call)
+    if (!shouldMarkDemo) {
+      shouldMarkDemo = await checkDemoAllowlist(email);
+    }
+    
+    if (shouldMarkDemo) {
+      await markUserAsDemo(currentProfile?.type === "employer" ? "employer" : "talent");
+      // Reload profile to get updated is_demo flag
+      await loadProfile();
+    }
+  }, [loadProfile]);
+
   React.useEffect(() => {
     // Set up auth state listener FIRST
     const {
@@ -86,12 +122,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const p = await bootstrapProfile();
           await loadDemoOrgs();
           
-          // Auto-mark as demo if email matches pattern and not already marked
-          if (isDemoEmail(currentSession.user.email) && !p?.is_demo) {
-            await markUserAsDemo(p?.type === "employer" ? "employer" : "talent");
-            // Reload profile to get updated is_demo flag
-            await loadProfile();
-          }
+          // Auto-mark as demo if email matches pattern OR is in allowlist
+          await checkAndMarkDemo(currentSession.user.email, p);
         }, 0);
       }
 
@@ -114,18 +146,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const p = await loadProfile();
           await loadDemoOrgs();
           
-          // Auto-mark as demo if email matches pattern and not already marked
-          if (isDemoEmail(existingSession.user.email) && !p?.is_demo) {
-            await markUserAsDemo(p?.type === "employer" ? "employer" : "talent");
-            // Reload profile to get updated is_demo flag
-            await loadProfile();
-          }
+          // Auto-mark as demo if email matches pattern OR is in allowlist
+          await checkAndMarkDemo(existingSession.user.email, p);
         }, 0);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [bootstrapProfile, loadProfile, loadDemoOrgs]);
+  }, [bootstrapProfile, loadProfile, loadDemoOrgs, checkAndMarkDemo]);
 
   const refreshProfile = React.useCallback(async () => {
     await loadProfile();

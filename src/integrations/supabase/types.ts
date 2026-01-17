@@ -258,6 +258,21 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_email_allowlist: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       employer_talent_swipes: {
         Row: {
           created_at: string
@@ -999,6 +1014,7 @@ export type Database = {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
       }
+      is_demo_allowlisted: { Args: { p_email: string }; Returns: boolean }
       is_listing_owner: {
         Args: { _listing_id: string; _user_id: string }
         Returns: boolean
