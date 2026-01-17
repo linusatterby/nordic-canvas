@@ -5,6 +5,9 @@ export interface ResetDemoResult {
   message?: string;
   error?: string;
   org_id?: string;
+  swipes_deleted?: number;
+  offers_deleted?: number;
+  messages_deleted?: number;
 }
 
 /**
@@ -45,6 +48,24 @@ export async function checkDemoOrg(orgId: string): Promise<{
   }
 
   return { isDemo: data?.is_demo ?? false, error: null };
+}
+
+/**
+ * Reset demo data for a user (talent) without requiring org_id
+ * Clears job swipes, borrow offers, and messages for demo data
+ */
+export async function resetDemoForUser(): Promise<{
+  result: ResetDemoResult | null;
+  error: Error | null;
+}> {
+  const { data, error } = await supabase.rpc("reset_demo_for_user");
+
+  if (error) {
+    return { result: null, error: new Error(error.message) };
+  }
+
+  const result = data as unknown as ResetDemoResult;
+  return { result, error: null };
 }
 
 /**

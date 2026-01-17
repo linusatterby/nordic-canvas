@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { resetDemo, listMyDemoOrgs } from "@/lib/api/demo";
+import { resetDemo, resetDemoForUser, listMyDemoOrgs } from "@/lib/api/demo";
 import { useDefaultOrgId } from "./useOrgs";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -30,6 +30,7 @@ export function useDemoMode() {
 
 /**
  * Hook to reset demo data
+ * Chooses strategy based on whether user has an org (employer) or not (talent)
  */
 export function useResetDemo() {
   const queryClient = useQueryClient();
@@ -40,10 +41,19 @@ export function useResetDemo() {
     mutationFn: async (orgId: string | undefined) => {
       // Priority: passed orgId > first demo org > default org
       const targetOrgId = orgId ?? demoOrgIds[0] ?? defaultOrgId;
-      if (!targetOrgId) {
-        throw new Error("No org ID provided");
+      
+      // If we have an org ID, use org-based reset (employer)
+      if (targetOrgId) {
+        const { result, error } = await resetDemo(targetOrgId);
+        if (error) throw error;
+        if (!result?.success) {
+          throw new Error(result?.error ?? "Failed to reset demo");
+        }
+        return result;
       }
-      const { result, error } = await resetDemo(targetOrgId);
+      
+      // No org ID - use user-based reset (talent)
+      const { result, error } = await resetDemoForUser();
       if (error) throw error;
       if (!result?.success) {
         throw new Error(result?.error ?? "Failed to reset demo");
