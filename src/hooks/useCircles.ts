@@ -6,6 +6,11 @@ import {
   declineCircleRequest,
   listTrustedCircle,
   listCirclePartners,
+  listMyCircles,
+  getCircleMembers,
+  createCircle,
+  addCircleMember,
+  removeCircleMember,
   getMyVisibility,
   updateMyVisibility,
   createReleaseOffer,
@@ -115,6 +120,83 @@ export function useTrustedCircle(orgId: string | undefined) {
       return partners;
     },
     enabled: !!orgId,
+  });
+}
+
+// ============================================
+// Multi-Circle Management
+// ============================================
+
+export function useMyCircles(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ["myCircles", orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      const { circles, error } = await listMyCircles(orgId);
+      if (error) throw error;
+      return circles;
+    },
+    enabled: !!orgId,
+  });
+}
+
+export function useCircleMembers(circleId: string | undefined) {
+  return useQuery({
+    queryKey: ["circleMembers", circleId],
+    queryFn: async () => {
+      if (!circleId) return [];
+      const { members, error } = await getCircleMembers(circleId);
+      if (error) throw error;
+      return members;
+    },
+    enabled: !!circleId,
+  });
+}
+
+export function useCreateCircle() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ orgId, name }: { orgId: string; name: string }) => {
+      const { circleId, error } = await createCircle(orgId, name);
+      if (error) throw error;
+      return circleId;
+    },
+    onSuccess: (_, { orgId }) => {
+      queryClient.invalidateQueries({ queryKey: ["myCircles", orgId] });
+    },
+  });
+}
+
+export function useAddCircleMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ circleId, memberOrgId }: { circleId: string; memberOrgId: string }) => {
+      const { success, error } = await addCircleMember(circleId, memberOrgId);
+      if (error) throw error;
+      return success;
+    },
+    onSuccess: (_, { circleId }) => {
+      queryClient.invalidateQueries({ queryKey: ["circleMembers", circleId] });
+      queryClient.invalidateQueries({ queryKey: ["myCircles"] });
+    },
+  });
+}
+
+export function useRemoveCircleMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ circleId, memberOrgId }: { circleId: string; memberOrgId: string }) => {
+      const { success, error } = await removeCircleMember(circleId, memberOrgId);
+      if (error) throw error;
+      return success;
+    },
+    onSuccess: (_, { circleId }) => {
+      queryClient.invalidateQueries({ queryKey: ["circleMembers", circleId] });
+      queryClient.invalidateQueries({ queryKey: ["myCircles"] });
+    },
   });
 }
 

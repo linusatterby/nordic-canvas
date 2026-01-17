@@ -35,6 +35,19 @@ export interface CirclePartner {
   location: string | null;
 }
 
+// Circle group (for multi-circle feature)
+export interface Circle {
+  id: string;
+  name: string;
+  memberCount: number;
+}
+
+export interface CircleMember {
+  id: string;
+  name: string;
+  location: string | null;
+}
+
 export interface TalentVisibility {
   talent_user_id: string;
   scope: TalentVisibilityScope;
@@ -459,18 +472,115 @@ export async function cancelReleaseOffer(offerId: string): Promise<{
 }
 
 // ============================================
+// Multi-Circle Management
+// ============================================
+
+/**
+ * List circles owned by an org
+ */
+export async function listMyCircles(orgId: string): Promise<{
+  circles: Circle[];
+  error: Error | null;
+}> {
+  const { data, error } = await supabase.rpc("get_my_circles", { p_org_id: orgId });
+
+  if (error) {
+    return { circles: [], error: new Error(error.message) };
+  }
+
+  const circles: Circle[] = (data ?? []).map((c: { circle_id: string; name: string; member_count: number }) => ({
+    id: c.circle_id,
+    name: c.name,
+    memberCount: Number(c.member_count),
+  }));
+
+  return { circles, error: null };
+}
+
+/**
+ * Get members of a circle
+ */
+export async function getCircleMembers(circleId: string): Promise<{
+  members: CircleMember[];
+  error: Error | null;
+}> {
+  const { data, error } = await supabase.rpc("get_circle_members", { p_circle_id: circleId });
+
+  if (error) {
+    return { members: [], error: new Error(error.message) };
+  }
+
+  const members: CircleMember[] = (data ?? []).map((m: { org_id: string; org_name: string; org_location: string | null }) => ({
+    id: m.org_id,
+    name: m.org_name,
+    location: m.org_location,
+  }));
+
+  return { members, error: null };
+}
+
+/**
+ * Create a new circle
+ */
+export async function createCircle(orgId: string, name: string): Promise<{
+  circleId: string | null;
+  error: Error | null;
+}> {
+  const { data, error } = await supabase.rpc("create_circle", { p_org_id: orgId, p_name: name });
+
+  if (error) {
+    return { circleId: null, error: new Error(error.message) };
+  }
+
+  return { circleId: data as string, error: null };
+}
+
+/**
+ * Add a member to a circle
+ */
+export async function addCircleMember(circleId: string, memberOrgId: string): Promise<{
+  success: boolean;
+  error: Error | null;
+}> {
+  const { error } = await supabase.rpc("add_circle_member", { p_circle_id: circleId, p_member_org_id: memberOrgId });
+
+  if (error) {
+    return { success: false, error: new Error(error.message) };
+  }
+
+  return { success: true, error: null };
+}
+
+/**
+ * Remove a member from a circle
+ */
+export async function removeCircleMember(circleId: string, memberOrgId: string): Promise<{
+  success: boolean;
+  error: Error | null;
+}> {
+  const { error } = await supabase.rpc("remove_circle_member", { p_circle_id: circleId, p_member_org_id: memberOrgId });
+
+  if (error) {
+    return { success: false, error: new Error(error.message) };
+  }
+
+  return { success: true, error: null };
+}
+
+// ============================================
 // Scoped Talent Search
 // ============================================
 
 /**
- * Find available talents with scope filtering
+ * Find available talents with scope filtering (now supports circle_id)
  */
 export async function findAvailableTalentsScoped(
   location: string,
   startTs: string,
   endTs: string,
   scope: BorrowScope,
-  requesterOrgId: string
+  requesterOrgId: string,
+  circleId?: string
 ): Promise<{ talents: AvailableTalent[]; error: Error | null }> {
   const { data, error } = await supabase.rpc("find_available_talents_scoped", {
     p_location: location,
@@ -478,6 +588,7 @@ export async function findAvailableTalentsScoped(
     p_end_ts: endTs,
     p_scope: scope,
     p_requester_org_id: requesterOrgId,
+    p_circle_id: circleId ?? null,
   });
 
   if (error) {
@@ -494,7 +605,8 @@ export async function getAvailableTalentCounts(
   location: string,
   startTs: string,
   endTs: string,
-  requesterOrgId: string
+  requesterOrgId: string,
+  circleId?: string
 ): Promise<{
   internal: number;
   circle: number;
@@ -510,7 +622,8 @@ export async function getAvailableTalentCounts(
       startTs,
       endTs,
       scope,
-      requesterOrgId
+      requesterOrgId,
+      scope === "circle" ? circleId : undefined
     );
     if (error) {
       return { ...counts, error };

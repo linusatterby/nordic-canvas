@@ -75,6 +75,7 @@ export type Database = {
       }
       borrow_requests: {
         Row: {
+          circle_id: string | null
           created_at: string
           created_by: string
           end_ts: string
@@ -84,10 +85,12 @@ export type Database = {
           message: string | null
           org_id: string
           role_key: string
+          scope: string
           start_ts: string
           status: string
         }
         Insert: {
+          circle_id?: string | null
           created_at?: string
           created_by: string
           end_ts: string
@@ -97,10 +100,12 @@ export type Database = {
           message?: string | null
           org_id: string
           role_key: string
+          scope?: string
           start_ts: string
           status?: string
         }
         Update: {
+          circle_id?: string | null
           created_at?: string
           created_by?: string
           end_ts?: string
@@ -110,13 +115,54 @@ export type Database = {
           message?: string | null
           org_id?: string
           role_key?: string
+          scope?: string
           start_ts?: string
           status?: string
         }
         Relationships: [
           {
+            foreignKeyName: "borrow_requests_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "borrow_requests_org_id_fkey"
             columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      circle_members: {
+        Row: {
+          added_at: string
+          circle_id: string
+          member_org_id: string
+        }
+        Insert: {
+          added_at?: string
+          circle_id: string
+          member_org_id: string
+        }
+        Update: {
+          added_at?: string
+          circle_id?: string
+          member_org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_members_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_members_member_org_id_fkey"
+            columns: ["member_org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
             referencedColumns: ["id"]
@@ -159,6 +205,35 @@ export type Database = {
           {
             foreignKeyName: "circle_requests_to_org_id_fkey"
             columns: ["to_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      circles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_org_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_org_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circles_owner_org_id_fkey"
+            columns: ["owner_org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
             referencedColumns: ["id"]
@@ -834,6 +909,14 @@ export type Database = {
     Functions: {
       accept_borrow_offer: { Args: { p_offer_id: string }; Returns: Json }
       accept_circle_request: { Args: { p_request_id: string }; Returns: Json }
+      add_circle_member: {
+        Args: { p_circle_id: string; p_member_org_id: string }
+        Returns: undefined
+      }
+      create_circle: {
+        Args: { p_name: string; p_org_id: string }
+        Returns: string
+      }
       find_available_talents: {
         Args: { p_end_ts: string; p_location: string; p_start_ts: string }
         Returns: {
@@ -844,6 +927,7 @@ export type Database = {
       }
       find_available_talents_scoped: {
         Args: {
+          p_circle_id?: string
           p_end_ts: string
           p_location: string
           p_requester_org_id: string
@@ -856,12 +940,28 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_circle_members: {
+        Args: { p_circle_id: string }
+        Returns: {
+          org_id: string
+          org_location: string
+          org_name: string
+        }[]
+      }
       get_circle_partners: {
         Args: { p_org_id: string }
         Returns: {
           partner_location: string
           partner_org_id: string
           partner_org_name: string
+        }[]
+      }
+      get_my_circles: {
+        Args: { p_org_id: string }
+        Returns: {
+          circle_id: string
+          member_count: number
+          name: string
         }[]
       }
       get_trusted_circle_orgs: {
@@ -891,6 +991,10 @@ export type Database = {
         Returns: boolean
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
+      remove_circle_member: {
+        Args: { p_circle_id: string; p_member_org_id: string }
+        Returns: undefined
+      }
       reset_demo: { Args: { p_org_id: string }; Returns: Json }
       take_release_offer: { Args: { p_offer_id: string }; Returns: Json }
       toggle_talent_circle_visibility: {
