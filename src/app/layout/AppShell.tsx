@@ -5,7 +5,6 @@ import { TopNav } from "./TopNav";
 import { MobileNav } from "./MobileNav";
 import type { Role } from "@/lib/constants/roles";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDemoMode } from "@/hooks/useDemo";
 import { DemoBanner } from "@/components/demo/DemoBanner";
 import { DemoGuideModal } from "@/components/demo/DemoGuideModal";
 
@@ -18,12 +17,11 @@ export function AppShell({ children, role }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [guideOpen, setGuideOpen] = React.useState(false);
-  const { profile } = useAuth();
-  const { isDemoMode, isLoading: demoLoading } = useDemoMode();
+  const { profile, isDemoMode, loading, profileLoading } = useAuth();
 
   // Show demo guide on first visit for demo users
   React.useEffect(() => {
-    if (demoLoading || !isDemoMode) return;
+    if (loading || profileLoading || !isDemoMode) return;
     
     const guideSeen = localStorage.getItem("demoGuideSeen");
     if (!guideSeen) {
@@ -31,7 +29,7 @@ export function AppShell({ children, role }: AppShellProps) {
       const timer = setTimeout(() => setGuideOpen(true), 500);
       return () => clearTimeout(timer);
     }
-  }, [isDemoMode, demoLoading]);
+  }, [isDemoMode, loading, profileLoading]);
 
   return (
     <div className="min-h-screen bg-frost">

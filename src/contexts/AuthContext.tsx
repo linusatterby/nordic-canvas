@@ -9,6 +9,7 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   profileLoading: boolean;
+  isDemoMode: boolean;
   refreshProfile: () => Promise<void>;
 }
 
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = React.useState<Profile | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [profileLoading, setProfileLoading] = React.useState(false);
+  const [demoOrgIds, setDemoOrgIds] = React.useState<string[]>([]);
 
   const loadProfile = React.useCallback(async () => {
     setProfileLoading(true);
@@ -35,6 +37,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfileLoading(false);
   }, []);
 
+  // Load demo org IDs for the user
+  const loadDemoOrgs = React.useCallback(async () => {
+    const { data, error } = await supabase
+      .from("orgs")
+      .select("id")
+      .eq("is_demo", true);
+    
+    if (!error && data) {
+      setDemoOrgIds(data.map(o => o.id));
+    }
+  }, []);
+
   React.useEffect(() => {
     // Set up auth state listener FIRST
     const {
@@ -48,12 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === "SIGNED_IN" && currentSession?.user) {
         setTimeout(() => {
           bootstrapProfile();
+          loadDemoOrgs();
         }, 0);
       }
 
       // Clear profile on sign out
       if (event === "SIGNED_OUT") {
         setProfile(null);
+        setDemoOrgIds([]);
       }
     });
 
@@ -67,16 +83,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (existingSession?.user) {
         setTimeout(() => {
           loadProfile();
+          loadDemoOrgs();
         }, 0);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [bootstrapProfile, loadProfile]);
+  }, [bootstrapProfile, loadProfile, loadDemoOrgs]);
 
   const refreshProfile = React.useCallback(async () => {
     await loadProfile();
   }, [loadProfile]);
+
+  // Compute isDemoMode based on profile, orgs, or email
+  const isDemoMode = React.useMemo(() => {
+    // Profile has is_demo flag
+    if ((profile as Profile & { is_demo?: boolean })?.is_demo) {
+      return true;
+    }
+    // User belongs to a demo org
+    if (demoOrgIds.length > 0) {
+      return true;
+    }
+    // Email contains +demo
+    if (user?.email?.includes("+demo")) {
+      return true;
+    }
+    return false;
+  }, [profile, demoOrgIds, user?.email]);
 
   return (
     <AuthContext.Provider
@@ -86,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         loading,
         profileLoading,
+        isDemoMode,
         refreshProfile,
       }}
     >

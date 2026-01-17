@@ -1,12 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { resetDemo, listMyDemoOrgs } from "@/lib/api/demo";
 import { useDefaultOrgId } from "./useOrgs";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
- * Hook to check if user is in demo mode (belongs to any demo org)
+ * Hook to check if user is in demo mode
+ * Now uses AuthContext which checks profile.is_demo, demo orgs, and email
  */
 export function useDemoMode() {
-  const { data: demoOrgIds = [], isLoading } = useQuery({
+  const { isDemoMode, loading, profileLoading } = useAuth();
+  
+  // Also fetch demo org IDs for reset functionality
+  const { data: demoOrgIds = [], isLoading: orgsLoading } = useQuery({
     queryKey: ["demoOrgs"],
     queryFn: async () => {
       const { demoOrgIds, error } = await listMyDemoOrgs();
@@ -17,9 +22,9 @@ export function useDemoMode() {
   });
 
   return {
-    isDemoMode: demoOrgIds.length > 0,
+    isDemoMode,
     demoOrgIds,
-    isLoading,
+    isLoading: loading || profileLoading || orgsLoading,
   };
 }
 
