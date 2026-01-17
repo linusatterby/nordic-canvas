@@ -1,14 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { listUnswipedJobs, getJob, listOrgJobs, type JobWithOrg } from "@/lib/api/jobs";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { listUnswipedJobs, getJob, listOrgJobs, resetTalentDemoSwipes, type JobWithOrg, type JobFilters } from "@/lib/api/jobs";
 
 /**
- * Hook to fetch unswiped published jobs for talent
+ * Hook to fetch unswiped published jobs for talent with filters
  */
-export function useJobsFeed() {
+export function useJobsFeed(filters?: JobFilters) {
   return useQuery({
-    queryKey: ["jobs", "unswiped"],
+    queryKey: ["jobs", "unswiped", filters],
     queryFn: async () => {
-      const { jobs, error } = await listUnswipedJobs();
+      const { jobs, error } = await listUnswipedJobs(filters);
       if (error) throw error;
       return jobs;
     },
@@ -45,5 +45,25 @@ export function useOrgJobs(orgId: string | undefined) {
       return jobs;
     },
     enabled: !!orgId,
+  });
+}
+
+/**
+ * Hook to reset talent's demo job swipes
+ */
+export function useResetTalentDemoSwipes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { success, error } = await resetTalentDemoSwipes();
+      if (error) throw error;
+      if (!success) throw new Error("Failed to reset demo swipes");
+      return success;
+    },
+    onSuccess: () => {
+      // Invalidate job feed to refresh available jobs
+      queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
+    },
   });
 }

@@ -8,6 +8,14 @@ export interface JobWithOrg extends JobPost {
   org_name: string;
 }
 
+export interface JobFilters {
+  location?: string | null;
+  roleKey?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  housingOnly?: boolean;
+}
+
 /**
  * List all published jobs
  */
@@ -37,9 +45,9 @@ export async function listPublishedJobs(): Promise<{
 }
 
 /**
- * List published jobs the user hasn't swiped on yet
+ * List published jobs the user hasn't swiped on yet, with optional filters
  */
-export async function listUnswipedJobs(): Promise<{
+export async function listUnswipedJobs(filters?: JobFilters): Promise<{
   jobs: JobWithOrg[];
   error: Error | null;
 }> {
@@ -61,19 +69,44 @@ export async function listUnswipedJobs(): Promise<{
 
   const swipedJobIds = (swipes ?? []).map((s) => s.job_post_id);
 
-  // Get published jobs not yet swiped
+  // Build query with filters
   let query = supabase
     .from("job_posts")
     .select(`
       *,
       orgs ( name )
     `)
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
+    .eq("status", "published");
 
+  // Apply filters
+  if (filters?.location && filters.location !== "all") {
+    query = query.eq("location", filters.location);
+  }
+
+  if (filters?.roleKey && filters.roleKey !== "all") {
+    query = query.eq("role_key", filters.roleKey);
+  }
+
+  if (filters?.startDate) {
+    query = query.gte("end_date", filters.startDate);
+  }
+
+  if (filters?.endDate) {
+    query = query.lte("start_date", filters.endDate);
+  }
+
+  if (filters?.housingOnly) {
+    query = query.eq("housing_offered", true);
+  }
+
+  // Exclude already swiped jobs
   if (swipedJobIds.length > 0) {
     query = query.not("id", "in", `(${swipedJobIds.join(",")})`);
   }
+
+  // Order: demo jobs first (Visby prioritized), then by date
+  query = query.order("is_demo", { ascending: false })
+    .order("created_at", { ascending: false });
 
   const { data, error } = await query;
 
@@ -203,4 +236,27 @@ export async function createJob(params: {
     job: data,
     error: error ? new Error(error.message) : null,
   };
+}
+
+/**
+ * Reset talent's demo job swipes
+ */
+export async function resetTalentDemoSwipes(): Promise<{
+  success: boolean;
+  deletedCount?: number;
+  error: Error | null;
+}> {
+  const { data, error } = await supabase.rpc("reset_talent_demo_swipes");
+
+  if (error) {
+    return { success: false, error: new Error(error.message) };
+  }
+
+  const result = data as { success: boolean; deleted_count?: number; error?: string };
+  
+  if (!result.success) {
+    return { success: false, error: new Error(result.error ?? "Unknown error") };
+  }
+
+  return { success: true, deletedCount: result.deleted_count, error: null };
 }
