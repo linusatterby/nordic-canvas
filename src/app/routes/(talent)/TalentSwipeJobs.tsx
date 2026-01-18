@@ -279,6 +279,18 @@ export function TalentSwipeJobs() {
                     <p><span className="text-muted-foreground">effectiveJobsCount:</span> {effectiveJobs.length}</p>
                     <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {shouldUseHardFetch ? "true" : "false"}</p>
                     
+                    {/* Show status values from hard demo jobs */}
+                    {hardDemoJobs && hardDemoJobs.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-border">
+                        <p className="text-muted-foreground mb-1">hardDemoJobs status-värden:</p>
+                        {hardDemoJobs.map((job, i) => (
+                          <p key={job.id} className="pl-2">
+                            [{i}] {job.title?.slice(0, 20)}... → status: "{job.status}", is_demo: {String(job.is_demo)}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    
                     <div className="flex gap-2 mt-3">
                       <Button
                         variant="outline"
