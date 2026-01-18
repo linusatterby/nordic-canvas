@@ -298,6 +298,45 @@ export async function createJob(params: {
 }
 
 /**
+ * HARD demo fetch - no filters, no joins, no availability logic
+ * This should NEVER return 0 jobs if demo jobs exist in DB
+ */
+export async function listDemoJobsHard(limit: number = 6): Promise<{
+  jobs: Array<{
+    id: string;
+    title: string;
+    location: string | null;
+    role_key: string;
+    status: string | null;
+    is_demo: boolean;
+    created_at: string;
+    start_date: string;
+    end_date: string;
+    housing_offered: boolean | null;
+    org_id: string;
+  }>;
+  error: Error | null;
+}> {
+  console.log("[listDemoJobsHard] Fetching demo jobs with limit:", limit);
+  
+  const { data, error } = await supabase
+    .from("job_posts")
+    .select("id, title, location, role_key, status, is_demo, created_at, start_date, end_date, housing_offered, org_id")
+    .eq("is_demo", true)
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[listDemoJobsHard] Supabase error:", error);
+    return { jobs: [], error: new Error(error.message) };
+  }
+
+  console.log("[listDemoJobsHard] Found jobs:", data?.length ?? 0, data);
+  return { jobs: data ?? [], error: null };
+}
+
+/**
  * Reset talent's demo job swipes
  */
 export async function resetTalentDemoSwipes(): Promise<{
