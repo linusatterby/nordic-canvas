@@ -298,7 +298,7 @@ export async function createJob(params: {
 }
 
 /**
- * HARD demo fetch - no filters, no joins, no availability logic
+ * HARD demo fetch - no filters except is_demo, no joins, no availability logic
  * This should NEVER return 0 jobs if demo jobs exist in DB
  */
 export async function listDemoJobsHard(limit: number = 6): Promise<{
@@ -314,6 +314,7 @@ export async function listDemoJobsHard(limit: number = 6): Promise<{
     end_date: string;
     housing_offered: boolean | null;
     org_id: string;
+    required_badges: string[] | null;
   }>;
   error: Error | null;
 }> {
@@ -321,9 +322,8 @@ export async function listDemoJobsHard(limit: number = 6): Promise<{
   
   const { data, error } = await supabase
     .from("job_posts")
-    .select("id, title, location, role_key, status, is_demo, created_at, start_date, end_date, housing_offered, org_id")
+    .select("*")
     .eq("is_demo", true)
-    .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(limit);
 
