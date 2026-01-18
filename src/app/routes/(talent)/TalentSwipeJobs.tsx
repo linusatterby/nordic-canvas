@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, RefreshCw, Bug } from "lucide-react";
 import { AppShell } from "@/app/layout/AppShell";
 import { JobCard } from "@/components/cards/JobCard";
 import { JobFilters, DEFAULT_FILTERS, type JobFilterValues } from "@/components/jobs/JobFilters";
@@ -10,7 +10,7 @@ import { useToasts } from "@/components/delight/Toasts";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { HOUSING_STATUS } from "@/lib/constants/status";
-import { useJobsFeed, useResetTalentDemoSwipes } from "@/hooks/useJobsFeed";
+import { useJobsFeed, useResetTalentDemoSwipes, useDemoJobsHard } from "@/hooks/useJobsFeed";
 import { useSwipeTalentJob } from "@/hooks/useSwipes";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +25,7 @@ export function TalentSwipeJobs() {
   const { isDemoMode } = useDemoMode();
   const [filters, setFilters] = React.useState<JobFilterValues>(DEFAULT_FILTERS);
   const [showFilters, setShowFilters] = React.useState(true);
+  const [showDebug, setShowDebug] = React.useState(false);
   const { addToast } = useToasts();
 
   // Convert UI filter values to API filter format
@@ -36,18 +37,41 @@ export function TalentSwipeJobs() {
     housingOnly: filters.housingOnly,
   }), [filters]);
 
-  const { data: jobs, isLoading, error } = useJobsFeed(apiFilters);
+  const { data: jobs, isLoading, error: feedError, refetch: refetchFeed } = useJobsFeed(apiFilters);
   const swipeMutation = useSwipeTalentJob();
   const resetSwipesMutation = useResetTalentDemoSwipes();
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [showConfetti, setShowConfetti] = React.useState(false);
 
-  // Reset index when filters change
+  // Use hard demo fetch as fallback when normal feed is empty in demo mode
+  const shouldUseHardFetch = isDemoMode && !isLoading && (!jobs || jobs.length === 0);
+  const { 
+    data: hardDemoJobs, 
+    error: hardDemoError, 
+    refetch: refetchHardDemo,
+    isLoading: isHardLoading 
+  } = useDemoJobsHard(shouldUseHardFetch);
+
+  // Determine which jobs to show
+  const effectiveJobs = React.useMemo(() => {
+    if (jobs && jobs.length > 0) return jobs;
+    if (shouldUseHardFetch && hardDemoJobs && hardDemoJobs.length > 0) {
+      // Convert hard demo jobs to JobWithOrg format
+      return hardDemoJobs.map(job => ({
+        ...job,
+        org_name: "Demo-företag",
+        required_badges: null,
+      }));
+    }
+    return [];
+  }, [jobs, shouldUseHardFetch, hardDemoJobs]);
+
+  // Reset index when filters or jobs change
   React.useEffect(() => {
     setCurrentIndex(0);
-  }, [filters]);
+  }, [filters, effectiveJobs.length]);
 
-  const currentJob = jobs?.[currentIndex];
+  const currentJob = effectiveJobs[currentIndex];
 
   const handleSwipe = async (direction: "yes" | "no") => {
     if (!currentJob || !user) return;
@@ -79,10 +103,10 @@ export function TalentSwipeJobs() {
       }
 
       // Move to next job
-      if (jobs && currentIndex < jobs.length - 1) {
+      if (effectiveJobs && currentIndex < effectiveJobs.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        setCurrentIndex(jobs?.length ?? 0);
+        setCurrentIndex(effectiveJobs?.length ?? 0);
       }
     } catch (err) {
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara." });
@@ -119,7 +143,7 @@ export function TalentSwipeJobs() {
     filters.endDate ||
     filters.housingOnly;
 
-  if (isLoading) {
+  if (isLoading || isHardLoading) {
     return (
       <AppShell role="talent">
         <div className="container mx-auto px-4 py-8 max-w-lg">
@@ -233,6 +257,50 @@ export function TalentSwipeJobs() {
                 </Button>
               )}
             </div>
+
+            {/* Debug Panel - only in demo mode when empty */}
+            {isDemoMode && (
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <Bug className="h-3 w-3" />
+                  {showDebug ? "Dölj debug" : "Visa debug-info"}
+                </button>
+                
+                {showDebug && (
+                  <div className="mt-2 p-3 rounded-lg bg-muted/50 border border-border text-xs font-mono space-y-1">
+                    <p><span className="text-muted-foreground">demoMode:</span> {isDemoMode ? "true" : "false"}</p>
+                    <p><span className="text-muted-foreground">normalFeedCount:</span> {jobs?.length ?? 0}</p>
+                    <p><span className="text-muted-foreground">normalFeedError:</span> {feedError?.message ?? "null"}</p>
+                    <p><span className="text-muted-foreground">hardDemoCount:</span> {hardDemoJobs?.length ?? 0}</p>
+                    <p><span className="text-muted-foreground">hardDemoError:</span> {hardDemoError?.message ?? "null"}</p>
+                    <p><span className="text-muted-foreground">effectiveJobsCount:</span> {effectiveJobs.length}</p>
+                    <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {shouldUseHardFetch ? "true" : "false"}</p>
+                    
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refetchFeed()}
+                        className="text-xs"
+                      >
+                        Refetch normal
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refetchHardDemo()}
+                        className="text-xs"
+                      >
+                        Refetch hard demo
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="animate-fade-in">
@@ -247,9 +315,10 @@ export function TalentSwipeJobs() {
               onSwipeNo={() => handleSwipe("no")}
             />
             <p className="text-center text-xs text-muted-foreground mt-4">
-              {jobs && jobs.length > 1 && (
+              {effectiveJobs && effectiveJobs.length > 1 && (
                 <span className="block mb-1">
-                  {currentIndex + 1} av {jobs.length} jobb
+                  {currentIndex + 1} av {effectiveJobs.length} jobb
+                  {shouldUseHardFetch && " (hard fetch)"}
                 </span>
               )}
               Använd piltangenter eller J/K för att swipea

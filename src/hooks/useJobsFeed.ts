@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listUnswipedJobs, getJob, listOrgJobs, resetTalentDemoSwipes, type JobWithOrg, type JobFilters } from "@/lib/api/jobs";
+import { listUnswipedJobs, getJob, listOrgJobs, resetTalentDemoSwipes, listDemoJobsHard, type JobWithOrg, type JobFilters } from "@/lib/api/jobs";
 import { useDemoMode } from "@/hooks/useDemo";
 
 /**
@@ -68,8 +68,31 @@ export function useResetTalentDemoSwipes() {
     onSuccess: () => {
       // Invalidate all job feed queries (partial match on key prefix)
       queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
+      queryClient.invalidateQueries({ queryKey: ["jobs", "demo-hard"] });
       // Force immediate refetch
       queryClient.refetchQueries({ queryKey: ["jobs", "unswiped"] });
     },
+  });
+}
+
+/**
+ * Hook for hard demo job fetch - bypasses all filtering
+ * Used as fallback when normal feed returns 0 jobs in demo mode
+ */
+export function useDemoJobsHard(enabled: boolean = false) {
+  return useQuery({
+    queryKey: ["jobs", "demo-hard"],
+    queryFn: async () => {
+      console.log("[useDemoJobsHard] Fetching hard demo jobs...");
+      const { jobs, error } = await listDemoJobsHard(6);
+      if (error) {
+        console.error("[useDemoJobsHard] Error:", error);
+        throw error;
+      }
+      console.log("[useDemoJobsHard] Got jobs:", jobs.length);
+      return jobs;
+    },
+    enabled,
+    staleTime: 1000 * 30, // 30 seconds
   });
 }
