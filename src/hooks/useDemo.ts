@@ -10,7 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 export function useDemoMode() {
   const { isDemoMode, loading, profileLoading } = useAuth();
   
-  // Also fetch demo org IDs for reset functionality
+  // Lazy-load demo org IDs only when actually in demo mode
+  // This prevents unnecessary DB calls during initial load
   const { data: demoOrgIds = [], isLoading: orgsLoading } = useQuery({
     queryKey: ["demoOrgs"],
     queryFn: async () => {
@@ -18,13 +19,14 @@ export function useDemoMode() {
       if (error) throw error;
       return demoOrgIds;
     },
+    enabled: isDemoMode, // Only fetch when in demo mode
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
   return {
     isDemoMode,
     demoOrgIds,
-    isLoading: loading || profileLoading || orgsLoading,
+    isLoading: loading || profileLoading || (isDemoMode && orgsLoading),
   };
 }
 

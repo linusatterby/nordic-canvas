@@ -43,6 +43,8 @@ export function useScheduler(
       };
     },
     enabled: !!orgId,
+    staleTime: 1000 * 60, // 1 minute
+    refetchOnMount: true, // Scheduler needs fresh data when viewed
   });
 
   // Subscribe to realtime updates for shift_bookings

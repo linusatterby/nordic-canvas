@@ -212,6 +212,7 @@ export function useMyVisibility() {
       if (error) throw error;
       return visibility;
     },
+    staleTime: 1000 * 120, // 2 minutes - dashboard data
   });
 }
 

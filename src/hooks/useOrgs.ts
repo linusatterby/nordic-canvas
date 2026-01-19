@@ -12,6 +12,7 @@ export function useMyOrgs() {
       if (error) throw error;
       return orgs;
     },
+    staleTime: 1000 * 300, // 5 minutes - rarely changes
   });
 }
 
@@ -26,6 +27,7 @@ export function useDefaultOrgId() {
       if (error) throw error;
       return orgId;
     },
+    staleTime: 1000 * 300, // 5 minutes - rarely changes
   });
 }
 

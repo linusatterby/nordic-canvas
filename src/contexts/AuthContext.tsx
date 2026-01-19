@@ -2,6 +2,7 @@ import * as React from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureMyProfile, getMyProfile, type Profile, type ProfileType } from "@/lib/api/profile";
+import { perfStart, perfEnd, perfMark } from "@/lib/utils/perf";
 
 interface AuthContextValue {
   user: User | null;
@@ -58,34 +59,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = React.useState<Profile | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [profileLoading, setProfileLoading] = React.useState(false);
-  const [demoOrgIds, setDemoOrgIds] = React.useState<string[]>([]);
 
   const loadProfile = React.useCallback(async () => {
+    perfStart("loadProfile");
     setProfileLoading(true);
     const { profile: p } = await getMyProfile();
     setProfile(p);
     setProfileLoading(false);
+    perfEnd("loadProfile");
     return p;
   }, []);
 
   const bootstrapProfile = React.useCallback(async (defaultType: ProfileType = "talent") => {
+    perfStart("bootstrapProfile");
     setProfileLoading(true);
     const { profile: p } = await ensureMyProfile(defaultType);
     setProfile(p);
     setProfileLoading(false);
+    perfEnd("bootstrapProfile");
     return p;
-  }, []);
-
-  // Load demo org IDs for the user
-  const loadDemoOrgs = React.useCallback(async () => {
-    const { data, error } = await supabase
-      .from("orgs")
-      .select("id")
-      .eq("is_demo", true);
-    
-    if (!error && data) {
-      setDemoOrgIds(data.map(o => o.id));
-    }
   }, []);
 
   // Helper to check and mark demo user (pattern OR allowlist)
@@ -108,10 +100,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadProfile]);
 
   React.useEffect(() => {
+    perfStart("auth_bootstrap");
+    
     // Set up auth state listener FIRST
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      perfMark("auth_state_change", event);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
@@ -120,9 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === "SIGNED_IN" && currentSession?.user) {
         setTimeout(async () => {
           const p = await bootstrapProfile();
-          await loadDemoOrgs();
-          
-          // Auto-mark as demo if email matches pattern OR is in allowlist
+          // Demo check is fast (pattern) or deferred (allowlist)
           await checkAndMarkDemo(currentSession.user.email, p);
         }, 0);
       }
@@ -130,12 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear profile on sign out
       if (event === "SIGNED_OUT") {
         setProfile(null);
-        setDemoOrgIds([]);
       }
     });
 
     // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
+      perfMark("getSession_complete");
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
       setLoading(false);
@@ -144,29 +137,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (existingSession?.user) {
         setTimeout(async () => {
           const p = await loadProfile();
-          await loadDemoOrgs();
-          
-          // Auto-mark as demo if email matches pattern OR is in allowlist
+          perfEnd("auth_bootstrap");
+          // Demo check is fast (pattern) or deferred (allowlist)
           await checkAndMarkDemo(existingSession.user.email, p);
         }, 0);
+      } else {
+        perfEnd("auth_bootstrap");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [bootstrapProfile, loadProfile, loadDemoOrgs, checkAndMarkDemo]);
+  }, [bootstrapProfile, loadProfile, checkAndMarkDemo]);
 
   const refreshProfile = React.useCallback(async () => {
     await loadProfile();
   }, [loadProfile]);
 
-  // Compute isDemoMode based on profile, orgs, or email
+  // Compute isDemoMode based on profile or email pattern
+  // Removed demoOrgIds check - now computed lazily in routes if needed
   const isDemoMode = React.useMemo(() => {
     // Profile has is_demo flag
     if ((profile as Profile & { is_demo?: boolean })?.is_demo) {
-      return true;
-    }
-    // User belongs to a demo org
-    if (demoOrgIds.length > 0) {
       return true;
     }
     // Email contains demo pattern (fallback while profile updates)
@@ -174,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     }
     return false;
-  }, [profile, demoOrgIds, user?.email]);
+  }, [profile, user?.email]);
 
   return (
     <AuthContext.Provider

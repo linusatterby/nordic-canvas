@@ -36,6 +36,7 @@ export function useTalentBorrowOffers() {
       if (error) throw error;
       return offers;
     },
+    staleTime: 1000 * 120, // 2 minutes - dashboard data
   });
 }
 
