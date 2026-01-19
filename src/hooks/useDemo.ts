@@ -71,6 +71,8 @@ export function useResetDemo() {
       queryClient.invalidateQueries({ queryKey: ["thread"] });
       queryClient.invalidateQueries({ queryKey: ["orgJobs"] });
       queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
+      // Also invalidate talent feed for employer swipe view
+      queryClient.invalidateQueries({ queryKey: ["talentFeed"] });
     },
   });
 }

@@ -176,6 +176,119 @@ export async function listTalentsForJob(
 }
 
 /**
+ * HARD demo fetch for talents - no filters, no joins, no constraints
+ * This should NEVER return 0 talents if demo talents exist in DB
+ */
+export async function listDemoTalentsHard(limit: number = 6): Promise<{
+  talents: CandidateCardDTO[];
+  error: Error | null;
+}> {
+  console.log("[listDemoTalentsHard] Fetching demo talents with limit:", limit);
+  
+  // Get demo talent profiles directly from profiles table
+  const { data: demoProfiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("user_id, full_name, home_base, is_demo, created_at")
+    .eq("is_demo", true)
+    .eq("type", "talent")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (profileError) {
+    console.error("[listDemoTalentsHard] Profile query error:", profileError);
+    return { talents: [], error: new Error(profileError.message) };
+  }
+
+  console.log("[listDemoTalentsHard] Found demo profiles:", demoProfiles?.length ?? 0);
+
+  if (!demoProfiles || demoProfiles.length === 0) {
+    return { talents: [], error: null };
+  }
+
+  const userIds = demoProfiles.map(p => p.user_id);
+
+  // Get talent_profiles for scores
+  const { data: talentProfiles } = await supabase
+    .from("talent_profiles")
+    .select("user_id, legacy_score_cached, desired_roles")
+    .in("user_id", userIds);
+
+  // Get badges
+  const { data: badges } = await supabase
+    .from("talent_badges")
+    .select("user_id, badge_key, label, verified")
+    .in("user_id", userIds);
+
+  // Get availability
+  const { data: availability } = await supabase
+    .from("availability_blocks")
+    .select("user_id, start_date, end_date")
+    .in("user_id", userIds);
+
+  // Get videos
+  const { data: videos } = await supabase
+    .from("video_pitches")
+    .select("user_id, thumbnail_url, playback_id, status")
+    .in("user_id", userIds)
+    .eq("status", "ready");
+
+  // Build maps
+  const talentProfileMap = new Map(talentProfiles?.map(p => [p.user_id, p]) ?? []);
+  const badgeMap = new Map<string, typeof badges>();
+  badges?.forEach(b => {
+    const existing = badgeMap.get(b.user_id) ?? [];
+    existing.push(b);
+    badgeMap.set(b.user_id, existing);
+  });
+  const availMap = new Map<string, typeof availability>();
+  availability?.forEach(a => {
+    const existing = availMap.get(a.user_id) ?? [];
+    existing.push(a);
+    availMap.set(a.user_id, existing);
+  });
+  const videoMap = new Map(videos?.map(v => [v.user_id, v]) ?? []);
+
+  // Build DTOs
+  const talents: CandidateCardDTO[] = demoProfiles.map(profile => {
+    const talentProfile = talentProfileMap.get(profile.user_id);
+    const userBadges = badgeMap.get(profile.user_id) ?? [];
+    const userAvail = availMap.get(profile.user_id) ?? [];
+    const video = videoMap.get(profile.user_id);
+
+    // Compute availability snippet
+    let availabilitySnippet = "Ej angiven";
+    if (userAvail.length > 0) {
+      const sortedAvail = [...userAvail].sort(
+        (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+      );
+      const first = sortedAvail[0];
+      availabilitySnippet = `${first.start_date} - ${first.end_date}`;
+      if (sortedAvail.length > 1) {
+        availabilitySnippet += ` +${sortedAvail.length - 1} till`;
+      }
+    }
+
+    return {
+      user_id: profile.user_id,
+      full_name: profile.full_name ?? null,
+      legacy_score_cached: talentProfile?.legacy_score_cached ?? 50,
+      badges: userBadges.map(b => ({
+        badge_key: b.badge_key,
+        label: b.label,
+        verified: b.verified,
+      })),
+      availability_snippet: availabilitySnippet,
+      video_thumbnail_url: video?.thumbnail_url ?? null,
+      video_playback_id: video?.playback_id ?? null,
+      has_video: !!video,
+    };
+  });
+
+  console.log("[listDemoTalentsHard] Returning talents:", talents.length);
+  return { talents, error: null };
+}
+
+/**
  * Record employer swipe on a talent (idempotent upsert)
  */
 export async function upsertEmployerTalentSwipe(params: {

@@ -1,11 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { listTalentsForJob, type CandidateCardDTO } from "@/lib/api/talent";
+import { listTalentsForJob, listDemoTalentsHard, type CandidateCardDTO } from "@/lib/api/talent";
 
 /**
  * Hook to fetch talents who have swiped YES on a job
+ * In demo mode, uses hard fallback if normal feed is empty
  */
-export function useTalentFeed(jobId: string | undefined, orgId: string | undefined) {
-  return useQuery({
+export function useTalentFeed(
+  jobId: string | undefined, 
+  orgId: string | undefined,
+  isDemoMode: boolean = false
+) {
+  // Normal feed query
+  const normalQuery = useQuery({
     queryKey: ["talentFeed", jobId, orgId],
     queryFn: async () => {
       if (!jobId || !orgId) return [];
@@ -16,4 +22,53 @@ export function useTalentFeed(jobId: string | undefined, orgId: string | undefin
     enabled: !!jobId && !!orgId,
     staleTime: 1000 * 60, // 1 minute
   });
+
+  // Hard demo fallback query - only enabled in demo mode when normal feed is empty
+  const hardQuery = useQuery({
+    queryKey: ["talentFeed", "hard", "demo"],
+    queryFn: async () => {
+      const { talents, error } = await listDemoTalentsHard(6);
+      if (error) throw error;
+      return talents;
+    },
+    enabled: isDemoMode && !normalQuery.isLoading && (normalQuery.data?.length ?? 0) === 0,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Determine if we should use hard fetch
+  const shouldUseHardFetch = isDemoMode && 
+    !normalQuery.isLoading && 
+    (normalQuery.data?.length ?? 0) === 0 &&
+    (hardQuery.data?.length ?? 0) > 0;
+
+  // Effective talents to display
+  const effectiveTalents = shouldUseHardFetch 
+    ? hardQuery.data ?? [] 
+    : normalQuery.data ?? [];
+
+  return {
+    // Main data
+    data: effectiveTalents,
+    isLoading: normalQuery.isLoading || (isDemoMode && hardQuery.isLoading && (normalQuery.data?.length ?? 0) === 0),
+    error: normalQuery.error ?? hardQuery.error,
+    
+    // Debug info for demo mode
+    debug: {
+      normalCount: normalQuery.data?.length ?? 0,
+      hardCount: hardQuery.data?.length ?? 0,
+      shouldUseHardFetch,
+      normalError: normalQuery.error?.message ?? null,
+      hardError: hardQuery.error?.message ?? null,
+      isNormalLoading: normalQuery.isLoading,
+      isHardLoading: hardQuery.isLoading,
+    },
+    
+    // Refetch function
+    refetch: () => {
+      normalQuery.refetch();
+      if (isDemoMode) {
+        hardQuery.refetch();
+      }
+    },
+  };
 }
