@@ -49,26 +49,47 @@ export function EmployerSwipeTalent() {
     if (!currentTalent || !orgId || !jobId) return;
 
     try {
-      await swipeMutation.mutateAsync({
-        orgId,
-        jobId,
-        talentUserId: currentTalent.user_id,
-        direction,
-      });
-
-      if (direction === "yes") {
-        const { match } = await getMatchByJobAndTalent(jobId, currentTalent.user_id);
-        if (match) {
-          setShowConfetti(true);
+      // Handle both real talents and demo cards
+      if (currentTalent.type === "demo_card" && currentTalent.demo_card_id) {
+        await swipeMutation.mutateAsync({
+          orgId,
+          jobId,
+          demoCardId: currentTalent.demo_card_id,
+          type: "demo_card",
+          direction,
+        });
+        
+        // Demo cards don't create real matches, just show success
+        if (direction === "yes") {
           addToast({
-            type: "match",
-            title: "Match!",
-            message: `${currentTalent.full_name ?? "Kandidaten"} är intresserad!`,
-            action: {
-              label: "Öppna chatten",
-              onClick: () => navigate(`/employer/matches/${match.id}`),
-            },
+            type: "success",
+            title: "Intresse registrerat",
+            message: `Du gillade ${currentTalent.full_name ?? "kandidaten"}!`,
           });
+        }
+      } else if (currentTalent.user_id) {
+        await swipeMutation.mutateAsync({
+          orgId,
+          jobId,
+          talentUserId: currentTalent.user_id,
+          type: "real",
+          direction,
+        });
+
+        if (direction === "yes") {
+          const { match } = await getMatchByJobAndTalent(jobId, currentTalent.user_id);
+          if (match) {
+            setShowConfetti(true);
+            addToast({
+              type: "match",
+              title: "Match!",
+              message: `${currentTalent.full_name ?? "Kandidaten"} är intresserad!`,
+              action: {
+                label: "Öppna chatten",
+                onClick: () => navigate(`/employer/matches/${match.id}`),
+              },
+            });
+          }
         }
       }
 
@@ -181,10 +202,19 @@ export function EmployerSwipeTalent() {
 
         {currentTalent ? (
           <div className="animate-fade-in">
+            {/* Show DEMO badge for demo cards */}
+            {currentTalent.type === "demo_card" && (
+              <div className="flex justify-center mb-2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                  DEMO
+                </span>
+              </div>
+            )}
+            
             <CandidateCard
-              id={currentTalent.user_id}
+              id={currentTalent.user_id ?? currentTalent.demo_card_id ?? "unknown"}
               name={currentTalent.full_name ?? "Anonym"}
-              role="Kandidat"
+              role={currentTalent.role_key ?? "Kandidat"}
               legacyScore={currentTalent.legacy_score_cached ?? 50}
               badges={currentTalent.badges.map((b) => ({
                 label: b.label ?? b.badge_key,
@@ -195,6 +225,13 @@ export function EmployerSwipeTalent() {
               onSwipeYes={() => handleSwipe("yes")}
               onSwipeNo={() => handleSwipe("no")}
             />
+            
+            {/* Show location for demo cards */}
+            {currentTalent.type === "demo_card" && currentTalent.location && (
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                📍 {currentTalent.location}
+              </p>
+            )}
             
             <p className="text-center text-sm text-muted-foreground mt-4">
               {currentIndex + 1} av {talents?.length ?? 0} kandidater

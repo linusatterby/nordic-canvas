@@ -25,13 +25,14 @@ export function useTalentFeed(
 
   // Hard demo fallback query - only enabled in demo mode when normal feed is empty
   const hardQuery = useQuery({
-    queryKey: ["talentFeed", "hard", "demo"],
+    queryKey: ["talentFeed", "hard", "demo", orgId, jobId],
     queryFn: async () => {
-      const { talents, error } = await listDemoTalentsHard(6);
+      if (!orgId) return [];
+      const { talents, error } = await listDemoTalentsHard(orgId, jobId ?? null, 6);
       if (error) throw error;
       return talents;
     },
-    enabled: isDemoMode && !normalQuery.isLoading && (normalQuery.data?.length ?? 0) === 0,
+    enabled: isDemoMode && !!orgId && !normalQuery.isLoading && (normalQuery.data?.length ?? 0) === 0,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
