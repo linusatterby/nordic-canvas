@@ -30,7 +30,9 @@ export function useSwipeEmployerTalent() {
     mutationFn: async (params: {
       orgId: string;
       jobId: string;
-      talentUserId: string;
+      talentUserId?: string;
+      demoCardId?: string;
+      type?: "real" | "demo_card";
       direction: "yes" | "no";
     }) => {
       const { error } = await upsertEmployerTalentSwipe(params);
@@ -40,6 +42,10 @@ export function useSwipeEmployerTalent() {
       // Invalidate talent feed for this job
       queryClient.invalidateQueries({ 
         queryKey: ["talentFeed", variables.jobId, variables.orgId] 
+      });
+      // Also invalidate hard demo feed
+      queryClient.invalidateQueries({ 
+        queryKey: ["talentFeed", "hard", "demo"] 
       });
     },
   });
