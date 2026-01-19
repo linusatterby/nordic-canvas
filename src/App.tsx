@@ -31,7 +31,15 @@ import EmployerBorrow from "@/app/routes/(employer)/EmployerBorrow";
 
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60, // 1 minute default
+      refetchOnWindowFocus: false, // Reduce unnecessary refetches
+      retry: 1, // Single retry for faster failure
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

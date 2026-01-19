@@ -23,6 +23,7 @@ export function useMatches(
       }
     },
     enabled: role === "talent" || !!orgId,
+    staleTime: 1000 * 120, // 2 minutes for dashboard
   });
 }
 

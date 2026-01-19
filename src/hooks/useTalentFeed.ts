@@ -20,7 +20,8 @@ export function useTalentFeed(
       return talents;
     },
     enabled: !!jobId && !!orgId,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 120, // 2 minutes
+    refetchOnMount: false,
   });
 
   // Hard demo fallback query - only enabled in demo mode when normal feed is empty

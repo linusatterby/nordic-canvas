@@ -16,7 +16,8 @@ export function useJobsFeed(filters?: JobFilters) {
       if (error) throw error;
       return jobs;
     },
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 120, // 2 minutes - swipe feed
+    refetchOnMount: false, // Don't refetch if data exists
   });
 }
 

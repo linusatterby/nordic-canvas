@@ -29,11 +29,12 @@ export function useChat(matchId: string | undefined) {
       return thread;
     },
     enabled: !!matchId,
+    staleTime: 1000 * 300, // 5 minutes - threads rarely change
   });
 
   const threadId = threadQuery.data?.id;
 
-  // Get messages
+  // Get messages - only fetch when we have a thread
   const messagesQuery = useQuery({
     queryKey: ["messages", threadId],
     queryFn: async () => {
@@ -43,6 +44,7 @@ export function useChat(matchId: string | undefined) {
       return messages;
     },
     enabled: !!threadId,
+    staleTime: 0, // Always fresh for chat
     refetchInterval: false, // We'll use realtime instead
   });
 
