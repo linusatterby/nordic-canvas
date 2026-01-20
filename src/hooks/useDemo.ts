@@ -75,6 +75,9 @@ export function useResetDemo() {
       queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
       // Also invalidate talent feed for employer swipe view
       queryClient.invalidateQueries({ queryKey: ["talentFeed"] });
+      // Invalidate dashboard summary queries
+      queryClient.invalidateQueries({ queryKey: ["visibilitySummary"] });
+      queryClient.invalidateQueries({ queryKey: ["talentDashboardSummary"] });
     },
   });
 }

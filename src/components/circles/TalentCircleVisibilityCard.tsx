@@ -1,44 +1,57 @@
 import { Eye, EyeOff, Clock, Users } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Switch } from "@/components/ui/switch";
-import { useMyVisibility, useUpdateVisibility } from "@/hooks/useCircles";
+import { useVisibilitySummary, useUpdateVisibilitySummary } from "@/hooks/useVisibilitySummary";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "sonner";
 
 export function TalentCircleVisibilityCard() {
-  const { data: visibility, isLoading } = useMyVisibility();
-  const updateMutation = useUpdateVisibility();
+  const { data: visibility, isLoading } = useVisibilitySummary();
+  const updateMutation = useUpdateVisibilitySummary();
 
   const isCircleOnly = visibility?.scope === "circle_only";
   const isOff = visibility?.scope === "off";
   const extraHours = visibility?.available_for_extra_hours ?? false;
 
-  const handleExtraHoursChange = async (checked: boolean) => {
-    try {
-      await updateMutation.mutateAsync({
+  const handleExtraHoursChange = (checked: boolean) => {
+    // Optimistic - mutation handles rollback on error
+    updateMutation.mutate(
+      {
         scope: visibility?.scope ?? "public",
         extraHours: checked,
-      });
-      toast.success(checked ? "Extra timmar aktiverat" : "Extra timmar avaktiverat");
-    } catch {
-      toast.error("Kunde inte uppdatera inställning");
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success(checked ? "Extra timmar aktiverat" : "Extra timmar avaktiverat");
+        },
+        onError: () => {
+          toast.error("Kunde inte uppdatera inställning");
+        },
+      }
+    );
   };
 
-  const handleCircleOnlyChange = async (checked: boolean) => {
-    try {
-      const newScope = checked ? "circle_only" : "public";
-      await updateMutation.mutateAsync({
+  const handleCircleOnlyChange = (checked: boolean) => {
+    const newScope = checked ? "circle_only" : "public";
+    // Optimistic - mutation handles rollback on error
+    updateMutation.mutate(
+      {
         scope: newScope,
         extraHours: visibility?.available_for_extra_hours ?? false,
-      });
-      toast.success(checked 
-        ? "Du syns nu bara för partnerföretag" 
-        : "Du syns nu för alla i orten"
-      );
-    } catch {
-      toast.error("Kunde inte uppdatera inställning");
-    }
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            checked
+              ? "Du syns nu bara för partnerföretag"
+              : "Du syns nu för alla i orten"
+          );
+        },
+        onError: () => {
+          toast.error("Kunde inte uppdatera inställning");
+        },
+      }
+    );
   };
 
   if (isLoading) {
