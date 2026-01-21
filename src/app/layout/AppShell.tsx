@@ -19,17 +19,22 @@ export function AppShell({ children, role }: AppShellProps) {
   const [guideOpen, setGuideOpen] = React.useState(false);
   const { profile, isDemoMode, loading, profileLoading } = useAuth();
 
-  // Show demo guide on first visit for demo users
+  // Show demo guide on first visit for demo users (role-specific)
   React.useEffect(() => {
-    if (loading || profileLoading || !isDemoMode) return;
+    if (loading || profileLoading || !isDemoMode || !profile) return;
     
-    const guideSeen = localStorage.getItem("demoGuideSeen");
+    // Role-specific localStorage key
+    const storageKey = profile.user_id 
+      ? `demoGuideSeen:${role}:${profile.user_id}`
+      : `demoGuideSeen:${role}`;
+    
+    const guideSeen = localStorage.getItem(storageKey);
     if (!guideSeen) {
       // Delay to let the page render
       const timer = setTimeout(() => setGuideOpen(true), 500);
       return () => clearTimeout(timer);
     }
-  }, [isDemoMode, loading, profileLoading]);
+  }, [isDemoMode, loading, profileLoading, role, profile]);
 
   return (
     <div className="min-h-screen bg-frost">
