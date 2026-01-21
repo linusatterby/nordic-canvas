@@ -19,6 +19,7 @@ export interface CandidateCardProps {
   onSwipeNo?: (id: string) => void;
   onViewVideo?: (id: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export function CandidateCard({
@@ -34,6 +35,7 @@ export function CandidateCard({
   onSwipeNo,
   onViewVideo,
   className,
+  disabled = false,
 }: CandidateCardProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowRight" || e.key === "j") {
@@ -102,6 +104,7 @@ export function CandidateCard({
           onClick={() => onSwipeNo?.(id)}
           className="flex-1"
           aria-label="Avvisa kandidat"
+          disabled={disabled}
         >
           Nej
         </Button>
@@ -111,6 +114,7 @@ export function CandidateCard({
           onClick={() => onSwipeYes?.(id)}
           className="flex-1"
           aria-label="Godkänn kandidat"
+          disabled={disabled}
         >
           Ja
         </Button>
