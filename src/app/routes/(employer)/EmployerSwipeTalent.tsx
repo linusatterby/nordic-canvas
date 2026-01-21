@@ -27,7 +27,12 @@ export function EmployerSwipeTalent() {
   const resetDemo = useResetDemo();
   
   // Fetch job details
-  const { data: job, isLoading: jobLoading, error: jobError } = useJob(jobId);
+  const { data: jobResult, isLoading: jobLoading, error: jobQueryError } = useJob(jobId);
+  
+  // Extract job from result
+  const job = jobResult?.job ?? null;
+  const jobError = jobResult?.error ?? jobQueryError ?? null;
+  const jobReason = jobResult?.reason;
   
   // Fetch talents with demo fallback
   const { 
@@ -151,20 +156,30 @@ export function EmployerSwipeTalent() {
 
   // Job not found
   if (jobError || !job) {
+    const errorMessage = jobReason === "forbidden" 
+      ? "Du saknar behörighet att se detta jobb."
+      : jobReason === "rls_blocked"
+      ? "Jobbet kunde inte laddas på grund av säkerhetsinställningar."
+      : "Det valda jobbet kunde inte hittas eller har tagits bort.";
+    
     return (
       <AppShell role="employer">
         <div className="container mx-auto px-4 py-8 max-w-lg">
           <EmptyState
             type="no-data"
-            title="Jobb hittades inte"
-            message="Det valda jobbet kunde inte hittas eller har tagits bort."
+            title={jobReason === "forbidden" ? "Ingen åtkomst" : "Jobb hittades inte"}
+            message={errorMessage}
             action={{ label: "Gå till Mina jobb", onClick: () => navigate("/employer/jobs") }}
           />
           
           {isDemoMode && (
             <Card className="mt-4 p-3 bg-muted/50 border-dashed">
               <p className="text-xs text-muted-foreground font-mono">
-                <span className="font-semibold">Debug:</span> jobId={jobId}, error={jobError?.message ?? "Job not found"}
+                <span className="font-semibold">Debug:</span><br />
+                jobId={jobId}<br />
+                reason={jobReason ?? "unknown"}<br />
+                error={jobError?.message ?? "No job returned"}<br />
+                orgId={orgId ?? "null"}
               </p>
             </Card>
           )}

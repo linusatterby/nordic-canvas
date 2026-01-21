@@ -181,13 +181,19 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
   return { jobs, error: null };
 }
 
-/**
- * Get a single job by ID
- */
-export async function getJob(jobId: string): Promise<{
+export type JobFetchReason = "not_found" | "forbidden" | "rls_blocked" | "unknown";
+
+export interface JobFetchResult {
   job: JobWithOrg | null;
   error: Error | null;
-}> {
+  reason?: JobFetchReason;
+}
+
+/**
+ * Get a single job by ID with detailed error reporting
+ */
+export async function getJob(jobId: string): Promise<JobFetchResult> {
+  // First try with org join
   const { data, error } = await supabase
     .from("job_posts")
     .select(`
@@ -198,11 +204,35 @@ export async function getJob(jobId: string): Promise<{
     .maybeSingle();
 
   if (error) {
-    return { job: null, error: new Error(error.message) };
+    // Check if it's an RLS error
+    if (error.code === "42501" || error.message.includes("permission")) {
+      return { job: null, error: new Error(error.message), reason: "forbidden" };
+    }
+    return { job: null, error: new Error(error.message), reason: "unknown" };
   }
 
   if (!data) {
-    return { job: null, error: null };
+    // Try without org join to check if it's an RLS issue on orgs
+    const { data: jobOnly, error: jobOnlyError } = await supabase
+      .from("job_posts")
+      .select("*")
+      .eq("id", jobId)
+      .maybeSingle();
+    
+    if (jobOnlyError) {
+      return { job: null, error: new Error(jobOnlyError.message), reason: "rls_blocked" };
+    }
+    
+    if (!jobOnly) {
+      return { job: null, error: null, reason: "not_found" };
+    }
+    
+    // Job exists but we couldn't get org - use fallback
+    const job: JobWithOrg = {
+      ...jobOnly,
+      org_name: "Okänd",
+    };
+    return { job, error: null };
   }
 
   const job: JobWithOrg = {

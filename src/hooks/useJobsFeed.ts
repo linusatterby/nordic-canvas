@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listUnswipedJobs, getJob, listOrgJobs, resetTalentDemoSwipes, listDemoJobsHard, type JobWithOrg, type JobFilters } from "@/lib/api/jobs";
+import { listUnswipedJobs, getJob, listOrgJobs, resetTalentDemoSwipes, listDemoJobsHard, type JobWithOrg, type JobFilters, type JobFetchResult } from "@/lib/api/jobs";
 import { useDemoMode } from "@/hooks/useDemo";
 
 /**
@@ -22,16 +22,14 @@ export function useJobsFeed(filters?: JobFilters) {
 }
 
 /**
- * Hook to fetch a single job
+ * Hook to fetch a single job with detailed error info
  */
 export function useJob(jobId: string | undefined) {
-  return useQuery({
+  return useQuery<JobFetchResult | null>({
     queryKey: ["job", jobId],
     queryFn: async () => {
       if (!jobId) return null;
-      const { job, error } = await getJob(jobId);
-      if (error) throw error;
-      return job;
+      return await getJob(jobId);
     },
     enabled: !!jobId,
   });
