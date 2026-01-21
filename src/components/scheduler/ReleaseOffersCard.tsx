@@ -8,7 +8,7 @@ import {
   useCircleReleaseOffers,
   useTakeReleaseOffer,
   useCreateReleaseOffer,
-  useTrustedCircle,
+  useAllCirclePartnersFlat,
 } from "@/hooks/useCircles";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -22,11 +22,11 @@ interface ReleaseOffersCardProps {
 
 export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
   const { data: circleOffers, isLoading } = useCircleReleaseOffers(orgId);
-  const { data: trustedCircle } = useTrustedCircle(orgId);
+  const { data: allCirclePartners } = useAllCirclePartnersFlat(orgId);
   const takeOfferMutation = useTakeReleaseOffer();
   const createOfferMutation = useCreateReleaseOffer();
 
-  const hasCirclePartners = (trustedCircle?.length ?? 0) > 0;
+  const hasCirclePartners = (allCirclePartners?.length ?? 0) > 0;
 
   // Filter bookings that can be released (not already released, not in past)
   const releasableBookings = bookings.filter(
