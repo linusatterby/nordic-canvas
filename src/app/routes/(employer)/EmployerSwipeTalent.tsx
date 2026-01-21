@@ -38,11 +38,13 @@ export function EmployerSwipeTalent() {
   } = useTalentFeed(jobId, orgId ?? undefined, isDemoMode);
   
   const swipeMutation = useSwipeEmployerTalent();
-  const [currentIndex, setCurrentIndex] = React.useState(0);
   const [showConfetti, setShowConfetti] = React.useState(false);
   const [showDebug, setShowDebug] = React.useState(false);
+  const [seenCount, setSeenCount] = React.useState(0);
 
-  const currentTalent = talents?.[currentIndex];
+  // Always show first talent in the stack (optimistic updates remove swiped ones)
+  const currentTalent = talents?.[0];
+  const remainingCount = talents?.length ?? 0;
   const isLoading = jobLoading || talentsLoading;
 
   const handleSwipe = async (direction: "yes" | "no") => {
@@ -93,11 +95,8 @@ export function EmployerSwipeTalent() {
         }
       }
 
-      if (talents && currentIndex < talents.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        setCurrentIndex(talents?.length ?? 0);
-      }
+      // Optimistic UI already removed the talent, just increment seen count
+      setSeenCount((prev) => prev + 1);
     } catch {
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara." });
     }
@@ -106,7 +105,7 @@ export function EmployerSwipeTalent() {
   const handleResetDemo = async () => {
     try {
       await resetDemo.mutateAsync(undefined);
-      setCurrentIndex(0);
+      setSeenCount(0);
       refetchTalents();
       addToast({ type: "success", title: "Demo återställt", message: "Du kan nu swipa igen." });
     } catch (err) {
@@ -224,6 +223,7 @@ export function EmployerSwipeTalent() {
               hasVideoPitch={currentTalent.has_video}
               onSwipeYes={() => handleSwipe("yes")}
               onSwipeNo={() => handleSwipe("no")}
+              disabled={swipeMutation.isPending}
             />
             
             {/* Show location for demo cards */}
@@ -234,7 +234,7 @@ export function EmployerSwipeTalent() {
             )}
             
             <p className="text-center text-sm text-muted-foreground mt-4">
-              {currentIndex + 1} av {talents?.length ?? 0} kandidater
+              {seenCount > 0 ? `${seenCount} granskade, ` : ""}{remainingCount} kvar
             </p>
           </div>
         ) : (
@@ -284,7 +284,7 @@ export function EmployerSwipeTalent() {
                   <p><span className="text-muted-foreground">normalCount:</span> {talentDebug.normalCount}</p>
                   <p><span className="text-muted-foreground">hardCount:</span> {talentDebug.hardCount}</p>
                   <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {String(talentDebug.shouldUseHardFetch)}</p>
-                  <p><span className="text-muted-foreground">currentIndex:</span> {currentIndex}</p>
+                  <p><span className="text-muted-foreground">seenCount:</span> {seenCount}</p>
                   {talentDebug.normalError && (
                     <p className="text-destructive"><span className="text-muted-foreground">normalError:</span> {talentDebug.normalError}</p>
                   )}
@@ -318,7 +318,7 @@ export function EmployerSwipeTalent() {
               <p><span className="text-muted-foreground">normalCount:</span> {talentDebug.normalCount}</p>
               <p><span className="text-muted-foreground">hardCount:</span> {talentDebug.hardCount}</p>
               <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {String(talentDebug.shouldUseHardFetch)}</p>
-              <p><span className="text-muted-foreground">currentIndex:</span> {currentIndex} / {talents?.length ?? 0}</p>
+              <p><span className="text-muted-foreground">seen / remaining:</span> {seenCount} / {remainingCount}</p>
             </div>
           </Card>
         )}

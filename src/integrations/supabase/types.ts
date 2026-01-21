@@ -273,6 +273,75 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_talent_cards: {
+        Row: {
+          available_for_extra_hours: boolean | null
+          created_at: string
+          housing_needed: boolean | null
+          id: string
+          is_demo: boolean
+          legacy_score: number | null
+          location: string
+          name: string
+          role_key: string
+          skills: string[] | null
+          video_url: string | null
+        }
+        Insert: {
+          available_for_extra_hours?: boolean | null
+          created_at?: string
+          housing_needed?: boolean | null
+          id?: string
+          is_demo?: boolean
+          legacy_score?: number | null
+          location: string
+          name: string
+          role_key: string
+          skills?: string[] | null
+          video_url?: string | null
+        }
+        Update: {
+          available_for_extra_hours?: boolean | null
+          created_at?: string
+          housing_needed?: boolean | null
+          id?: string
+          is_demo?: boolean
+          legacy_score?: number | null
+          location?: string
+          name?: string
+          role_key?: string
+          skills?: string[] | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      employer_demo_talent_swipes: {
+        Row: {
+          created_at: string
+          demo_card_id: string
+          direction: string
+          job_post_id: string
+          org_id: string
+          swiper_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          demo_card_id: string
+          direction: string
+          job_post_id: string
+          org_id: string
+          swiper_user_id: string
+        }
+        Update: {
+          created_at?: string
+          demo_card_id?: string
+          direction?: string
+          job_post_id?: string
+          org_id?: string
+          swiper_user_id?: string
+        }
+        Relationships: []
+      }
       employer_talent_swipes: {
         Row: {
           created_at: string

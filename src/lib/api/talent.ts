@@ -279,7 +279,7 @@ export async function listDemoTalentCards(
 
 /**
  * HARD demo fetch for talents - combines real demo talents + demo cards
- * This should NEVER return 0 talents if demo talents or cards exist
+ * Excludes already swiped talents/cards to prevent loops
  */
 export async function listDemoTalentsHard(
   orgId: string,
@@ -294,14 +294,35 @@ export async function listDemoTalentsHard(
   const allTalents: CandidateCardDTO[] = [];
   let lastError: Error | null = null;
 
-  // 1. Try to get real demo talents first
-  const { data: demoProfiles, error: profileError } = await supabase
+  // 1. Get already swiped real talent IDs to exclude them
+  let swipedRealTalentIds: string[] = [];
+  if (jobId) {
+    const { data: existingSwipes, error: swipeError } = await supabase
+      .from("employer_talent_swipes")
+      .select("talent_user_id")
+      .eq("job_post_id", jobId)
+      .eq("org_id", orgId);
+
+    if (!swipeError && existingSwipes) {
+      swipedRealTalentIds = existingSwipes.map((s) => s.talent_user_id);
+    }
+  }
+
+  // 2. Try to get real demo talents first (excluding swiped)
+  let profileQuery = supabase
     .from("profiles")
     .select("user_id, full_name, home_base, is_demo, created_at")
     .eq("is_demo", true)
     .eq("type", "talent")
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  // Exclude already swiped real talents
+  if (swipedRealTalentIds.length > 0) {
+    profileQuery = profileQuery.not("user_id", "in", `(${swipedRealTalentIds.join(",")})`);
+  }
+
+  const { data: demoProfiles, error: profileError } = await profileQuery;
 
   if (profileError) {
     console.warn("[listDemoTalentsHard] Profile query error:", profileError);
@@ -356,7 +377,7 @@ export async function listDemoTalentsHard(
 
   console.log("[listDemoTalentsHard] Real demo talents found:", allTalents.length);
 
-  // 2. If we don't have enough, fill with demo cards
+  // 3. If we don't have enough, fill with demo cards (also excludes swiped)
   if (allTalents.length < limit) {
     const remaining = limit - allTalents.length;
     const { cards, error: cardError } = await listDemoTalentCards(orgId, jobId, remaining);
