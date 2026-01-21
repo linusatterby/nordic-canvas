@@ -48,6 +48,10 @@ export function useTalentFeed(
     ? hardQuery.data ?? [] 
     : normalQuery.data ?? [];
 
+  // Count real vs demo_card types in effective list
+  const realCount = effectiveTalents.filter((t) => t.type === "real").length;
+  const demoCardCount = effectiveTalents.filter((t) => t.type === "demo_card").length;
+
   return {
     // Main data
     data: effectiveTalents,
@@ -63,6 +67,14 @@ export function useTalentFeed(
       hardError: hardQuery.error?.message ?? null,
       isNormalLoading: normalQuery.isLoading,
       isHardLoading: hardQuery.isLoading,
+      // New: breakdown by type
+      realCount,
+      demoCardCount,
+      tables: {
+        demoCards: "demo_talent_cards",
+        demoSwipes: "employer_demo_talent_swipes",
+        realSwipes: "employer_talent_swipes",
+      },
     },
     
     // Refetch function
