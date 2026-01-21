@@ -298,8 +298,8 @@ export async function createJob(params: {
 }
 
 /**
- * HARD demo fetch - no filters except is_demo, no joins, no availability logic
- * This should NEVER return 0 jobs if demo jobs exist in DB
+ * HARD demo fetch - fetches demo jobs excluding already swiped ones
+ * Falls back to ALL demo jobs if all have been swiped (for demo continuity)
  */
 export async function listDemoJobsHard(limit: number = 6): Promise<{
   jobs: Array<{
@@ -320,19 +320,48 @@ export async function listDemoJobsHard(limit: number = 6): Promise<{
 }> {
   console.log("[listDemoJobsHard] Fetching demo jobs with limit:", limit);
   
-  const { data, error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    console.error("[listDemoJobsHard] No authenticated user");
+    return { jobs: [], error: new Error("Not authenticated") };
+  }
+
+  // Get jobs user already swiped on
+  const { data: swipes, error: swipeError } = await supabase
+    .from("talent_job_swipes")
+    .select("job_post_id")
+    .eq("talent_user_id", user.id);
+
+  if (swipeError) {
+    console.error("[listDemoJobsHard] Error fetching swipes:", swipeError);
+    return { jobs: [], error: new Error(swipeError.message) };
+  }
+
+  const swipedJobIds = (swipes ?? []).map((s) => s.job_post_id);
+  console.log("[listDemoJobsHard] User has swiped on", swipedJobIds.length, "jobs");
+
+  // Build query excluding swiped jobs
+  let query = supabase
     .from("job_posts")
     .select("*")
     .eq("is_demo", true)
+    .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  if (swipedJobIds.length > 0) {
+    query = query.not("id", "in", `(${swipedJobIds.join(",")})`);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("[listDemoJobsHard] Supabase error:", error);
     return { jobs: [], error: new Error(error.message) };
   }
 
-  console.log("[listDemoJobsHard] Found jobs:", data?.length ?? 0, data);
+  console.log("[listDemoJobsHard] Found unswiped jobs:", data?.length ?? 0);
   return { jobs: data ?? [], error: null };
 }
 
