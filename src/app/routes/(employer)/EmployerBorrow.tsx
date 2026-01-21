@@ -26,6 +26,7 @@ import {
   useDeclineCircleRequest,
   useAvailableTalentCounts,
   useMyCircles,
+  useCircleMembers,
 } from "@/hooks/useCircles";
 import { useToasts } from "@/components/delight/Toasts";
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFooter } from "@/components/ui/Modal";
@@ -114,6 +115,9 @@ export function EmployerBorrow() {
     if (!myCircles || !selectedCircleId) return null;
     return myCircles.find((c) => c.id === selectedCircleId) ?? null;
   }, [myCircles, selectedCircleId]);
+
+  // Fetch members for selected circle (for modal display)
+  const { data: selectedCircleMembers } = useCircleMembers(selectedCircleId ?? undefined);
 
   const { data: talentCounts } = useAvailableTalentCounts(
     defaultLocation,
@@ -654,6 +658,26 @@ export function EmployerBorrow() {
                     <p className="text-xs text-muted-foreground">
                       Endast medlemmar i den här cirkeln får förfrågan.
                     </p>
+                    {/* Show members of selected circle */}
+                    {selectedCircleMembers && selectedCircleMembers.length > 0 && (
+                      <div className="mt-2 p-2 rounded-lg bg-muted/50">
+                        <p className="text-xs font-medium text-foreground mb-1">
+                          Medlemmar ({selectedCircleMembers.length}):
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedCircleMembers.slice(0, 5).map((member) => (
+                            <Badge key={member.id} variant="default" size="sm">
+                              {member.name}
+                            </Badge>
+                          ))}
+                          {selectedCircleMembers.length > 5 && (
+                            <Badge variant="default" size="sm">
+                              +{selectedCircleMembers.length - 5}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <Card variant="ghost" padding="sm" className="text-center">
