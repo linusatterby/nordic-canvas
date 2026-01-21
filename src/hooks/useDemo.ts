@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { resetDemo, resetDemoForUser, listMyDemoOrgs } from "@/lib/api/demo";
+import { resetDemo, resetDemoForUser, listMyDemoOrgs, seedDemoScenario } from "@/lib/api/demo";
 import { useDefaultOrgId } from "./useOrgs";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -63,21 +63,58 @@ export function useResetDemo() {
       return result;
     },
     onSuccess: () => {
-      // Invalidate all relevant queries to refresh UI
-      queryClient.invalidateQueries({ queryKey: ["matches"] });
-      queryClient.invalidateQueries({ queryKey: ["orgMatches"] });
-      queryClient.invalidateQueries({ queryKey: ["scheduler"] });
-      queryClient.invalidateQueries({ queryKey: ["orgBorrowRequests"] });
-      queryClient.invalidateQueries({ queryKey: ["talentBorrowOffers"] });
-      queryClient.invalidateQueries({ queryKey: ["chat"] });
-      queryClient.invalidateQueries({ queryKey: ["thread"] });
-      queryClient.invalidateQueries({ queryKey: ["orgJobs"] });
-      queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
-      // Also invalidate talent feed for employer swipe view
-      queryClient.invalidateQueries({ queryKey: ["talentFeed"] });
-      // Invalidate dashboard summary queries
-      queryClient.invalidateQueries({ queryKey: ["visibilitySummary"] });
-      queryClient.invalidateQueries({ queryKey: ["talentDashboardSummary"] });
+      invalidateDemoQueries(queryClient);
     },
   });
+}
+
+/**
+ * Hook to seed a complete demo scenario
+ * Creates jobs, borrow request/offer, match, chat, booking, and release offer
+ */
+export function useSeedDemoScenario() {
+  const queryClient = useQueryClient();
+  const { data: defaultOrgId } = useDefaultOrgId();
+  const { demoOrgIds } = useDemoMode();
+
+  return useMutation({
+    mutationFn: async (orgId?: string) => {
+      // Priority: passed orgId > first demo org > default org
+      const targetOrgId = orgId ?? demoOrgIds[0] ?? defaultOrgId;
+      
+      if (!targetOrgId) {
+        throw new Error("No demo org found");
+      }
+      
+      const { result, error } = await seedDemoScenario(targetOrgId);
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      invalidateDemoQueries(queryClient);
+    },
+  });
+}
+
+/**
+ * Helper to invalidate all demo-related queries
+ */
+function invalidateDemoQueries(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: ["matches"] });
+  queryClient.invalidateQueries({ queryKey: ["orgMatches"] });
+  queryClient.invalidateQueries({ queryKey: ["scheduler"] });
+  queryClient.invalidateQueries({ queryKey: ["orgBorrowRequests"] });
+  queryClient.invalidateQueries({ queryKey: ["talentBorrowOffers"] });
+  queryClient.invalidateQueries({ queryKey: ["chat"] });
+  queryClient.invalidateQueries({ queryKey: ["thread"] });
+  queryClient.invalidateQueries({ queryKey: ["orgJobs"] });
+  queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
+  queryClient.invalidateQueries({ queryKey: ["talentFeed"] });
+  queryClient.invalidateQueries({ queryKey: ["visibilitySummary"] });
+  queryClient.invalidateQueries({ queryKey: ["talentDashboardSummary"] });
+  // Demo-specific queries
+  queryClient.invalidateQueries({ queryKey: ["demoMatches"] });
+  queryClient.invalidateQueries({ queryKey: ["demoChatThreads"] });
+  queryClient.invalidateQueries({ queryKey: ["demoBookings"] });
+  queryClient.invalidateQueries({ queryKey: ["demoReleaseOffers"] });
 }

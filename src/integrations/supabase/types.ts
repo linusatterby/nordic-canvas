@@ -258,6 +258,67 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_type: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_type: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_type?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "demo_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_chat_threads: {
+        Row: {
+          created_at: string
+          demo_match_id: string | null
+          id: string
+          org_id: string
+        }
+        Insert: {
+          created_at?: string
+          demo_match_id?: string | null
+          id?: string
+          org_id: string
+        }
+        Update: {
+          created_at?: string
+          demo_match_id?: string | null
+          id?: string
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_chat_threads_demo_match_id_fkey"
+            columns: ["demo_match_id"]
+            isOneToOne: false
+            referencedRelation: "demo_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_email_allowlist: {
         Row: {
           created_at: string
@@ -272,6 +333,126 @@ export type Database = {
           email?: string
         }
         Relationships: []
+      }
+      demo_matches: {
+        Row: {
+          created_at: string
+          demo_card_id: string | null
+          id: string
+          is_seeded: boolean
+          job_post_id: string
+          org_id: string
+          status: string
+          talent_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          demo_card_id?: string | null
+          id?: string
+          is_seeded?: boolean
+          job_post_id: string
+          org_id: string
+          status?: string
+          talent_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          demo_card_id?: string | null
+          id?: string
+          is_seeded?: boolean
+          job_post_id?: string
+          org_id?: string
+          status?: string
+          talent_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_matches_demo_card_id_fkey"
+            columns: ["demo_card_id"]
+            isOneToOne: false
+            referencedRelation: "demo_talent_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_release_offers: {
+        Row: {
+          created_at: string
+          demo_booking_id: string | null
+          from_org_id: string
+          id: string
+          status: string
+          taken_by_org_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          demo_booking_id?: string | null
+          from_org_id: string
+          id?: string
+          status?: string
+          taken_by_org_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          demo_booking_id?: string | null
+          from_org_id?: string
+          id?: string
+          status?: string
+          taken_by_org_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_release_offers_demo_booking_id_fkey"
+            columns: ["demo_booking_id"]
+            isOneToOne: false
+            referencedRelation: "demo_shift_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_shift_bookings: {
+        Row: {
+          created_at: string
+          demo_card_id: string | null
+          end_ts: string
+          id: string
+          is_released: boolean
+          is_seeded: boolean
+          org_id: string
+          start_ts: string
+          talent_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          demo_card_id?: string | null
+          end_ts: string
+          id?: string
+          is_released?: boolean
+          is_seeded?: boolean
+          org_id: string
+          start_ts: string
+          talent_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          demo_card_id?: string | null
+          end_ts?: string
+          id?: string
+          is_released?: boolean
+          is_seeded?: boolean
+          org_id?: string
+          start_ts?: string
+          talent_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_shift_bookings_demo_card_id_fkey"
+            columns: ["demo_card_id"]
+            isOneToOne: false
+            referencedRelation: "demo_talent_cards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       demo_talent_cards: {
         Row: {
@@ -481,6 +662,7 @@ export type Database = {
           created_at: string
           end_date: string
           housing_offered: boolean | null
+          housing_text: string | null
           id: string
           is_demo: boolean
           location: string | null
@@ -495,6 +677,7 @@ export type Database = {
           created_at?: string
           end_date: string
           housing_offered?: boolean | null
+          housing_text?: string | null
           id?: string
           is_demo?: boolean
           location?: string | null
@@ -509,6 +692,7 @@ export type Database = {
           created_at?: string
           end_date?: string
           housing_offered?: boolean | null
+          housing_text?: string | null
           id?: string
           is_demo?: boolean
           location?: string | null
@@ -1111,6 +1295,7 @@ export type Database = {
       reset_demo: { Args: { p_org_id: string }; Returns: Json }
       reset_demo_for_user: { Args: never; Returns: Json }
       reset_talent_demo_swipes: { Args: never; Returns: Json }
+      seed_demo_scenario: { Args: { p_org_id: string }; Returns: Json }
       take_release_offer: { Args: { p_offer_id: string }; Returns: Json }
       toggle_talent_circle_visibility: {
         Args: { p_extra_hours: boolean; p_scope: string }
