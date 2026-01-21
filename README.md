@@ -60,6 +60,22 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Environment Variables
+
+The following environment variables can be configured:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_DEMO_DEBUG` | `false` | Enable debug panels and technical info in demo mode. Set to `true` for development. |
+
+### Development Setup
+
+For local development with debug panels enabled, create a `.env.local` file:
+
+```sh
+VITE_DEMO_DEBUG=true
+```
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.

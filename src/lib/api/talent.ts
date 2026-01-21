@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { debugLog, debugWarn } from "@/lib/utils/debug";
 
 export interface CandidateCardDTO {
   type: "real" | "demo_card";
@@ -208,7 +209,7 @@ export async function listDemoTalentCards(
   cards: CandidateCardDTO[];
   error: Error | null;
 }> {
-  console.log("[listDemoTalentCards] Fetching demo cards, limit:", limit);
+  debugLog("[listDemoTalentCards]", "Fetching demo cards, limit:", limit);
 
   // Get already swiped demo card IDs for this org/job using raw query
   // Note: We use explicit typing since these tables may not be in generated types yet
@@ -224,12 +225,12 @@ export async function listDemoTalentCards(
   const { data: existingSwipes, error: swipeError } = await swipeQuery;
 
   if (swipeError) {
-    console.error("[listDemoTalentCards] Swipe query error:", swipeError);
+    debugWarn("[listDemoTalentCards]", "Swipe query error:", swipeError);
     return { cards: [], error: new Error(swipeError.message) };
   }
 
   const swipedCardIds = ((existingSwipes ?? []) as unknown as Array<{ demo_card_id: string }>).map((s) => s.demo_card_id);
-  console.log("[listDemoTalentCards] Already swiped cards:", swipedCardIds.length);
+  debugLog("[listDemoTalentCards]", "Already swiped cards:", swipedCardIds.length);
 
   // Fetch demo cards that haven't been swiped
   let cardQuery = supabase
@@ -246,11 +247,11 @@ export async function listDemoTalentCards(
   const { data: demoCards, error: cardError } = await cardQuery;
 
   if (cardError) {
-    console.error("[listDemoTalentCards] Card query error:", cardError);
+    debugWarn("[listDemoTalentCards]", "Card query error:", cardError);
     return { cards: [], error: new Error(cardError.message) };
   }
 
-  console.log("[listDemoTalentCards] Found demo cards:", demoCards?.length ?? 0);
+  debugLog("[listDemoTalentCards]", "Found demo cards:", demoCards?.length ?? 0);
 
   // Convert to CandidateCardDTO format
   const typedCards = (demoCards ?? []) as unknown as DemoTalentCard[];
@@ -289,7 +290,7 @@ export async function listDemoTalentsHard(
   talents: CandidateCardDTO[];
   error: Error | null;
 }> {
-  console.log("[listDemoTalentsHard] Fetching with orgId:", orgId, "jobId:", jobId);
+  debugLog("[listDemoTalentsHard]", "Fetching with orgId:", orgId, "jobId:", jobId);
   
   const allTalents: CandidateCardDTO[] = [];
   let lastError: Error | null = null;
@@ -325,7 +326,7 @@ export async function listDemoTalentsHard(
   const { data: demoProfiles, error: profileError } = await profileQuery;
 
   if (profileError) {
-    console.warn("[listDemoTalentsHard] Profile query error:", profileError);
+    debugWarn("[listDemoTalentsHard]", "Profile query error:", profileError);
     lastError = new Error(profileError.message);
   } else if (demoProfiles && demoProfiles.length > 0) {
     const userIds = demoProfiles.map(p => p.user_id);
@@ -375,7 +376,7 @@ export async function listDemoTalentsHard(
     });
   }
 
-  console.log("[listDemoTalentsHard] Real demo talents found:", allTalents.length);
+  debugLog("[listDemoTalentsHard]", "Real demo talents found:", allTalents.length);
 
   // 3. If we don't have enough, fill with demo cards (also excludes swiped)
   if (allTalents.length < limit) {
@@ -383,14 +384,14 @@ export async function listDemoTalentsHard(
     const { cards, error: cardError } = await listDemoTalentCards(orgId, jobId, remaining);
     
     if (cardError) {
-      console.warn("[listDemoTalentsHard] Demo cards error:", cardError);
+      debugWarn("[listDemoTalentsHard]", "Demo cards error:", cardError);
       if (!lastError) lastError = cardError;
     } else {
       allTalents.push(...cards);
     }
   }
 
-  console.log("[listDemoTalentsHard] Total talents after cards:", allTalents.length);
+  debugLog("[listDemoTalentsHard]", "Total talents after cards:", allTalents.length);
 
   return { talents: allTalents, error: lastError };
 }
