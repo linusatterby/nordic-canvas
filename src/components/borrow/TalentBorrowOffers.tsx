@@ -1,11 +1,12 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useTalentBorrowOffers, useAcceptBorrowOffer, useDeclineBorrowOffer } from "@/hooks/useBorrow";
 import { useToasts } from "@/components/delight/Toasts";
-import { MapPin, Clock, Briefcase, Check, X } from "lucide-react";
+import { MapPin, Clock, Check, X, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 
@@ -18,6 +19,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export function TalentBorrowOffers() {
+  const navigate = useNavigate();
   const { addToast } = useToasts();
   const { data: offers, isLoading } = useTalentBorrowOffers();
   const acceptMutation = useAcceptBorrowOffer();
@@ -25,11 +27,15 @@ export function TalentBorrowOffers() {
 
   const handleAccept = async (offerId: string) => {
     try {
-      await acceptMutation.mutateAsync(offerId);
+      const result = await acceptMutation.mutateAsync(offerId);
       addToast({
         type: "success",
-        title: "Accepterat!",
-        message: "Bokning skapad. Kolla ditt schema.",
+        title: "Klart! Du är bokad.",
+        message: "Passet har lagts till i ditt schema.",
+        action: {
+          label: "Se matchningar",
+          onClick: () => navigate("/talent/matches"),
+        },
       });
     } catch (e: any) {
       addToast({

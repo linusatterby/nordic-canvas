@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/delight/EmptyStates";
-import { MessageCircle, Calendar, MapPin } from "lucide-react";
+import { MessageCircle, Calendar, MapPin, Send, Sparkles } from "lucide-react";
 import { useMatches } from "@/hooks/useMatches";
 
 export function TalentMatches() {
@@ -48,58 +48,83 @@ export function TalentMatches() {
 
         {matches && matches.length > 0 ? (
           <div className="space-y-4">
-            {matches.map((match) => (
-              <Card key={match.id} variant="interactive" padding="md">
-                <div className="flex items-start gap-4">
-                  <Avatar size="lg" fallback={match.org_name.slice(0, 2)} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-foreground">{match.job_title}</h3>
-                      <Badge
-                        variant={match.status === "chatting" ? "verified" : "primary"}
-                        size="sm"
-                      >
-                        {match.status === "chatting" ? "Aktiv chatt" : "Matchad"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{match.org_name}</p>
-                    
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      {match.job_location && (
+            {matches.map((match) => {
+              const hasNoMessages = !match.last_message;
+              
+              return (
+                <Card key={match.id} variant="interactive" padding="md">
+                  <div className="flex items-start gap-4">
+                    <Avatar size="lg" fallback={match.org_name.slice(0, 2)} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-foreground">{match.job_title}</h3>
+                        {match.is_demo && (
+                          <Badge variant="warn" size="sm">DEMO</Badge>
+                        )}
+                        <Badge
+                          variant={match.status === "chatting" ? "verified" : "primary"}
+                          size="sm"
+                        >
+                          {match.status === "chatting" ? "Aktiv chatt" : "Matchad"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{match.org_name}</p>
+                      
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        {match.job_location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {match.job_location}
+                          </span>
+                        )}
                         <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {match.job_location}
+                          <Calendar className="h-3 w-3" />
+                          {formatPeriod(match.job_start_date, match.job_end_date)}
                         </span>
+                      </div>
+
+                      {match.last_message ? (
+                        <p className="text-sm text-muted-foreground mt-3 truncate">
+                          {match.last_message}
+                        </p>
+                      ) : (
+                        <div className="flex items-center gap-2 mt-3 text-sm text-primary bg-primary-muted rounded-lg px-3 py-2">
+                          <Sparkles className="h-4 w-4" />
+                          <span>Ny matchning – skriv en hälsning!</span>
+                        </div>
                       )}
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {formatPeriod(match.job_start_date, match.job_end_date)}
-                      </span>
                     </div>
 
-                    {match.last_message && (
-                      <p className="text-sm text-muted-foreground mt-3 truncate">
-                        {match.last_message}
-                      </p>
-                    )}
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => navigate(`/talent/matches/${match.id}`)}
+                      >
+                        {hasNoMessages ? (
+                          <>
+                            <Send className="h-4 w-4" />
+                            Skriv
+                          </>
+                        ) : (
+                          <>
+                            <MessageCircle className="h-4 w-4" />
+                            Chatta
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="gap-1 shrink-0"
-                    onClick={() => navigate(`/talent/matches/${match.id}`)}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    Chatta
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <EmptyState
             type="no-matches"
+            title="Inga matchningar ännu"
+            message="Fortsätt swipea för att hitta din nästa säsong!"
             action={{ label: "Börja swipea", onClick: () => navigate("/talent/swipe-jobs") }}
           />
         )}
