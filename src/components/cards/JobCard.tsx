@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MapPin, Calendar, Home, Sparkles } from "lucide-react";
+import { MapPin, Calendar, Home, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ export interface JobCardProps {
   location: string;
   period: string;
   housingStatus: HousingStatus;
+  housingText?: string | null;
   matchHint?: string;
   onSwipeYes?: (id: string) => void;
   onSwipeNo?: (id: string) => void;
@@ -41,12 +42,15 @@ export function JobCard({
   location,
   period,
   housingStatus,
+  housingText,
   matchHint,
   onSwipeYes,
   onSwipeNo,
   onViewDetails,
   className,
 }: JobCardProps) {
+  const [showHousingDetails, setShowHousingDetails] = React.useState(false);
+  
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowRight" || e.key === "j") {
       onSwipeYes?.(id);
@@ -54,6 +58,8 @@ export function JobCard({
       onSwipeNo?.(id);
     }
   };
+
+  const hasHousing = housingStatus === HOUSING_STATUS.OFFERED || housingStatus === HOUSING_STATUS.VERIFIED || !!housingText;
 
   return (
     <Card
@@ -85,9 +91,39 @@ export function JobCard({
 
       {/* Housing Status */}
       <div className="mt-4">
-        <Badge variant={housingBadgeVariants[housingStatus]} icon={<Home className="h-3 w-3" />}>
-          {housingLabels[housingStatus]}
-        </Badge>
+        {hasHousing ? (
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => housingText && setShowHousingDetails(!showHousingDetails)}
+              className={cn(
+                "inline-flex items-center gap-1",
+                housingText && "cursor-pointer hover:opacity-80"
+              )}
+              disabled={!housingText}
+            >
+              <Badge variant={housingBadgeVariants[housingStatus]} icon={<Home className="h-3 w-3" />}>
+                {housingLabels[housingStatus]}
+              </Badge>
+              {housingText && (
+                showHousingDetails 
+                  ? <ChevronUp className="h-3 w-3 text-muted-foreground" />
+                  : <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              )}
+            </button>
+            
+            {showHousingDetails && housingText && (
+              <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-sm text-foreground animate-fade-in">
+                <p className="text-xs font-medium text-success mb-1">Boendeinfo</p>
+                <p>{housingText}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Badge variant={housingBadgeVariants[housingStatus]} icon={<Home className="h-3 w-3" />}>
+            {housingLabels[housingStatus]}
+          </Badge>
+        )}
       </div>
 
       {/* Match Hint */}
