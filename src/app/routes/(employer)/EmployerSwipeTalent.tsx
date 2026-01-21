@@ -285,6 +285,10 @@ export function EmployerSwipeTalent() {
                   <p><span className="text-muted-foreground">hardCount:</span> {talentDebug.hardCount}</p>
                   <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {String(talentDebug.shouldUseHardFetch)}</p>
                   <p><span className="text-muted-foreground">seenCount:</span> {seenCount}</p>
+                  <hr className="border-border my-2" />
+                  <p><span className="text-muted-foreground">realCount:</span> {talentDebug.realCount}</p>
+                  <p><span className="text-muted-foreground">demoCardCount:</span> {talentDebug.demoCardCount}</p>
+                  <p className="text-xs opacity-70">tables: {talentDebug.tables?.demoCards}, {talentDebug.tables?.demoSwipes}</p>
                   {talentDebug.normalError && (
                     <p className="text-destructive"><span className="text-muted-foreground">normalError:</span> {talentDebug.normalError}</p>
                   )}
@@ -319,6 +323,8 @@ export function EmployerSwipeTalent() {
               <p><span className="text-muted-foreground">hardCount:</span> {talentDebug.hardCount}</p>
               <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {String(talentDebug.shouldUseHardFetch)}</p>
               <p><span className="text-muted-foreground">seen / remaining:</span> {seenCount} / {remainingCount}</p>
+              <p><span className="text-muted-foreground">realCount:</span> {talentDebug.realCount}</p>
+              <p><span className="text-muted-foreground">demoCardCount:</span> {talentDebug.demoCardCount}</p>
             </div>
           </Card>
         )}
