@@ -314,6 +314,7 @@ export function EmployerScheduler() {
           <ReleaseOffersCard 
             orgId={orgId} 
             bookings={schedulerData?.bookings ?? []} 
+            releaseOffers={schedulerData?.releaseOffers ?? []}
           />
         )}
       </div>

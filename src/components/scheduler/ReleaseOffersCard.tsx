@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Share2, ArrowRight, Clock, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Share2, ArrowRight, Clock, User, Calendar } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -10,23 +11,45 @@ import {
   useCreateReleaseOffer,
   useAllCirclePartnersFlat,
 } from "@/hooks/useCircles";
-import { toast } from "sonner";
+import { useToasts } from "@/components/delight/Toasts";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
-import type { ShiftBookingWithTalent } from "@/lib/api/scheduler";
+import type { EffectiveBooking, EffectiveReleaseOffer } from "@/hooks/useScheduler";
 
 interface ReleaseOffersCardProps {
   orgId: string;
-  bookings: ShiftBookingWithTalent[];
+  bookings: EffectiveBooking[];
+  releaseOffers?: EffectiveReleaseOffer[];
 }
 
-export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
+export function ReleaseOffersCard({ orgId, bookings, releaseOffers = [] }: ReleaseOffersCardProps) {
+  const navigate = useNavigate();
+  const { addToast } = useToasts();
   const { data: circleOffers, isLoading } = useCircleReleaseOffers(orgId);
   const { data: allCirclePartners } = useAllCirclePartnersFlat(orgId);
   const takeOfferMutation = useTakeReleaseOffer();
   const createOfferMutation = useCreateReleaseOffer();
 
   const hasCirclePartners = (allCirclePartners?.length ?? 0) > 0;
+
+  // Combine real circle offers with demo release offers
+  const allOffers = React.useMemo(() => {
+    const realOffers = circleOffers ?? [];
+    // Filter out demo offers that are already in real offers by ID
+    const realIds = new Set(realOffers.map(o => o.id));
+    const demoOnlyOffers = releaseOffers.filter(o => o.is_demo && !realIds.has(o.id));
+    
+    return [
+      ...realOffers.map(o => ({ ...o, is_demo: false })),
+      ...demoOnlyOffers.map(o => ({
+        id: o.id,
+        talent_name: o.talent_name ?? "Demo-talang",
+        from_org_name: "Demo-partner",
+        start_ts: o.booking_start_ts,
+        is_demo: true,
+      })),
+    ];
+  }, [circleOffers, releaseOffers]);
 
   // Filter bookings that can be released (not already released, not in past)
   const releasableBookings = bookings.filter(
@@ -36,31 +59,58 @@ export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
   const handleRelease = async (bookingId: string) => {
     try {
       await createOfferMutation.mutateAsync({ bookingId, fromOrgId: orgId });
-      toast.success("Pass öppnat för cirkeln", {
-        description: "Partnerföretag kan nu ta över passet.",
+      addToast({
+        type: "success",
+        title: "Pass öppnat för cirkeln",
+        message: "Partnerföretag kan nu ta över passet.",
       });
     } catch (error) {
-      toast.error("Kunde inte öppna pass", {
-        description: error instanceof Error ? error.message : "Okänt fel",
+      addToast({
+        type: "error",
+        title: "Kunde inte öppna pass",
+        message: error instanceof Error ? error.message : "Okänt fel",
       });
     }
   };
 
-  const handleTakeOver = async (offerId: string) => {
+  const handleTakeOver = async (offerId: string, isDemo: boolean = false) => {
     try {
+      // For demo offers, we would call a demo-specific RPC if it existed
+      // For now, we'll just show a success message for demo
+      if (isDemo) {
+        addToast({
+          type: "success",
+          title: "Passet är ditt!",
+          message: "Demo-bokningen har lagts till i ditt schema.",
+          action: {
+            label: "Öppna schemat",
+            onClick: () => navigate("/employer/scheduler"),
+          },
+        });
+        return;
+      }
+      
       await takeOfferMutation.mutateAsync(offerId);
-      toast.success("Du tog över passet!", {
-        description: "Bokningen har lagts till i ditt schema.",
+      addToast({
+        type: "success",
+        title: "Passet är ditt!",
+        message: "Bokningen har lagts till i ditt schema.",
+        action: {
+          label: "Öppna schemat",
+          onClick: () => navigate("/employer/scheduler"),
+        },
       });
     } catch (error) {
-      toast.error("Kunde inte ta över", {
-        description: error instanceof Error ? error.message : "Okänt fel",
+      addToast({
+        type: "error",
+        title: "Kunde inte ta över",
+        message: error instanceof Error ? error.message : "Okänt fel",
       });
     }
   };
 
-  if (!hasCirclePartners) {
-    return null; // Don't show if no circle partners
+  if (!hasCirclePartners && releaseOffers.length === 0) {
+    return null; // Don't show if no circle partners and no demo offers
   }
 
   return (
@@ -82,12 +132,12 @@ export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
-        ) : circleOffers && circleOffers.length > 0 ? (
+        ) : allOffers && allOffers.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Öppna pass från partners
             </h4>
-            {circleOffers.map((offer) => (
+            {allOffers.map((offer) => (
               <div
                 key={offer.id}
                 className="flex items-center justify-between p-3 rounded-lg bg-secondary"
@@ -97,9 +147,14 @@ export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
                     <User className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <span className="font-medium text-foreground text-sm">
-                      {offer.talent_name}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground text-sm">
+                        {offer.talent_name}
+                      </span>
+                      {offer.is_demo && (
+                        <Badge variant="warn" size="sm">DEMO</Badge>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>{offer.from_org_name}</span>
                       {offer.start_ts && (
@@ -117,7 +172,7 @@ export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => handleTakeOver(offer.id)}
+                  onClick={() => handleTakeOver(offer.id, offer.is_demo)}
                   disabled={takeOfferMutation.isPending}
                 >
                   Ta över
@@ -127,8 +182,19 @@ export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-4 text-sm text-muted-foreground">
-            Inga öppna pass från partners just nu
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground mb-3">
+              Inga öppna pass från partners just nu
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate("/employer/borrow")}
+              className="gap-1"
+            >
+              <Calendar className="h-4 w-4" />
+              Skapa förfrågan
+            </Button>
           </div>
         )}
 
@@ -144,9 +210,14 @@ export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
                 className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
               >
                 <div className="flex items-center gap-3">
-                  <Badge variant="verified" size="sm">
-                    {booking.talent_name ?? "Talang"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="verified" size="sm">
+                      {booking.talent_name ?? "Talang"}
+                    </Badge>
+                    {booking.is_demo && (
+                      <Badge variant="warn" size="sm">DEMO</Badge>
+                    )}
+                  </div>
                   <span className="text-xs text-muted-foreground">
                     {format(new Date(booking.start_ts), "d MMM HH:mm", { locale: sv })}
                   </span>
@@ -155,7 +226,7 @@ export function ReleaseOffersCard({ orgId, bookings }: ReleaseOffersCardProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => handleRelease(booking.id)}
-                  disabled={createOfferMutation.isPending}
+                  disabled={createOfferMutation.isPending || booking.is_demo}
                   className="text-xs"
                 >
                   <Share2 className="h-3 w-3 mr-1" />
