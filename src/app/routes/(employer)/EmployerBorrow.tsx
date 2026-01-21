@@ -666,8 +666,8 @@ export function EmployerBorrow() {
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {selectedCircleMembers.slice(0, 5).map((member) => (
-                            <Badge key={member.id} variant="default" size="sm">
-                              {member.name}
+                            <Badge key={member.id} variant="default" size="sm" title={member.location ?? undefined}>
+                              {member.name}{member.location ? ` (${member.location})` : ""}
                             </Badge>
                           ))}
                           {selectedCircleMembers.length > 5 && (
