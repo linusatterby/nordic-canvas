@@ -103,9 +103,9 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
     }
   }
 
-  // Apply housing filter
+  // Apply housing filter - check both housing_offered=true OR housing_text is not null
   if (filters?.housingOnly) {
-    query = query.eq("housing_offered", true);
+    query = query.or("housing_offered.eq.true,housing_text.neq.null");
   }
 
   // Exclude already swiped jobs
@@ -343,6 +343,7 @@ export async function listDemoJobsHard(limit: number = 6): Promise<{
     start_date: string;
     end_date: string;
     housing_offered: boolean | null;
+    housing_text: string | null;
     org_id: string;
     required_badges: string[] | null;
   }>;

@@ -60,6 +60,7 @@ export function TalentSwipeJobs() {
         ...job,
         org_name: "Demo-företag",
         required_badges: null,
+        housing_text: job.housing_text ?? null,
       }));
     }
     return [];
@@ -121,8 +122,8 @@ export function TalentSwipeJobs() {
     }
   };
 
-  const mapHousingStatus = (offered?: boolean | null) => {
-    if (offered) return HOUSING_STATUS.OFFERED;
+  const mapHousingStatus = (offered?: boolean | null, housingText?: string | null) => {
+    if (offered || housingText) return HOUSING_STATUS.OFFERED;
     return HOUSING_STATUS.NONE;
   };
 
@@ -312,7 +313,8 @@ export function TalentSwipeJobs() {
               company={currentJob.org_name}
               location={currentJob.location ?? "Okänd plats"}
               period={formatPeriod(currentJob.start_date, currentJob.end_date)}
-              housingStatus={mapHousingStatus(currentJob.housing_offered)}
+              housingStatus={mapHousingStatus(currentJob.housing_offered, currentJob.housing_text)}
+              housingText={currentJob.housing_text}
               onSwipeYes={() => handleSwipe("yes")}
               onSwipeNo={() => handleSwipe("no")}
             />
