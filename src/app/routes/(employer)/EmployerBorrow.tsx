@@ -19,7 +19,7 @@ import {
 import { useDefaultOrgId, useCreateOrg, useMyOrgs } from "@/hooks/useOrgs";
 import { useOrgBorrowRequests, useCreateBorrowRequest, useCloseBorrowRequest } from "@/hooks/useBorrow";
 import {
-  useCirclePartners,
+  useAllCirclePartnersFlat,
   useCircleRequests,
   useCreateCircleRequest,
   useAcceptCircleRequest,
@@ -84,7 +84,7 @@ export function EmployerBorrow() {
   const { data: orgId, isLoading: orgLoading } = useDefaultOrgId();
   const { data: orgs } = useMyOrgs();
   const { data: requests, isLoading: requestsLoading } = useOrgBorrowRequests(orgId);
-  const { data: circlePartners } = useCirclePartners(orgId);
+  const { data: allCirclePartners } = useAllCirclePartnersFlat(orgId);
   const { data: circleRequests } = useCircleRequests(orgId);
   const { data: myCircles } = useMyCircles(orgId);
   const createMutation = useCreateBorrowRequest();
@@ -475,20 +475,23 @@ export function EmployerBorrow() {
                   </Button>
                 </div>
                 
-                {circlePartners && circlePartners.length > 0 ? (
+                {allCirclePartners && allCirclePartners.length > 0 ? (
                   <div className="grid gap-2">
-                    {circlePartners.map((partner) => (
-                      <Card key={partner.id} variant="ghost" padding="sm">
+                    {allCirclePartners.map((partner) => (
+                      <Card key={partner.orgId} variant="ghost" padding="sm">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-primary/10">
                             <Handshake className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <span className="font-medium text-foreground">{partner.name}</span>
-                            {partner.location && (
-                              <p className="text-xs text-muted-foreground">{partner.location}</p>
-                            )}
-                            {!partner.location && (
+                            <span className="font-medium text-foreground">{partner.orgName}</span>
+                            {partner.orgLocation ? (
+                              <p className="text-xs text-muted-foreground">{partner.orgLocation}</p>
+                            ) : partner.circles.length > 0 ? (
+                              <p className="text-xs text-muted-foreground">
+                                {partner.circles.map((c) => c.circleName).join(", ")}
+                              </p>
+                            ) : (
                               <p className="text-xs text-muted-foreground">Aktiv partner</p>
                             )}
                           </div>

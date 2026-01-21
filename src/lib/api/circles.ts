@@ -48,6 +48,14 @@ export interface CircleMember {
   location: string | null;
 }
 
+// Flat list of all partners across all circles with circle info
+export interface CirclePartnerFlat {
+  orgId: string;
+  orgName: string;
+  orgLocation: string | null;
+  circles: { circleId: string; circleName: string }[];
+}
+
 export interface TalentVisibility {
   talent_user_id: string;
   scope: TalentVisibilityScope;
@@ -565,6 +573,67 @@ export async function removeCircleMember(circleId: string, memberOrgId: string):
   }
 
   return { success: true, error: null };
+}
+
+// ============================================
+// Unified Circle Partners (aggregated from all circles)
+// ============================================
+
+/**
+ * List all circle members across all circles owned by an org,
+ * returning a flat, deduplicated list with circle membership info.
+ * This is the SINGLE SOURCE OF TRUTH for "Dina cirkelpartners" in all UIs.
+ */
+export async function listAllCircleMembersFlat(orgId: string): Promise<{
+  partners: CirclePartnerFlat[];
+  error: Error | null;
+}> {
+  // 1. Get all circles for this org
+  const { circles, error: circlesError } = await listMyCircles(orgId);
+  if (circlesError) {
+    return { partners: [], error: circlesError };
+  }
+
+  if (circles.length === 0) {
+    return { partners: [], error: null };
+  }
+
+  // 2. Get members for each circle in parallel
+  const memberPromises = circles.map(async (circle) => {
+    const { members, error } = await getCircleMembers(circle.id);
+    return { circle, members, error };
+  });
+
+  const results = await Promise.all(memberPromises);
+
+  // Check for errors
+  const firstError = results.find((r) => r.error);
+  if (firstError?.error) {
+    return { partners: [], error: firstError.error };
+  }
+
+  // 3. Aggregate into flat list with circle info
+  const partnerMap = new Map<string, CirclePartnerFlat>();
+
+  for (const { circle, members } of results) {
+    for (const member of members ?? []) {
+      const existing = partnerMap.get(member.id);
+      if (existing) {
+        // Add circle to existing partner
+        existing.circles.push({ circleId: circle.id, circleName: circle.name });
+      } else {
+        // Create new partner entry
+        partnerMap.set(member.id, {
+          orgId: member.id,
+          orgName: member.name,
+          orgLocation: member.location,
+          circles: [{ circleId: circle.id, circleName: circle.name }],
+        });
+      }
+    }
+  }
+
+  return { partners: Array.from(partnerMap.values()), error: null };
 }
 
 // ============================================

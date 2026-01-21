@@ -19,9 +19,11 @@ import {
   cancelReleaseOffer,
   findAvailableTalentsScoped,
   getAvailableTalentCounts,
+  listAllCircleMembersFlat,
   type TalentVisibilityScope,
   type BorrowScope,
   type CirclePartner,
+  type CirclePartnerFlat,
 } from "@/lib/api/circles";
 
 // ============================================
@@ -92,7 +94,27 @@ export function useDeclineCircleRequest() {
 // ============================================
 
 /**
+ * UNIFIED hook for all circle partners across all circles.
+ * This is the SINGLE SOURCE OF TRUTH for "Dina cirkelpartners".
+ * Returns flat list of unique partners with their circle memberships.
+ */
+export function useAllCirclePartnersFlat(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ["allCirclePartnersFlat", orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      const { partners, error } = await listAllCircleMembersFlat(orgId);
+      if (error) throw error;
+      return partners;
+    },
+    enabled: !!orgId,
+    staleTime: 1000 * 120, // 2 minutes
+  });
+}
+
+/**
  * Hook to get circle partners with proper names (uses SECURITY DEFINER RPC)
+ * @deprecated Use useAllCirclePartnersFlat instead for unified partner lists
  */
 export function useCirclePartners(orgId: string | undefined) {
   return useQuery({
@@ -108,7 +130,7 @@ export function useCirclePartners(orgId: string | undefined) {
 }
 
 /**
- * @deprecated Use useCirclePartners instead - kept for backward compatibility
+ * @deprecated Use useAllCirclePartnersFlat instead - kept for backward compatibility
  */
 export function useTrustedCircle(orgId: string | undefined) {
   return useQuery({

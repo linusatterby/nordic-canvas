@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import {
   useCircleMembers,
-  useCirclePartners,
+  useAllCirclePartnersFlat,
   useAddCircleMember,
   useRemoveCircleMember,
   useCreateCircle,
@@ -43,17 +43,20 @@ export function CircleManagementModal({
   const [selectedPartner, setSelectedPartner] = React.useState<string>("");
 
   const { data: members, isLoading: membersLoading } = useCircleMembers(circle?.id);
-  const { data: partners } = useCirclePartners(orgId);
+  const { data: allPartners } = useAllCirclePartnersFlat(orgId);
   const addMemberMutation = useAddCircleMember();
   const removeMemberMutation = useRemoveCircleMember();
   const createCircleMutation = useCreateCircle();
 
-  // Filter out partners that are already members
+  // Filter out partners that are already members of THIS circle
   const availablePartners = React.useMemo(() => {
-    if (!partners || !members) return partners ?? [];
+    if (!allPartners || !members) return [];
     const memberIds = new Set(members.map((m: CircleMember) => m.id));
-    return partners.filter((p) => !memberIds.has(p.id));
-  }, [partners, members]);
+    // Map to same shape expected by UI
+    return allPartners
+      .filter((p) => !memberIds.has(p.orgId))
+      .map((p) => ({ id: p.orgId, name: p.orgName, location: p.orgLocation }));
+  }, [allPartners, members]);
 
   const handleAddMember = async () => {
     if (!circle || !selectedPartner) return;
@@ -223,7 +226,7 @@ export function CircleManagementModal({
                 </Button>
               </div>
             </div>
-          ) : partners && partners.length === 0 ? (
+          ) : allPartners && allPartners.length === 0 ? (
             <Card variant="ghost" padding="sm" className="text-center">
               <p className="text-sm text-muted-foreground">
                 Du har inga trusted partners ännu. Bjud in partners först i "Trusted Circle"-fliken.
