@@ -1,7 +1,7 @@
 import * as React from "react";
-import { FlaskConical, RotateCcw, Compass } from "lucide-react";
+import { FlaskConical, RotateCcw, Compass, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { useResetDemo } from "@/hooks/useDemo";
+import { useResetDemo, useSeedDemoScenario } from "@/hooks/useDemo";
 import { toast } from "sonner";
 
 interface DemoBannerProps {
@@ -10,6 +10,7 @@ interface DemoBannerProps {
 
 export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
   const resetDemoMutation = useResetDemo();
+  const seedScenarioMutation = useSeedDemoScenario();
 
   const handleReset = async () => {
     try {
@@ -23,6 +24,21 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
       });
     }
   };
+
+  const handleSeedScenario = async () => {
+    try {
+      const result = await seedScenarioMutation.mutateAsync(undefined);
+      toast.success("Demo-scenario skapat", {
+        description: `Scenario med ${result?.seeded?.talent_source === "real_demo_user" ? "riktig demo-talang" : "demo-kort"} har skapats.`,
+      });
+    } catch (error) {
+      toast.error("Kunde inte skapa scenario", {
+        description: error instanceof Error ? error.message : "Okänt fel",
+      });
+    }
+  };
+
+  const isPending = resetDemoMutation.isPending || seedScenarioMutation.isPending;
 
   return (
     <div className="bg-accent/10 border-b border-accent/20 px-4 py-2">
@@ -39,12 +55,23 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
           <Button
             variant="ghost"
             size="sm"
+            onClick={handleSeedScenario}
+            disabled={isPending}
+            className="h-7 px-2 text-xs"
+            title="Skapar ett komplett demo-scenario med matchningar, chatt, bokningar och erbjudanden"
+          >
+            <Sparkles className="h-3.5 w-3.5 mr-1" />
+            {seedScenarioMutation.isPending ? "Skapar..." : "Återställ demo (full)"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleReset}
-            disabled={resetDemoMutation.isPending}
+            disabled={isPending}
             className="h-7 px-2 text-xs"
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1" />
-            {resetDemoMutation.isPending ? "Återställer..." : "Återställ"}
+            {resetDemoMutation.isPending ? "Rensar..." : "Rensa"}
           </Button>
           <Button
             variant="outline"
