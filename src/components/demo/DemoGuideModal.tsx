@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase,
   Users,
@@ -7,8 +8,11 @@ import {
   Send,
   SwatchBook,
   MessageCircle,
-  Inbox,
+  Check,
+  RotateCcw,
   ArrowRight,
+  User,
+  Repeat,
 } from "lucide-react";
 import {
   Modal,
@@ -18,179 +22,213 @@ import {
   ModalDescription,
 } from "@/components/ui/Modal";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Progress } from "@/components/ui/Progress";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDefaultOrgId } from "@/hooks/useOrgs";
+import { useDemoGuideSummary } from "@/hooks/useDemoGuideSummary";
+import { useSeedDemoScenario } from "@/hooks/useDemo";
+import { getGuideSteps, getCompletedCount, type GuideStep } from "@/lib/demo/guideSteps";
+import { useToasts } from "@/components/delight/Toasts";
 
 interface DemoGuideModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface GuideOption {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  path: string;
-  badge?: string;
+const ICON_MAP: Record<GuideStep["icon"], React.ReactNode> = {
+  swipe: <SwatchBook className="h-5 w-5" />,
+  match: <Users className="h-5 w-5" />,
+  chat: <MessageCircle className="h-5 w-5" />,
+  borrow: <Send className="h-5 w-5" />,
+  schedule: <Calendar className="h-5 w-5" />,
+  release: <Repeat className="h-5 w-5" />,
+  profile: <User className="h-5 w-5" />,
+};
+
+function getStorageKey(role: string, profileId?: string): string {
+  return profileId ? `demoGuideSeen:${role}:${profileId}` : `demoGuideSeen:${role}`;
 }
-
-const EMPLOYER_OPTIONS: GuideOption[] = [
-  {
-    icon: <Users className="h-6 w-6" />,
-    title: "Swipea talanger",
-    description: "Hitta och matcha kandidater för dina jobb",
-    path: "/employer/jobs",
-    badge: "Populärt",
-  },
-  {
-    icon: <Calendar className="h-6 w-6" />,
-    title: "Öppna schema",
-    description: "Se bokningar och hantera busy blocks",
-    path: "/employer/scheduler",
-  },
-  {
-    icon: <Send className="h-6 w-6" />,
-    title: "Skicka Borrow",
-    description: "Låna personal från andra organisationer",
-    path: "/employer/borrow",
-  },
-];
-
-const TALENT_OPTIONS: GuideOption[] = [
-  {
-    icon: <SwatchBook className="h-6 w-6" />,
-    title: "Swipea jobb",
-    description: "Hitta säsongsjobb som passar dig",
-    path: "/talent/swipe-jobs",
-    badge: "Populärt",
-  },
-  {
-    icon: <MessageCircle className="h-6 w-6" />,
-    title: "Öppna en match",
-    description: "Chatta med arbetsgivare du matchat med",
-    path: "/talent/matches",
-  },
-  {
-    icon: <Inbox className="h-6 w-6" />,
-    title: "Svara på Borrow",
-    description: "Se och hantera inkommande förfrågningar",
-    path: "/talent/dashboard",
-  },
-];
 
 export function DemoGuideModal({ open, onOpenChange }: DemoGuideModalProps) {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const queryClient = useQueryClient();
+  const { addToast } = useToasts();
+  const { user, profile, isDemoMode } = useAuth();
+  const { data: orgId } = useDefaultOrgId();
+  const seedDemo = useSeedDemoScenario();
 
   const isEmployer = profile?.type === "employer" || profile?.type === "both";
   const isTalent = profile?.type === "talent" || profile?.type === "both";
+  const activeRole: "employer" | "talent" = isEmployer ? "employer" : "talent";
 
-  const handleSelect = (path: string) => {
+  // Get guide summary for the active role
+  const { summary, refetch: refetchSummary } = useDemoGuideSummary({
+    orgId: isEmployer ? orgId : null,
+    userId: user?.id,
+    role: activeRole,
+  });
+
+  // Get steps for active role
+  const steps = React.useMemo(() => getGuideSteps(activeRole), [activeRole]);
+  const completedCount = getCompletedCount(steps, summary);
+  const progressPercent = steps.length > 0 ? (completedCount / steps.length) * 100 : 0;
+
+  // Mark guide as seen when opened (role-specific)
+  React.useEffect(() => {
+    if (open && profile) {
+      const key = getStorageKey(activeRole, profile.user_id);
+      localStorage.setItem(key, "true");
+    }
+  }, [open, activeRole, profile]);
+
+  const handleSelect = (href: string) => {
     onOpenChange(false);
-    navigate(path);
+    navigate(href);
   };
 
-  // Mark guide as seen when opened
-  React.useEffect(() => {
-    if (open) {
-      localStorage.setItem("demoGuideSeen", "true");
+  const handleResetDemo = async () => {
+    if (!orgId) {
+      addToast({ type: "error", title: "Fel", message: "Ingen organisation hittad." });
+      return;
     }
-  }, [open]);
+
+    try {
+      await seedDemo.mutateAsync(orgId);
+      
+      // Refetch guide summary
+      refetchSummary();
+      
+      addToast({
+        type: "success",
+        title: "Demo återställd",
+        message: "Alla steg har återställts med nytt demo-scenario.",
+      });
+    } catch (err) {
+      addToast({
+        type: "error",
+        title: "Fel",
+        message: "Kunde inte återställa demo-scenario.",
+      });
+    }
+  };
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="max-w-lg">
+      <ModalContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <ModalHeader>
-          <ModalTitle>Välkommen till Demo</ModalTitle>
-          <ModalDescription>
-            Välj vad du vill testa – all data är exempeldata
-          </ModalDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <ModalTitle>Demo-guide</ModalTitle>
+              <ModalDescription>
+                {activeRole === "employer" ? "Utforska som arbetsgivare" : "Utforska som talang"}
+              </ModalDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                {completedCount}/{steps.length}
+              </span>
+            </div>
+          </div>
+          
+          {/* Progress bar */}
+          <div className="mt-3">
+            <Progress value={progressPercent} className="h-2" />
+          </div>
         </ModalHeader>
         
-        <div className="space-y-6 py-4">
-          {/* Employer Section */}
-          {isEmployer && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+        <div className="space-y-3 py-4">
+          {/* Role indicator */}
+          <div className="flex items-center gap-2 px-1">
+            <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+              {activeRole === "employer" ? (
                 <Briefcase className="h-4 w-4" />
-                Som arbetsgivare
-              </h3>
-              <div className="grid gap-3">
-                {EMPLOYER_OPTIONS.map((option) => (
-                  <Card
-                    key={option.path}
-                    className="p-4 cursor-pointer hover:bg-muted/50 transition-colors group"
-                    onClick={() => handleSelect(option.path)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                        {option.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{option.title}</span>
-                          {option.badge && (
-                            <Badge variant="default" className="text-[10px] px-1.5 py-0">
-                              {option.badge}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {option.description}
-                        </p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Talent Section */}
-          {isTalent && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+              ) : (
                 <Users className="h-4 w-4" />
-                Som talang
-              </h3>
-              <div className="grid gap-3">
-                {TALENT_OPTIONS.map((option) => (
-                  <Card
-                    key={option.path}
-                    className="p-4 cursor-pointer hover:bg-muted/50 transition-colors group"
-                    onClick={() => handleSelect(option.path)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-lg bg-secondary/50 text-secondary-foreground">
-                        {option.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{option.title}</span>
-                          {option.badge && (
-                            <Badge variant="default" className="text-[10px] px-1.5 py-0">
-                              {option.badge}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {option.description}
-                        </p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              )}
             </div>
-          )}
+            <span className="text-sm font-medium">
+              {activeRole === "employer" ? "Arbetsgivarvy" : "Talangvy"}
+            </span>
+          </div>
 
-          {/* Fallback if no role */}
-          {!isEmployer && !isTalent && (
-            <p className="text-center text-muted-foreground py-4">
-              Laddar din profil...
-            </p>
+          {/* Steps */}
+          <div className="space-y-2">
+            {steps.map((step) => {
+              const isComplete = step.isComplete(summary);
+              
+              return (
+                <Card
+                  key={step.id}
+                  className={`p-3 cursor-pointer transition-all group ${
+                    isComplete 
+                      ? "bg-verified/10 border-verified/30" 
+                      : "hover:bg-muted/50"
+                  }`}
+                  onClick={() => handleSelect(step.href)}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Status icon */}
+                    <div className={`
+                      p-2 rounded-lg transition-colors
+                      ${isComplete 
+                        ? "bg-verified/20 text-verified" 
+                        : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                      }
+                    `}>
+                      {isComplete ? (
+                        <Check className="h-5 w-5" />
+                      ) : (
+                        ICON_MAP[step.icon]
+                      )}
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-medium ${isComplete ? "line-through text-muted-foreground" : ""}`}>
+                          {step.title}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {step.description}
+                      </p>
+                    </div>
+                    
+                    {/* CTA */}
+                    {!isComplete && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        {step.ctaLabel}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Reset button */}
+          {isDemoMode && isEmployer && (
+            <div className="pt-4 border-t">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full gap-2"
+                onClick={handleResetDemo}
+                disabled={seedDemo.isPending}
+              >
+                <RotateCcw className="h-4 w-4" />
+                {seedDemo.isPending ? "Återställer..." : "Starta från början"}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Skapar nytt demo-scenario med match, chatt och bokningar
+              </p>
+            </div>
           )}
         </div>
       </ModalContent>
