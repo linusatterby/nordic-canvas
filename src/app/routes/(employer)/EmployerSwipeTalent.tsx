@@ -16,6 +16,7 @@ import { useSwipeEmployerTalent } from "@/hooks/useSwipes";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode, useResetDemo } from "@/hooks/useDemo";
+import { shouldShowDemoDebug } from "@/lib/utils/debug";
 
 export function EmployerSwipeTalent() {
   useDemoCoachToast("swipe-talent");
@@ -130,7 +131,7 @@ export function EmployerSwipeTalent() {
             action={{ label: "Gå till Mina jobb", onClick: () => navigate("/employer/jobs") }}
           />
           
-          {isDemoMode && (
+          {shouldShowDemoDebug(isDemoMode) && (
             <Card className="mt-4 p-3 bg-muted/50 border-dashed">
               <p className="text-xs text-muted-foreground font-mono">
                 <span className="font-semibold">Debug:</span> jobId saknas i URL
@@ -172,7 +173,7 @@ export function EmployerSwipeTalent() {
             action={{ label: "Gå till Mina jobb", onClick: () => navigate("/employer/jobs") }}
           />
           
-          {isDemoMode && (
+          {shouldShowDemoDebug(isDemoMode) && (
             <Card className="mt-4 p-3 bg-muted/50 border-dashed">
               <p className="text-xs text-muted-foreground font-mono">
                 <span className="font-semibold">Debug:</span><br />
@@ -202,7 +203,7 @@ export function EmployerSwipeTalent() {
             <p className="text-sm text-muted-foreground">{job.title}</p>
           </div>
           
-          {isDemoMode && (
+          {shouldShowDemoDebug(isDemoMode) && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -273,8 +274,8 @@ export function EmployerSwipeTalent() {
               }
             />
             
-            {/* Debug panel for demo mode */}
-            {isDemoMode && (
+            {/* Debug panel for demo mode - only with VITE_DEMO_DEBUG=true */}
+            {shouldShowDemoDebug(isDemoMode) && (
               <Card className="p-4 bg-muted/50 border-dashed space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-muted-foreground">🐞 Demo Debug</p>
@@ -316,8 +317,8 @@ export function EmployerSwipeTalent() {
           </div>
         )}
         
-        {/* Inline debug panel when toggled */}
-        {isDemoMode && showDebug && currentTalent && (
+        {/* Inline debug panel when toggled - only with VITE_DEMO_DEBUG=true */}
+        {shouldShowDemoDebug(isDemoMode) && showDebug && currentTalent && (
           <Card className="mt-4 p-4 bg-muted/50 border-dashed space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-muted-foreground">🐞 Demo Debug</p>

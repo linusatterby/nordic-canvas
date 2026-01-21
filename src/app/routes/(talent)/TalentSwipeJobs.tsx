@@ -16,6 +16,7 @@ import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode } from "@/hooks/useDemo";
+import { shouldShowDemoDebug } from "@/lib/utils/debug";
 import type { JobFilters as JobFiltersType } from "@/lib/api/jobs";
 
 export function TalentSwipeJobs() {
@@ -249,8 +250,8 @@ export function TalentSwipeJobs() {
               )}
             </div>
 
-            {/* Debug Panel - only in demo mode when empty */}
-            {isDemoMode && (
+            {/* Debug Panel - only with VITE_DEMO_DEBUG=true */}
+            {shouldShowDemoDebug(isDemoMode) && (
               <div className="mt-6">
                 <button
                   onClick={() => setShowDebug(!showDebug)}
@@ -322,7 +323,6 @@ export function TalentSwipeJobs() {
               {effectiveJobs && effectiveJobs.length > 0 && (
                 <span className="block mb-1">
                   {effectiveJobs.length} jobb kvar
-                  {shouldUseHardFetch && " (demo)"}
                 </span>
               )}
               Använd piltangenter eller J/K för att swipea
