@@ -131,6 +131,13 @@ export type Database = {
             foreignKeyName: "borrow_requests_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "borrow_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
@@ -158,6 +165,13 @@ export type Database = {
             columns: ["circle_id"]
             isOneToOne: false
             referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_members_member_org_id_fkey"
+            columns: ["member_org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
             referencedColumns: ["id"]
           },
           {
@@ -199,7 +213,21 @@ export type Database = {
             foreignKeyName: "circle_requests_from_org_id_fkey"
             columns: ["from_org_id"]
             isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_requests_from_org_id_fkey"
+            columns: ["from_org_id"]
+            isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_requests_to_org_id_fkey"
+            columns: ["to_org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
             referencedColumns: ["id"]
           },
           {
@@ -231,6 +259,13 @@ export type Database = {
           owner_org_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "circles_owner_org_id_fkey"
+            columns: ["owner_org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "circles_owner_org_id_fkey"
             columns: ["owner_org_id"]
@@ -560,6 +595,13 @@ export type Database = {
             foreignKeyName: "employer_talent_swipes_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employer_talent_swipes_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
@@ -606,6 +648,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "housing_listings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "housing_listings_org_id_fkey"
             columns: ["org_id"]
@@ -708,6 +757,13 @@ export type Database = {
             foreignKeyName: "job_posts_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_posts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
@@ -747,6 +803,13 @@ export type Database = {
             columns: ["job_post_id"]
             isOneToOne: false
             referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
             referencedColumns: ["id"]
           },
           {
@@ -807,6 +870,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "org_members_org_id_fkey"
             columns: ["org_id"]
@@ -913,7 +983,21 @@ export type Database = {
             foreignKeyName: "release_offers_from_org_id_fkey"
             columns: ["from_org_id"]
             isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "release_offers_from_org_id_fkey"
+            columns: ["from_org_id"]
+            isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "release_offers_taken_by_org_id_fkey"
+            columns: ["taken_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
             referencedColumns: ["id"]
           },
           {
@@ -957,6 +1041,13 @@ export type Database = {
           talent_user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "shift_bookings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "shift_bookings_org_id_fkey"
             columns: ["org_id"]
@@ -1138,7 +1229,21 @@ export type Database = {
             foreignKeyName: "trusted_circle_links_org_a_fkey"
             columns: ["org_a"]
             isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trusted_circle_links_org_a_fkey"
+            columns: ["org_a"]
+            isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trusted_circle_links_org_b_fkey"
+            columns: ["org_b"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
             referencedColumns: ["id"]
           },
           {
@@ -1182,6 +1287,24 @@ export type Database = {
       }
     }
     Views: {
+      demo_orgs_public: {
+        Row: {
+          id: string | null
+          location: string | null
+          name: string | null
+        }
+        Insert: {
+          id?: string | null
+          location?: string | null
+          name?: string | null
+        }
+        Update: {
+          id?: string | null
+          location?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
       talent_busy_blocks_public: {
         Row: {
           end_ts: string | null
