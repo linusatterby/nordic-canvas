@@ -40,7 +40,6 @@ export function TalentSwipeJobs() {
   const { data: jobs, isLoading, error: feedError, refetch: refetchFeed } = useJobsFeed(apiFilters);
   const swipeMutation = useSwipeTalentJob();
   const resetSwipesMutation = useResetTalentDemoSwipes();
-  const [currentIndex, setCurrentIndex] = React.useState(0);
   const [showConfetti, setShowConfetti] = React.useState(false);
 
   // Use hard demo fetch as fallback when normal feed is empty in demo mode
@@ -52,7 +51,7 @@ export function TalentSwipeJobs() {
     isLoading: isHardLoading 
   } = useDemoJobsHard(shouldUseHardFetch);
 
-  // Determine which jobs to show
+  // Determine which jobs to show - use effectiveJobs as a stack (first item = current)
   const effectiveJobs = React.useMemo(() => {
     if (jobs && jobs.length > 0) return jobs;
     if (shouldUseHardFetch && hardDemoJobs && hardDemoJobs.length > 0) {
@@ -66,12 +65,8 @@ export function TalentSwipeJobs() {
     return [];
   }, [jobs, shouldUseHardFetch, hardDemoJobs]);
 
-  // Reset index when filters or jobs change
-  React.useEffect(() => {
-    setCurrentIndex(0);
-  }, [filters, effectiveJobs.length]);
-
-  const currentJob = effectiveJobs[currentIndex];
+  // Current job is always the first in the stack (optimistic updates remove swiped jobs)
+  const currentJob = effectiveJobs[0];
 
   const handleSwipe = async (direction: "yes" | "no") => {
     if (!currentJob || !user) return;
@@ -102,12 +97,7 @@ export function TalentSwipeJobs() {
         }
       }
 
-      // Move to next job
-      if (effectiveJobs && currentIndex < effectiveJobs.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        setCurrentIndex(effectiveJobs?.length ?? 0);
-      }
+      // Job is removed optimistically by mutation - no index management needed
     } catch (err) {
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara." });
     }
@@ -120,7 +110,7 @@ export function TalentSwipeJobs() {
   const handleResetDemoSwipes = async () => {
     try {
       await resetSwipesMutation.mutateAsync();
-      setCurrentIndex(0);
+      // Jobs will be refetched automatically via query invalidation
       addToast({
         type: "success",
         title: "Återställt",
@@ -327,10 +317,10 @@ export function TalentSwipeJobs() {
               onSwipeNo={() => handleSwipe("no")}
             />
             <p className="text-center text-xs text-muted-foreground mt-4">
-              {effectiveJobs && effectiveJobs.length > 1 && (
+              {effectiveJobs && effectiveJobs.length > 0 && (
                 <span className="block mb-1">
-                  {currentIndex + 1} av {effectiveJobs.length} jobb
-                  {shouldUseHardFetch && " (hard fetch)"}
+                  {effectiveJobs.length} jobb kvar
+                  {shouldUseHardFetch && " (demo)"}
                 </span>
               )}
               Använd piltangenter eller J/K för att swipea
