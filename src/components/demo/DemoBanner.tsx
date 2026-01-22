@@ -1,19 +1,28 @@
 import * as React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { FlaskConical, RotateCcw, Compass, Sparkles, Users, Briefcase, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useResetDemo, useSeedDemoScenario } from "@/hooks/useDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { canSeedDemo, DEMO_ENABLED } from "@/lib/config/env";
+import { invalidateForRoleSwitch } from "@/lib/query/invalidate";
 
 interface DemoBannerProps {
   onOpenGuide: () => void;
 }
 
+// Safe landing routes for each role
+const SAFE_LANDINGS = {
+  talent: "/talent/swipe-jobs",
+  employer: "/employer/jobs",
+} as const;
+
 export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { profile } = useAuth();
   const resetDemoMutation = useResetDemo();
   const seedScenarioMutation = useSeedDemoScenario();
@@ -49,14 +58,18 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
   };
 
   const handleSwitchToEmployer = () => {
-    navigate("/employer/jobs");
+    // Invalidate all role-specific queries to ensure fresh data
+    invalidateForRoleSwitch(queryClient);
+    navigate(SAFE_LANDINGS.employer);
     toast.info("Växlat till arbetsgivare-vy", {
       description: "Du ser nu demo som arbetsgivare.",
     });
   };
 
   const handleSwitchToTalent = () => {
-    navigate("/talent/swipe-jobs");
+    // Invalidate all role-specific queries to ensure fresh data
+    invalidateForRoleSwitch(queryClient);
+    navigate(SAFE_LANDINGS.talent);
     toast.info("Växlat till talang-vy", {
       description: "Du ser nu demo som talang.",
     });

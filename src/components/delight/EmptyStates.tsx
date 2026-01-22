@@ -1,16 +1,38 @@
 import * as React from "react";
-import { Search, FolderOpen, Calendar, Users, Inbox, Plus, ArrowRight } from "lucide-react";
+import { 
+  Search, 
+  FolderOpen, 
+  Calendar, 
+  Users, 
+  Inbox, 
+  Plus, 
+  ArrowRight, 
+  Briefcase, 
+  MessageSquare,
+  HandHeart,
+  Clock,
+  HelpCircle
+} from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
 
-type EmptyStateType = 
+export type EmptyStateType = 
   | "no-results" 
   | "no-data" 
   | "no-matches" 
   | "no-schedule" 
   | "inbox-empty"
   | "no-offers"
-  | "no-requests";
+  | "no-requests"
+  // New variants
+  | "no-jobs"
+  | "no-talents"
+  | "no-messages"
+  | "no-borrow-requests"
+  | "no-borrow-offers"
+  | "no-bookings"
+  | "no-release-offers"
+  | "not-found";
 
 interface EmptyStateProps {
   type: EmptyStateType;
@@ -62,6 +84,51 @@ const emptyStateDefaults: Record<EmptyStateType, { icon: React.ReactNode; title:
     icon: <Plus className="h-12 w-12" />,
     title: "Inga förfrågningar",
     message: "Skapa en förfrågan för att hitta personal snabbt.",
+  },
+  // New employer variants
+  "no-jobs": {
+    icon: <Briefcase className="h-12 w-12" />,
+    title: "Du har inga jobb ännu",
+    message: "Skapa ett jobb för att börja hitta talanger för säsongen.",
+  },
+  "no-talents": {
+    icon: <Users className="h-12 w-12" />,
+    title: "Inga kandidater just nu",
+    message: "Det finns inga fler kandidater att visa. Prova att justera filter eller återställ demo.",
+  },
+  // Chat
+  "no-messages": {
+    icon: <MessageSquare className="h-12 w-12" />,
+    title: "Säg hej först!",
+    message: "Ingen konversation ännu. Skicka ett meddelande för att komma igång.",
+  },
+  // Borrow system
+  "no-borrow-requests": {
+    icon: <HandHeart className="h-12 w-12" />,
+    title: "Inga förfrågningar",
+    message: "Skapa en förfrågan för att snabbt hitta personal från partners.",
+  },
+  "no-borrow-offers": {
+    icon: <Clock className="h-12 w-12" />,
+    title: "Inga erbjudanden",
+    message: "Slå på \"Extra timmar\" i din profil för att få erbjudanden från partners.",
+  },
+  // Scheduler
+  "no-bookings": {
+    icon: <Calendar className="h-12 w-12" />,
+    title: "Inga bokningar denna vecka",
+    message: "Skapa en bokning för att schemalägga din personal.",
+  },
+  "no-release-offers": {
+    icon: <Clock className="h-12 w-12" />,
+    title: "Inga öppna pass",
+    message: "Inga pass har släppts från dina partners just nu.",
+  },
+  // Generic not found
+  "not-found": {
+    icon: <HelpCircle className="h-12 w-12" />,
+    title: "Hittar inte det du letar efter",
+    message: "Sidan finns inte eller har tagits bort. Prova att gå tillbaka.",
   },
 };
 

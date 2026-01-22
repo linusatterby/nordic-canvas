@@ -67,9 +67,11 @@ export function TalentMatchChat() {
         <Card variant="default" padding="md" className="flex-1 overflow-y-auto mb-4">
           <div className="space-y-3">
             {messages.length === 0 && (
-              <p className="text-center text-sm text-muted-foreground py-8">
-                Ingen konversation ännu. Säg hej!
-              </p>
+              <div className="flex flex-col items-center justify-center py-8">
+                <p className="text-center text-sm text-muted-foreground">
+                  Säg hej först! Ingen konversation ännu.
+                </p>
+              </div>
             )}
             {messages.map((msg) => (
               <div

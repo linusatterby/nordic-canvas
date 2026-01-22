@@ -36,15 +36,21 @@ export function Auth() {
   const [loading, setLoading] = React.useState(false);
   const [showRoleSelector, setShowRoleSelector] = React.useState(false);
 
+  // Safe landing routes for each role
+  const SAFE_LANDINGS = {
+    talent: "/talent/swipe-jobs",
+    employer: "/employer/jobs",
+  } as const;
+
   // Redirect if already logged in
   React.useEffect(() => {
     if (user && profile) {
       if (profile.type === "both") {
         setShowRoleSelector(true);
       } else if (profile.type === "talent") {
-        navigate("/talent/dashboard", { replace: true });
+        navigate(SAFE_LANDINGS.talent, { replace: true });
       } else if (profile.type === "employer") {
-        navigate("/employer/dashboard", { replace: true });
+        navigate(SAFE_LANDINGS.employer, { replace: true });
       }
     }
   }, [user, profile, navigate]);
@@ -115,11 +121,11 @@ export function Auth() {
         await refreshProfile();
         toast.success("Konto skapat!");
 
-        // Navigate based on role
+        // Navigate to safe landing based on role
         if (role === "talent") {
-          navigate("/talent/dashboard", { replace: true });
+          navigate(SAFE_LANDINGS.talent, { replace: true });
         } else {
-          navigate("/employer/dashboard", { replace: true });
+          navigate(SAFE_LANDINGS.employer, { replace: true });
         }
       }
     } catch (err) {
