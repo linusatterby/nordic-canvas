@@ -13,6 +13,7 @@ import Landing from "@/app/routes/(public)/Landing";
 import ForTalanger from "@/app/routes/(public)/ForTalanger";
 import ForArbetsgivare from "@/app/routes/(public)/ForArbetsgivare";
 import Auth from "@/app/routes/(public)/Auth";
+import AdminHealth from "@/app/routes/(admin)/AdminHealth";
 
 // Talent routes
 import TalentDashboard from "@/app/routes/(talent)/TalentDashboard";
@@ -57,6 +58,9 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/login" element={<Auth />} />
               <Route path="/auth/signup" element={<Auth />} />
+              
+              {/* Admin */}
+              <Route path="/admin/health" element={<AdminHealth />} />
 
               {/* Talent */}
               <Route path="/talent/dashboard" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentDashboard /></RoleGate></ProtectedRoute>} />

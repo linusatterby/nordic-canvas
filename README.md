@@ -67,14 +67,53 @@ The following environment variables can be configured:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `VITE_DEMO_DEBUG` | `false` | Enable debug panels and technical info in demo mode. Set to `true` for development. |
+| `VITE_DEMO_ENABLED` | `true` | Master switch for demo functionality. Set to `false` to completely disable demo features. |
+| `VITE_ALLOW_DEMO_SEED` | `false` | Allow demo scenario seeding. Set to `true` in development to enable "Återställ demo" button. |
 
 ### Development Setup
 
-For local development with debug panels enabled, create a `.env.local` file:
+For local development with demo features enabled, create a `.env.local` file:
 
 ```sh
 VITE_DEMO_DEBUG=true
+VITE_DEMO_ENABLED=true
+VITE_ALLOW_DEMO_SEED=true
 ```
+
+### Production Setup
+
+For production builds, use these recommended settings:
+
+```sh
+VITE_DEMO_DEBUG=false
+VITE_DEMO_ENABLED=false
+VITE_ALLOW_DEMO_SEED=false
+```
+
+## Production Readiness Checklist
+
+Before going live, ensure the following:
+
+### 1. Environment Variables
+- [ ] `VITE_DEMO_DEBUG=false` - Hides debug panels from users
+- [ ] `VITE_DEMO_ENABLED=false` - Disables demo mode completely (optional, keep `true` if you want demo)
+- [ ] `VITE_ALLOW_DEMO_SEED=false` - Prevents demo data seeding
+
+### 2. Authentication Security (Lovable Cloud)
+- [ ] **Leaked Password Protection**: Enable in Lovable Cloud → Auth settings to block compromised passwords
+- [ ] **Email Confirmation**: Consider enabling email verification for production (disable auto-confirm)
+- [ ] **Rate Limiting**: Review default rate limits for auth endpoints
+
+### 3. Database Security
+- [ ] All tables have appropriate RLS policies
+- [ ] Demo data is isolated with `is_demo` flags
+- [ ] Public views expose only necessary fields
+
+### 4. Admin Health Check
+Visit `/admin/health` to verify:
+- Environment flag status
+- Configuration warnings
+- Security recommendations
 
 ## How can I deploy this project?
 

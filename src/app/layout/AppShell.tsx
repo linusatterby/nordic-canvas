@@ -7,6 +7,7 @@ import type { Role } from "@/lib/constants/roles";
 import { useAuth } from "@/contexts/AuthContext";
 import { DemoBanner } from "@/components/demo/DemoBanner";
 import { DemoGuideModal } from "@/components/demo/DemoGuideModal";
+import { isDemoEffectivelyEnabled } from "@/lib/config/env";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -77,8 +78,8 @@ export function AppShell({ children, role }: AppShellProps) {
           isSidebarOpen={mobileMenuOpen}
         />
         
-        {/* Demo Banner */}
-        {isDemoMode && (
+        {/* Demo Banner - only show if demo is globally enabled */}
+        {isDemoEffectivelyEnabled(isDemoMode) && (
           <DemoBanner onOpenGuide={() => setGuideOpen(true)} />
         )}
         

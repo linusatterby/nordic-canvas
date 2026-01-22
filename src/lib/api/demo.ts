@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { canSeedDemo } from "@/lib/config/env";
 
 export interface ResetDemoResult {
   success: boolean;
@@ -127,6 +128,14 @@ export async function seedDemoScenario(orgId: string): Promise<{
   result: SeedDemoScenarioResult | null;
   error: Error | null;
 }> {
+  // Check if demo seeding is allowed in this environment
+  if (!canSeedDemo()) {
+    return { 
+      result: null, 
+      error: new Error("Demo seeding är avstängt i denna miljö (VITE_ALLOW_DEMO_SEED=false)") 
+    };
+  }
+
   const { data, error } = await supabase.rpc("seed_demo_scenario", {
     p_org_id: orgId,
   });
