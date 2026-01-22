@@ -11,16 +11,18 @@ import { Input } from "@/components/ui/input";
 import { WeekRangeSelector, getCurrentWeekRange, type WeekRange } from "@/components/scheduler/WeekRangeSelector";
 import { CreateBookingModal } from "@/components/scheduler/CreateBookingModal";
 import { ReleaseOffersCard } from "@/components/scheduler/ReleaseOffersCard";
-import { Plus, Calendar } from "lucide-react";
+import { Plus, Calendar, Download } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { useDefaultOrgId, useCreateOrg } from "@/hooks/useOrgs";
 import { useScheduler, useCreateBooking } from "@/hooks/useScheduler";
 import { useMatches } from "@/hooks/useMatches";
 import { useToasts } from "@/components/delight/Toasts";
-import { format, addDays, isSameDay, parseISO, startOfDay } from "date-fns";
+import { format, addDays, isSameDay, startOfDay } from "date-fns";
 import { sv } from "date-fns/locale";
 import type { ShiftBookingWithTalent, BusyBlock } from "@/lib/api/scheduler";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
+import { downloadCsv } from "@/lib/utils/csv";
+import { buildPayrollRows, getPayrollFilename } from "@/lib/export/payrollExport";
 
 const weekDays = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
 
@@ -182,8 +184,24 @@ export function EmployerScheduler() {
             <h1 className="text-xl font-bold text-foreground">Schemaläggare</h1>
             <p className="text-sm text-muted-foreground mt-1">Hantera pass och se tillgänglighet</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <WeekRangeSelector value={weekRange} onChange={setWeekRange} />
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => {
+                const rows = buildPayrollRows(schedulerData?.bookings ?? []);
+                const filename = getPayrollFilename(weekRange.start);
+                downloadCsv(filename, rows);
+                addToast({ type: "success", title: "Exporterat!", message: `${rows.length} bokningar nedladdade.` });
+              }}
+              disabled={!schedulerData?.bookings?.length}
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Exportera CSV</span>
+              <span className="sm:hidden">CSV</span>
+            </Button>
             <Button 
               variant="primary" 
               size="sm" 
@@ -192,7 +210,8 @@ export function EmployerScheduler() {
               disabled={talentOptions.length === 0}
             >
               <Plus className="h-4 w-4" />
-              Skapa bokning
+              <span className="hidden sm:inline">Skapa bokning</span>
+              <span className="sm:hidden">Boka</span>
             </Button>
           </div>
         </div>

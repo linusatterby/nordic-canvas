@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, Calendar, MessageSquare, Award, ChevronDown } from "lucide-react";
+import { Sparkles, Home, MessageSquare, Clock, ChevronDown, CheckCircle } from "lucide-react";
 import { PublicShell } from "@/app/layout/PublicShell";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -20,20 +20,20 @@ export default function ForTalanger() {
           <div className="max-w-3xl mx-auto text-center">
             <Badge variant="default" className="mb-6">
               <Sparkles className="h-3 w-3 mr-1" />
-              Season Passport
+              Säsongsjobb som funkar
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-6">
-              Bygg ditt säsongs-CV.{" "}
-              <span className="text-primary">Matcha jobb + boende.</span>
+              Hitta säsongsjobb{" "}
+              <span className="text-primary">som faktiskt funkar</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Seasonal Talent hjälper dig hitta rätt säsongsjobb, visa upp dina 
-              färdigheter och få boende där jobben finns.
+              Matcha jobb + boende + extra pass i ett flöde. Bygg ett verifierat rykte 
+              som följer dig mellan säsonger.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/auth">
-                <Button variant="primary" size="lg" className="min-w-[160px]">
-                  Kom igång
+              <Link to="/auth?role=talent">
+                <Button variant="primary" size="lg" className="min-w-[180px]">
+                  Testa demo som talang
                 </Button>
               </Link>
               <Button 
@@ -67,10 +67,9 @@ export default function ForTalanger() {
               <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
                 <Sparkles className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">1. Swipe</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Swipea rätt jobb</h3>
               <p className="text-muted-foreground text-sm">
-                Bläddra bland säsongsjobb som matchar dina färdigheter och önskemål. 
-                Swipe höger på de du gillar.
+                Snabbt JA/NEJ, matcha och chatta direkt.
               </p>
             </Card>
 
@@ -78,12 +77,11 @@ export default function ForTalanger() {
             <Card className="p-8 text-center relative overflow-hidden group hover:shadow-lg transition-shadow">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-verified to-verified/50" />
               <div className="h-14 w-14 rounded-2xl bg-verified/10 flex items-center justify-center mx-auto mb-5">
-                <MessageSquare className="h-7 w-7 text-verified" />
+                <Home className="h-7 w-7 text-verified" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">2. Match</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Boende synligt</h3>
               <p className="text-muted-foreground text-sm">
-                När arbetsgivaren gillar dig tillbaka får ni en match. 
-                Chatta direkt och lär känna varandra.
+                Filtrera på boende och få tydlighet innan du tackar ja.
               </p>
             </Card>
 
@@ -91,99 +89,68 @@ export default function ForTalanger() {
             <Card className="p-8 text-center relative overflow-hidden group hover:shadow-lg transition-shadow">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-delight to-delight/50" />
               <div className="h-14 w-14 rounded-2xl bg-delight/10 flex items-center justify-center mx-auto mb-5">
-                <Calendar className="h-7 w-7 text-delight" />
+                <Clock className="h-7 w-7 text-delight" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">3. Schema</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Fler timmar, smartare</h3>
               <p className="text-muted-foreground text-sm">
-                Få pass bokade direkt i appen. Se ditt schema, håll koll på 
-                tillgänglighet och tjäna pengar.
+                Välj "extra timmar" och synlighet i Trusted Circle.
               </p>
             </Card>
           </div>
         </div>
       </section>
 
-      {/* Season Passport */}
+      {/* I demo kan du... */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <Badge variant="outline" className="mb-4">
-                <Award className="h-3 w-3 mr-1" />
-                Season Passport
-              </Badge>
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                Ditt digitala säsongs-CV
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Bygg upp ditt Legacy Score genom att jobba hårt, få bra omdömen 
-                och samla verifierade badges. Ju högre score, desto mer attraktiv 
-                blir du för arbetsgivare.
-              </p>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-center gap-3 text-foreground">
-                  <div className="h-6 w-6 rounded-full bg-verified/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-verified text-xs">✓</span>
-                  </div>
-                  Verifierade certifikat & utbildningar
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <div className="h-6 w-6 rounded-full bg-verified/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-verified text-xs">✓</span>
-                  </div>
-                  Legacy Score som växer med erfarenhet
-                </li>
-                <li className="flex items-center gap-3 text-foreground">
-                  <div className="h-6 w-6 rounded-full bg-verified/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-verified text-xs">✓</span>
-                  </div>
-                  Prioritet på populära jobb
-                </li>
-              </ul>
-            </div>
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-foreground text-center mb-4">
+              I demo kan du...
+            </h2>
+            <p className="text-muted-foreground text-center mb-10">
+              Testa hela flödet utan att skapa riktigt konto
+            </p>
             
-            {/* Mock Passport Card */}
-            <div className="flex justify-center">
-              <Card className="w-full max-w-sm p-6 bg-gradient-to-br from-card to-secondary/30 border-2">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">ST</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Season Passport</p>
-                    <p className="text-sm text-muted-foreground">Ditt digitala CV</p>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 text-primary" />
                 </div>
-                
-                <div className="mb-6">
-                  <p className="text-xs text-muted-foreground mb-1">Legacy Score</p>
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-bold text-foreground">72</span>
-                    <span className="text-muted-foreground mb-1">/100</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full mt-2 overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-primary to-verified rounded-full"
-                      style={{ width: "72%" }}
-                    />
-                  </div>
-                </div>
-                
                 <div>
-                  <p className="text-xs text-muted-foreground mb-2">Verifierade Badges</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      <span className="text-verified mr-1">✓</span> RSA
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      <span className="text-verified mr-1">✓</span> Hygienpass
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      <span className="text-verified mr-1">✓</span> Truck B
-                    </Badge>
-                  </div>
+                  <p className="font-medium text-foreground">Swipea 6 demo-jobb</p>
+                  <p className="text-sm text-muted-foreground">2 med boende inkluderat</p>
                 </div>
-              </Card>
+              </div>
+              
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
+                <div className="h-8 w-8 rounded-full bg-verified/10 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 text-verified" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">Se en demo-match + chatt</p>
+                  <p className="text-sm text-muted-foreground">Upplev hur matchningsflödet fungerar</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
+                <div className="h-8 w-8 rounded-full bg-delight/10 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 text-delight" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">Slå på "Extra timmar"</p>
+                  <p className="text-sm text-muted-foreground">Synlighet i Trusted Circle för fler pass</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">Följ demo-guiden</p>
+                  <p className="text-sm text-muted-foreground">Steg för steg genom alla funktioner</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -193,20 +160,31 @@ export default function ForTalanger() {
       <section className="py-20 bg-primary">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-primary-foreground mb-4">
-            Redo att hitta ditt nästa säsongsjobb?
+            Redo att testa?
           </h2>
           <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-            Skapa ditt konto gratis och börja matcha med arbetsgivare redan idag.
+            Prova demo-läget kostnadsfritt – inga konto krävs.
           </p>
-          <Link to="/auth">
-            <Button 
-              variant="secondary" 
-              size="lg"
-              className="min-w-[180px]"
-            >
-              Kom igång gratis
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/auth?role=talent">
+              <Button 
+                variant="secondary" 
+                size="lg"
+                className="min-w-[200px]"
+              >
+                Testa demo som talang
+              </Button>
+            </Link>
+            <Link to="/auth/login">
+              <Button 
+                variant="ghost" 
+                size="lg"
+                className="min-w-[140px] text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                Logga in
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </PublicShell>

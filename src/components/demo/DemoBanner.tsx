@@ -1,7 +1,9 @@
 import * as React from "react";
-import { FlaskConical, RotateCcw, Compass, Sparkles } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FlaskConical, RotateCcw, Compass, Sparkles, Users, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useResetDemo, useSeedDemoScenario } from "@/hooks/useDemo";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface DemoBannerProps {
@@ -9,8 +11,15 @@ interface DemoBannerProps {
 }
 
 export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { profile } = useAuth();
   const resetDemoMutation = useResetDemo();
   const seedScenarioMutation = useSeedDemoScenario();
+
+  // Determine current view based on route
+  const isEmployerView = location.pathname.startsWith("/employer");
+  const isTalentView = location.pathname.startsWith("/talent");
 
   const handleReset = async () => {
     try {
@@ -38,7 +47,24 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
     }
   };
 
+  const handleSwitchToEmployer = () => {
+    navigate("/employer/jobs");
+    toast.info("Växlat till arbetsgivare-vy", {
+      description: "Du ser nu demo som arbetsgivare.",
+    });
+  };
+
+  const handleSwitchToTalent = () => {
+    navigate("/talent/swipe-jobs");
+    toast.info("Växlat till talang-vy", {
+      description: "Du ser nu demo som talang.",
+    });
+  };
+
   const isPending = resetDemoMutation.isPending || seedScenarioMutation.isPending;
+
+  // Check if user has "both" role type for full switching, or show both buttons
+  const canSwitchRoles = profile?.type === "both" || true; // Allow switching in demo
 
   return (
     <div className="bg-accent/10 border-b border-accent/20 px-4 py-2">
@@ -51,7 +77,40 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
           </span>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
+          {/* Role switch buttons */}
+          {canSwitchRoles && (
+            <>
+              {!isTalentView && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSwitchToTalent}
+                  className="h-7 px-2 text-xs"
+                  title="Växla till talang-perspektiv"
+                >
+                  <Users className="h-3.5 w-3.5 mr-1" />
+                  <span className="hidden sm:inline">Till talang</span>
+                  <span className="sm:hidden">Talang</span>
+                </Button>
+              )}
+              {!isEmployerView && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSwitchToEmployer}
+                  className="h-7 px-2 text-xs"
+                  title="Växla till arbetsgivare-perspektiv"
+                >
+                  <Briefcase className="h-3.5 w-3.5 mr-1" />
+                  <span className="hidden sm:inline">Till arbetsgivare</span>
+                  <span className="sm:hidden">AG</span>
+                </Button>
+              )}
+              <div className="w-px h-4 bg-border hidden sm:block" />
+            </>
+          )}
+          
           <Button
             variant="ghost"
             size="sm"
@@ -61,7 +120,8 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
             title="Skapar ett komplett demo-scenario med matchningar, chatt, bokningar och erbjudanden"
           >
             <Sparkles className="h-3.5 w-3.5 mr-1" />
-            {seedScenarioMutation.isPending ? "Skapar..." : "Återställ demo (full)"}
+            <span className="hidden sm:inline">{seedScenarioMutation.isPending ? "Skapar..." : "Återställ demo"}</span>
+            <span className="sm:hidden">{seedScenarioMutation.isPending ? "..." : "Reset"}</span>
           </Button>
           <Button
             variant="ghost"
@@ -71,7 +131,8 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
             className="h-7 px-2 text-xs"
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1" />
-            {resetDemoMutation.isPending ? "Rensar..." : "Rensa"}
+            <span className="hidden sm:inline">{resetDemoMutation.isPending ? "Rensar..." : "Rensa"}</span>
+            <span className="sm:hidden">{resetDemoMutation.isPending ? "..." : "Rensa"}</span>
           </Button>
           <Button
             variant="outline"
@@ -80,7 +141,8 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
             className="h-7 px-2 text-xs"
           >
             <Compass className="h-3.5 w-3.5 mr-1" />
-            Demo-guide
+            <span className="hidden sm:inline">Demo-guide</span>
+            <span className="sm:hidden">Guide</span>
           </Button>
         </div>
       </div>
