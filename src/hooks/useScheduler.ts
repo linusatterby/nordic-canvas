@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/scheduler";
 import { useDemoMode } from "@/hooks/useDemo";
 import { useDemoBookings, useDemoReleaseOffers, type DemoBookingWithTalent, type DemoReleaseOfferDTO } from "@/hooks/useDemoScheduler";
+import { isDemoEffectivelyEnabled } from "@/lib/config/env";
 
 // Effective booking type (union of real and demo)
 export interface EffectiveBooking {
@@ -100,6 +101,7 @@ export function useScheduler(
 ) {
   const queryClient = useQueryClient();
   const { isDemoMode } = useDemoMode();
+  const demoEnabled = isDemoEffectivelyEnabled(isDemoMode);
   
   // Fetch real bookings
   const realQuery = useQuery({
@@ -125,9 +127,9 @@ export function useScheduler(
     refetchOnMount: true,
   });
 
-  // Fetch demo bookings (only in demo mode)
-  const demoBookingsQuery = useDemoBookings(orgId, range, isDemoMode);
-  const demoReleaseOffersQuery = useDemoReleaseOffers(orgId, range, isDemoMode);
+  // Fetch demo bookings (only when demo is effectively enabled)
+  const demoBookingsQuery = useDemoBookings(orgId, range, demoEnabled);
+  const demoReleaseOffersQuery = useDemoReleaseOffers(orgId, range, demoEnabled);
 
   // Subscribe to realtime updates for shift_bookings
   useEffect(() => {
@@ -161,15 +163,15 @@ export function useScheduler(
   const demoBookings = demoBookingsQuery.data ?? [];
   const demoReleaseOffers = demoReleaseOffersQuery.data ?? [];
 
-  // Use real bookings if available, otherwise use demo bookings in demo mode
+  // Use real bookings if available, otherwise use demo bookings when demo is enabled
   const effectiveBookings: EffectiveBooking[] = realBookings.length > 0
     ? realBookings.map(toEffectiveBooking)
-    : isDemoMode
+    : demoEnabled
       ? demoBookings.map(demoToEffectiveBooking)
       : [];
 
-  // For release offers, merge real (if any) with demo in demo mode
-  const effectiveReleaseOffers: EffectiveReleaseOffer[] = isDemoMode
+  // For release offers, merge real (if any) with demo when demo is enabled
+  const effectiveReleaseOffers: EffectiveReleaseOffer[] = demoEnabled
     ? demoReleaseOffers.map(demoToEffectiveReleaseOffer)
     : [];
 
@@ -181,13 +183,14 @@ export function useScheduler(
 
   return {
     data,
-    isLoading: realQuery.isLoading || (isDemoMode && (demoBookingsQuery.isLoading || demoReleaseOffersQuery.isLoading)),
+    isLoading: realQuery.isLoading || (demoEnabled && (demoBookingsQuery.isLoading || demoReleaseOffersQuery.isLoading)),
     error: realQuery.error || demoBookingsQuery.error || demoReleaseOffersQuery.error,
     debug: {
       realBookingsCount: realBookings.length,
       demoBookingsCount: demoBookings.length,
       demoReleaseOffersCount: demoReleaseOffers.length,
       isDemoMode,
+      demoEnabled,
       usingDemo: realBookings.length === 0 && demoBookings.length > 0,
     },
   };

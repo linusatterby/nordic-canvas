@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listMyMatches, listOrgMatches, getMatch, getMatchByJobAndTalent, type MatchDTO } from "@/lib/api/matches";
 import { useDemoMode } from "@/hooks/useDemo";
 import { useDemoMatches, type DemoMatchDTO } from "@/hooks/useDemoMatches";
+import { isDemoEffectivelyEnabled } from "@/lib/config/env";
 
 // Union type for effective matches (can be real or demo)
 export interface EffectiveMatch {
@@ -60,6 +61,7 @@ export function useMatches(
   orgId?: string | null
 ) {
   const { isDemoMode } = useDemoMode();
+  const demoEnabled = isDemoEffectivelyEnabled(isDemoMode);
   
   // Fetch real matches
   const realQuery = useQuery({
@@ -80,32 +82,33 @@ export function useMatches(
     staleTime: 1000 * 120, // 2 minutes for dashboard
   });
 
-  // Fetch demo matches (only in demo mode for employer)
+  // Fetch demo matches (only when demo is effectively enabled for employer)
   const demoQuery = useDemoMatches(
     role === "employer" ? (orgId ?? undefined) : undefined,
-    isDemoMode && role === "employer"
+    demoEnabled && role === "employer"
   );
 
   // Compute effective matches
   const realMatches = realQuery.data ?? [];
   const demoMatches = demoQuery.data ?? [];
   
-  // Use real matches if available, otherwise use demo matches in demo mode
+  // Use real matches if available, otherwise use demo matches when demo is enabled
   const effectiveMatches: EffectiveMatch[] = realMatches.length > 0
     ? realMatches.map(toEffectiveMatch)
-    : isDemoMode
+    : demoEnabled
       ? demoMatches.map(demoToEffectiveMatch)
       : [];
 
   return {
     data: effectiveMatches,
-    isLoading: realQuery.isLoading || (isDemoMode && demoQuery.isLoading),
+    isLoading: realQuery.isLoading || (demoEnabled && demoQuery.isLoading),
     error: realQuery.error || demoQuery.error,
     // Expose raw data for debugging
     debug: {
       realCount: realMatches.length,
       demoCount: demoMatches.length,
       isDemoMode,
+      demoEnabled,
       usingDemo: realMatches.length === 0 && demoMatches.length > 0,
     },
   };

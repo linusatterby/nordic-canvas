@@ -1,10 +1,11 @@
 import * as React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FlaskConical, RotateCcw, Compass, Sparkles, Users, Briefcase } from "lucide-react";
+import { FlaskConical, RotateCcw, Compass, Sparkles, Users, Briefcase, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useResetDemo, useSeedDemoScenario } from "@/hooks/useDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { canSeedDemo, DEMO_ENABLED } from "@/lib/config/env";
 
 interface DemoBannerProps {
   onOpenGuide: () => void;
@@ -111,18 +112,25 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
             </>
           )}
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSeedScenario}
-            disabled={isPending}
-            className="h-7 px-2 text-xs"
-            title="Skapar ett komplett demo-scenario med matchningar, chatt, bokningar och erbjudanden"
-          >
-            <Sparkles className="h-3.5 w-3.5 mr-1" />
-            <span className="hidden sm:inline">{seedScenarioMutation.isPending ? "Skapar..." : "Återställ demo"}</span>
-            <span className="sm:hidden">{seedScenarioMutation.isPending ? "..." : "Reset"}</span>
-          </Button>
+          {canSeedDemo() ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSeedScenario}
+              disabled={isPending}
+              className="h-7 px-2 text-xs"
+              title="Skapar ett komplett demo-scenario med matchningar, chatt, bokningar och erbjudanden"
+            >
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
+              <span className="hidden sm:inline">{seedScenarioMutation.isPending ? "Skapar..." : "Återställ demo"}</span>
+              <span className="sm:hidden">{seedScenarioMutation.isPending ? "..." : "Reset"}</span>
+            </Button>
+          ) : (
+            <span className="text-xs text-muted-foreground hidden sm:inline items-center gap-1">
+              <AlertCircle className="h-3 w-3 inline" />
+              Demo-reset avstängt
+            </span>
+          )}
           <Button
             variant="ghost"
             size="sm"

@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/demoMatches";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode } from "@/hooks/useDemo";
+import { isDemoEffectivelyEnabled } from "@/lib/config/env";
 
 // Union message type
 export interface EffectiveMessage {
@@ -62,10 +63,11 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
+  const demoEnabled = isDemoEffectivelyEnabled(isDemoMode);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Determine if this is a demo thread
-  const shouldUseDemoChat = isMatchDemo || (isDemoMode && matchId?.startsWith("demo-"));
+  // Determine if this is a demo thread (only when demo is effectively enabled)
+  const shouldUseDemoChat = demoEnabled && (isMatchDemo || (isDemoMode && matchId?.startsWith("demo-")));
 
   // Get real thread
   const realThreadQuery = useQuery({
