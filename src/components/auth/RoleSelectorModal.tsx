@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Briefcase, User } from "lucide-react";
 import {
   Modal,
@@ -9,6 +10,13 @@ import {
 } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/classnames";
+import { invalidateForRoleSwitch } from "@/lib/query/invalidate";
+
+// Safe landing routes for each role
+const SAFE_LANDINGS = {
+  talent: "/talent/swipe-jobs",
+  employer: "/employer/jobs",
+} as const;
 
 interface RoleSelectorModalProps {
   isOpen: boolean;
@@ -17,13 +25,17 @@ interface RoleSelectorModalProps {
 
 export function RoleSelectorModal({ isOpen, onClose }: RoleSelectorModalProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selected, setSelected] = React.useState<"talent" | "employer" | null>(null);
 
   const handleContinue = () => {
+    // Invalidate all role-specific queries to ensure fresh data
+    invalidateForRoleSwitch(queryClient);
+    
     if (selected === "talent") {
-      navigate("/talent/dashboard");
+      navigate(SAFE_LANDINGS.talent);
     } else if (selected === "employer") {
-      navigate("/employer/dashboard");
+      navigate(SAFE_LANDINGS.employer);
     }
     onClose();
   };
