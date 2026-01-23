@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils/classnames";
+import { MatchScoreBadge } from "@/components/matching/MatchScoreBadge";
+import type { MatchReason } from "@/lib/api/ranking";
 
 export interface CandidateCardProps {
   id: string;
@@ -15,6 +17,8 @@ export interface CandidateCardProps {
   badges: Array<{ label: string; variant: "verified" | "new" | "primary" }>;
   availability: string;
   hasVideoPitch?: boolean;
+  matchScore?: number;
+  matchReasons?: MatchReason[];
   onSwipeYes?: (id: string) => void;
   onSwipeNo?: (id: string) => void;
   onViewVideo?: (id: string) => void;
@@ -31,6 +35,8 @@ export function CandidateCard({
   badges,
   availability,
   hasVideoPitch = false,
+  matchScore,
+  matchReasons,
   onSwipeYes,
   onSwipeNo,
   onViewVideo,
@@ -95,6 +101,13 @@ export function CandidateCard({
         <Calendar className="h-4 w-4" />
         <span>{availability}</span>
       </div>
+
+      {/* Match Score */}
+      {matchScore !== undefined && matchScore > 0 && (
+        <div className="mt-4">
+          <MatchScoreBadge score={matchScore} reasons={matchReasons} variant="full" />
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex items-center gap-3 mt-6">

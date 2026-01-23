@@ -13,10 +13,18 @@ import { useJob } from "@/hooks/useJobsFeed";
 import { useTalentFeed } from "@/hooks/useTalentFeed";
 import { useDefaultOrgId } from "@/hooks/useOrgs";
 import { useSwipeEmployerTalent } from "@/hooks/useSwipes";
+import { useCandidateScores } from "@/hooks/useRanking";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode, useResetDemo } from "@/hooks/useDemo";
 import { shouldShowDemoDebug } from "@/lib/utils/debug";
+import type { CandidateCardDTO } from "@/lib/api/talent";
+
+// Candidate with optional match score attached
+interface ScoredCandidate extends CandidateCardDTO {
+  match_score?: number;
+  match_reasons?: Array<{ key: string; label: string; impact: number }>;
+}
 
 export function EmployerSwipeTalent() {
   useDemoCoachToast("swipe-talent");
@@ -37,7 +45,7 @@ export function EmployerSwipeTalent() {
   
   // Fetch talents with demo fallback
   const { 
-    data: talents, 
+    data: rawTalents, 
     isLoading: talentsLoading, 
     debug: talentDebug,
     refetch: refetchTalents,
@@ -47,6 +55,55 @@ export function EmployerSwipeTalent() {
   const [showConfetti, setShowConfetti] = React.useState(false);
   const [showDebug, setShowDebug] = React.useState(false);
   const [seenCount, setSeenCount] = React.useState(0);
+
+  // Extract IDs for batch scoring (max 12)
+  const { talentUserIds, demoCardIds } = React.useMemo(() => {
+    const talents: string[] = [];
+    const demos: string[] = [];
+    
+    (rawTalents ?? []).slice(0, 12).forEach(t => {
+      if (t.type === "demo_card" && t.demo_card_id) {
+        demos.push(t.demo_card_id);
+      } else if (t.user_id) {
+        talents.push(t.user_id);
+      }
+    });
+    
+    return { talentUserIds: talents, demoCardIds: demos };
+  }, [rawTalents]);
+
+  // Fetch scores in batch (graceful: returns empty map on error)
+  const { data: scoresMap } = useCandidateScores(
+    orgId,
+    jobId,
+    talentUserIds,
+    demoCardIds,
+    !!orgId && !!jobId && (talentUserIds.length > 0 || demoCardIds.length > 0)
+  );
+
+  // Merge scores and sort by match_score DESC
+  const talents = React.useMemo((): ScoredCandidate[] => {
+    if (!rawTalents || rawTalents.length === 0) return [];
+    
+    // Attach scores to candidates
+    const scored: ScoredCandidate[] = rawTalents.map(candidate => {
+      const id = candidate.type === "demo_card" ? candidate.demo_card_id : candidate.user_id;
+      const scoreData = id ? scoresMap?.get(id) : undefined;
+      return {
+        ...candidate,
+        match_score: scoreData?.score,
+        match_reasons: scoreData?.reasons,
+      };
+    });
+
+    // Sort by score (descending), items without score keep original order at end
+    return scored.sort((a, b) => {
+      const scoreA = a.match_score ?? -1;
+      const scoreB = b.match_score ?? -1;
+      if (scoreA === scoreB) return 0;
+      return scoreB - scoreA;
+    });
+  }, [rawTalents, scoresMap]);
 
   // Always show first talent in the stack (optimistic updates remove swiped ones)
   const currentTalent = talents?.[0];
@@ -237,6 +294,8 @@ export function EmployerSwipeTalent() {
               }))}
               availability={currentTalent.availability_snippet}
               hasVideoPitch={currentTalent.has_video}
+              matchScore={currentTalent.match_score}
+              matchReasons={currentTalent.match_reasons}
               onSwipeYes={() => handleSwipe("yes")}
               onSwipeNo={() => handleSwipe("no")}
               disabled={swipeMutation.isPending}
