@@ -1,12 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
+// Core types from database
 export type JobPost = Database["public"]["Tables"]["job_posts"]["Row"];
 export type TalentJobSwipe = Database["public"]["Tables"]["talent_job_swipes"]["Row"];
+
+// New unified Listing type (alias for backward compatibility)
+export type Listing = JobPost;
+export type ListingType = "job" | "shift_cover" | "housing";
+export type ListingStatus = "draft" | "published" | "matching" | "closed";
 
 export interface JobWithOrg extends JobPost {
   org_name: string;
 }
+
+// Alias for new Listing terminology
+export interface ListingWithOrg extends JobWithOrg {}
 
 export interface JobFilters {
   location?: string | null;
@@ -14,6 +23,13 @@ export interface JobFilters {
   startDate?: string | null;
   endDate?: string | null;
   housingOnly?: boolean;
+}
+
+// Extended filters for Listing API
+export interface ListingFilters extends JobFilters {
+  listingType?: ListingType | null;
+  status?: ListingStatus | null;
+  shiftRequired?: boolean;
 }
 
 /**
@@ -417,4 +433,191 @@ export async function resetTalentDemoSwipes(): Promise<{
   }
 
   return { success: true, deletedCount: result.deleted_count, error: null };
+}
+
+// ============================================================
+// NEW LISTING API - Unified interface for all listing types
+// ============================================================
+
+/**
+ * List listings with unified filters (new API)
+ * Supports job, shift_cover, housing types
+ */
+export async function listListings(filters?: ListingFilters): Promise<{
+  listings: ListingWithOrg[];
+  error: Error | null;
+}> {
+  let query = supabase
+    .from("job_posts")
+    .select(`
+      *,
+      orgs ( name )
+    `);
+
+  // Filter by listing type
+  if (filters?.listingType) {
+    query = query.eq("listing_type", filters.listingType);
+  }
+
+  // Filter by status (default to published for public queries)
+  if (filters?.status) {
+    query = query.eq("status", filters.status);
+  } else {
+    query = query.eq("status", "published");
+  }
+
+  // Apply location filter
+  if (filters?.location && filters.location !== "all") {
+    query = query.eq("location", filters.location);
+  }
+
+  // Apply role filter
+  if (filters?.roleKey && filters.roleKey !== "all") {
+    query = query.eq("role_key", filters.roleKey);
+  }
+
+  // Apply date filters
+  if (filters?.startDate) {
+    query = query.gte("end_date", filters.startDate);
+  }
+  if (filters?.endDate) {
+    query = query.lte("start_date", filters.endDate);
+  }
+
+  // Apply housing filter
+  if (filters?.housingOnly) {
+    query = query.or("housing_offered.eq.true,housing_text.neq.null");
+  }
+
+  // Apply shift required filter
+  if (filters?.shiftRequired !== undefined) {
+    query = query.eq("shift_required", filters.shiftRequired);
+  }
+
+  query = query.order("match_priority", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+
+  if (error) {
+    return { listings: [], error: new Error(error.message) };
+  }
+
+  const listings: ListingWithOrg[] = (data ?? []).map((listing) => ({
+    ...listing,
+    org_name: (listing.orgs as { name: string } | null)?.name ?? "Okänd",
+  }));
+
+  return { listings, error: null };
+}
+
+/**
+ * Create a new listing (unified create for all types)
+ */
+export async function createListing(params: {
+  orgId: string;
+  listingType?: ListingType;
+  title: string;
+  roleKey: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  status?: ListingStatus;
+  shiftStart?: string;
+  shiftEnd?: string;
+  shiftRequired?: boolean;
+  requiredBadges?: string[];
+  housingOffered?: boolean;
+  housingText?: string;
+  matchPriority?: number;
+  tags?: string[];
+}): Promise<{
+  listing: Listing | null;
+  error: Error | null;
+}> {
+  const { data, error } = await supabase
+    .from("job_posts")
+    .insert({
+      org_id: params.orgId,
+      listing_type: params.listingType ?? "job",
+      title: params.title,
+      role_key: params.roleKey,
+      location: params.location,
+      start_date: params.startDate,
+      end_date: params.endDate,
+      status: params.status ?? "published",
+      shift_start: params.shiftStart ?? null,
+      shift_end: params.shiftEnd ?? null,
+      shift_required: params.shiftRequired ?? false,
+      required_badges: params.requiredBadges ?? [],
+      housing_offered: params.housingOffered ?? false,
+      housing_text: params.housingText ?? null,
+      match_priority: params.matchPriority ?? 0,
+      tags: params.tags ?? null,
+    })
+    .select()
+    .single();
+
+  return {
+    listing: data,
+    error: error ? new Error(error.message) : null,
+  };
+}
+
+/**
+ * Update listing status (pipeline transitions)
+ */
+export async function updateListingStatus(
+  listingId: string,
+  status: ListingStatus
+): Promise<{ success: boolean; error: Error | null }> {
+  const { error } = await supabase
+    .from("job_posts")
+    .update({ status })
+    .eq("id", listingId);
+
+  return {
+    success: !error,
+    error: error ? new Error(error.message) : null,
+  };
+}
+
+/**
+ * Get a single listing by ID (alias for getJob with new naming)
+ */
+export async function getListing(listingId: string): Promise<JobFetchResult> {
+  return getJob(listingId);
+}
+
+/**
+ * List org listings (unified, replaces listOrgJobs internally)
+ */
+export async function listOrgListings(
+  orgId: string,
+  filters?: { listingType?: ListingType; status?: ListingStatus }
+): Promise<{
+  listings: Listing[];
+  error: Error | null;
+}> {
+  let query = supabase
+    .from("job_posts")
+    .select("*")
+    .eq("org_id", orgId);
+
+  if (filters?.listingType) {
+    query = query.eq("listing_type", filters.listingType);
+  }
+
+  if (filters?.status) {
+    query = query.eq("status", filters.status);
+  }
+
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+
+  return {
+    listings: data ?? [],
+    error: error ? new Error(error.message) : null,
+  };
 }
