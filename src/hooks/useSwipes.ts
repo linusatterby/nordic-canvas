@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { upsertTalentJobSwipe, type JobWithOrg } from "@/lib/api/jobs";
 import { upsertEmployerTalentSwipe } from "@/lib/api/talent";
+import { logListingInteraction, logCandidateInteraction } from "@/lib/api/ranking";
 
 /**
  * Hook for talent to swipe on a job with optimistic updates
@@ -11,6 +12,10 @@ export function useSwipeTalentJob() {
   return useMutation({
     mutationFn: async ({ jobId, direction }: { jobId: string; direction: "yes" | "no" }) => {
       console.log("[useSwipeTalentJob] Swiping job:", jobId, direction);
+      
+      // Log interaction for ranking (non-blocking)
+      logListingInteraction(jobId, direction === "yes" ? "swipe_yes" : "swipe_no");
+      
       const { error } = await upsertTalentJobSwipe(jobId, direction);
       if (error) throw error;
       return { jobId, direction };
@@ -71,6 +76,16 @@ export function useSwipeEmployerTalent() {
       direction: "yes" | "no";
     }) => {
       console.log("[useSwipeEmployerTalent] Swiping:", params);
+      
+      // Log interaction for ranking (non-blocking)
+      logCandidateInteraction(
+        params.orgId,
+        params.jobId,
+        params.talentUserId,
+        params.demoCardId,
+        params.direction === "yes" ? "swipe_yes" : "swipe_no"
+      );
+      
       const { error } = await upsertEmployerTalentSwipe(params);
       if (error) throw error;
       return params;
