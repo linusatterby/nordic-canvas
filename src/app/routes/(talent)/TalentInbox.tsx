@@ -10,10 +10,14 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { useMatches } from "@/hooks/useMatches";
 import { useTalentBorrowOffers } from "@/hooks/useBorrow";
+import { useNotifications, useUnreadCount, useMarkNotificationRead } from "@/hooks/useNotifications";
+import { getSeverityDotClass } from "@/lib/api/notifications";
+import { cn } from "@/lib/utils";
 import { 
   MessageSquare, 
   Users, 
   Calendar,
+  Bell,
   ChevronRight,
   RefreshCw
 } from "lucide-react";
@@ -22,9 +26,21 @@ export default function TalentInbox() {
   const navigate = useNavigate();
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches("talent");
   const { data: offers, isLoading: offersLoading, refetch: refetchOffers } = useTalentBorrowOffers();
+  const { data: notifications, isLoading: notificationsLoading, refetch: refetchNotifications } = useNotifications({ limit: 30 });
+  const { data: unreadCount } = useUnreadCount();
+  const markRead = useMarkNotificationRead();
 
   const pendingOffers = offers?.filter((o) => o.status === "pending") ?? [];
   const isLoading = matchesLoading || offersLoading;
+
+  const handleNotificationClick = (notification: { id: string; is_read: boolean; href?: string | null }) => {
+    if (!notification.is_read) {
+      markRead.mutate(notification.id);
+    }
+    if (notification.href) {
+      navigate(notification.href);
+    }
+  };
 
   return (
     <AppShell role="talent">
@@ -40,8 +56,17 @@ export default function TalentInbox() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="matches" className="w-full">
-          <TabsList className="w-full grid grid-cols-2">
+        <Tabs defaultValue="notifications" className="w-full">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="notifications" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Notiser
+              {unreadCount && unreadCount > 0 && (
+                <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="matches" className="gap-2">
               <MessageSquare className="h-4 w-4" />
               Matchningar
@@ -61,6 +86,89 @@ export default function TalentInbox() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="mt-4 space-y-3">
+            <div className="flex justify-end mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => refetchNotifications?.()}
+                disabled={notificationsLoading}
+              >
+                <RefreshCw className={cn("h-4 w-4 mr-1", notificationsLoading && "animate-spin")} />
+                Uppdatera
+              </Button>
+            </div>
+
+            {notificationsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="p-3">
+                  <div className="flex gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : !notifications || notifications.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-medium text-foreground">Inga notiser</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Du har inga notiser just nu
+                </p>
+              </Card>
+            ) : (
+              notifications.map((notification) => (
+                <Card
+                  key={notification.id}
+                  className={cn(
+                    "p-3 cursor-pointer transition-colors hover:bg-secondary/50",
+                    !notification.is_read && "bg-primary/5 border-l-2 border-l-primary"
+                  )}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-1">
+                      <div 
+                        className={cn(
+                          "h-2 w-2 rounded-full",
+                          getSeverityDotClass((notification as { severity?: string }).severity as "info" | "success" | "warning" | "urgent" || "info")
+                        )} 
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(
+                        "text-sm truncate",
+                        !notification.is_read ? "font-medium text-foreground" : "text-muted-foreground"
+                      )}>
+                        {notification.title}
+                      </p>
+                      {notification.body && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {notification.body}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground/70 mt-1">
+                        {formatDistanceToNow(new Date(notification.created_at), {
+                          addSuffix: true,
+                          locale: sv,
+                        })}
+                      </p>
+                    </div>
+                    {!notification.is_read && (
+                      <Badge variant="new" className="h-4 px-1 text-[10px] flex-shrink-0">
+                        Ny
+                      </Badge>
+                    )}
+                  </div>
+                </Card>
+              ))
+            )}
+          </TabsContent>
 
           {/* Matches Tab */}
           <TabsContent value="matches" className="mt-4 space-y-3">
@@ -141,7 +249,7 @@ export default function TalentInbox() {
                 onClick={() => refetchOffers?.()}
                 disabled={offersLoading}
               >
-                <RefreshCw className={`h-4 w-4 mr-1 ${offersLoading ? "animate-spin" : ""}`} />
+                <RefreshCw className={cn("h-4 w-4 mr-1", offersLoading && "animate-spin")} />
                 Uppdatera
               </Button>
             </div>

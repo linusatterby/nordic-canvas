@@ -18,12 +18,15 @@ export type Database = {
         Row: {
           actor_user_id: string | null
           created_at: string
+          dedup_key: string | null
           entity_id: string
           entity_type: string
           event_type: string
           id: string
           metadata: Json
           org_id: string | null
+          severity: string
+          source: string
           summary: string | null
           talent_user_id: string | null
           title: string
@@ -31,12 +34,15 @@ export type Database = {
         Insert: {
           actor_user_id?: string | null
           created_at?: string
+          dedup_key?: string | null
           entity_id: string
           entity_type: string
           event_type: string
           id?: string
           metadata?: Json
           org_id?: string | null
+          severity?: string
+          source?: string
           summary?: string | null
           talent_user_id?: string | null
           title: string
@@ -44,12 +50,15 @@ export type Database = {
         Update: {
           actor_user_id?: string | null
           created_at?: string
+          dedup_key?: string | null
           entity_id?: string
           entity_type?: string
           event_type?: string
           id?: string
           metadata?: Json
           org_id?: string | null
+          severity?: string
+          source?: string
           summary?: string | null
           talent_user_id?: string | null
           title?: string
@@ -950,6 +959,7 @@ export type Database = {
         Row: {
           body: string | null
           created_at: string
+          dedup_key: string | null
           entity_id: string
           entity_type: string
           href: string | null
@@ -960,12 +970,15 @@ export type Database = {
           org_id: string | null
           read_at: string | null
           recipient_user_id: string
+          severity: string
+          source: string
           talent_user_id: string | null
           title: string
         }
         Insert: {
           body?: string | null
           created_at?: string
+          dedup_key?: string | null
           entity_id: string
           entity_type: string
           href?: string | null
@@ -976,12 +989,15 @@ export type Database = {
           org_id?: string | null
           read_at?: string | null
           recipient_user_id: string
+          severity?: string
+          source?: string
           talent_user_id?: string | null
           title: string
         }
         Update: {
           body?: string | null
           created_at?: string
+          dedup_key?: string | null
           entity_id?: string
           entity_type?: string
           href?: string | null
@@ -992,6 +1008,8 @@ export type Database = {
           org_id?: string | null
           read_at?: string | null
           recipient_user_id?: string
+          severity?: string
+          source?: string
           talent_user_id?: string | null
           title?: string
         }
@@ -1490,41 +1508,82 @@ export type Database = {
         Args: { p_circle_id: string; p_member_org_id: string }
         Returns: undefined
       }
-      create_activity_event: {
-        Args: {
-          p_actor_user_id?: string
-          p_dedup_key?: string
-          p_entity_id?: string
-          p_entity_type?: string
-          p_event_type?: string
-          p_metadata?: Json
-          p_org_id?: string
-          p_summary?: string
-          p_talent_user_id?: string
-          p_title?: string
-        }
-        Returns: string
+      check_message_rate_limit: {
+        Args: { p_recipient_user_id: string; p_thread_id: string }
+        Returns: boolean
       }
+      create_activity_event:
+        | {
+            Args: {
+              p_actor_user_id?: string
+              p_dedup_key?: string
+              p_entity_id?: string
+              p_entity_type?: string
+              p_event_type?: string
+              p_metadata?: Json
+              p_org_id?: string
+              p_summary?: string
+              p_talent_user_id?: string
+              p_title?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_actor_user_id?: string
+              p_dedup_key?: string
+              p_entity_id?: string
+              p_entity_type?: string
+              p_event_type?: string
+              p_metadata?: Json
+              p_org_id?: string
+              p_severity?: string
+              p_source?: string
+              p_summary?: string
+              p_talent_user_id?: string
+              p_title?: string
+            }
+            Returns: string
+          }
       create_circle: {
         Args: { p_name: string; p_org_id: string }
         Returns: string
       }
-      create_notification: {
-        Args: {
-          p_body?: string
-          p_dedup_key?: string
-          p_entity_id: string
-          p_entity_type: string
-          p_href?: string
-          p_metadata?: Json
-          p_notification_type: string
-          p_org_id?: string
-          p_recipient_user_id: string
-          p_talent_user_id?: string
-          p_title: string
-        }
-        Returns: string
-      }
+      create_notification:
+        | {
+            Args: {
+              p_body?: string
+              p_dedup_key?: string
+              p_entity_id: string
+              p_entity_type: string
+              p_href?: string
+              p_metadata?: Json
+              p_notification_type: string
+              p_org_id?: string
+              p_recipient_user_id: string
+              p_talent_user_id?: string
+              p_title: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_body?: string
+              p_dedup_key?: string
+              p_entity_id: string
+              p_entity_type: string
+              p_href?: string
+              p_metadata?: Json
+              p_notification_type: string
+              p_org_id?: string
+              p_recipient_user_id: string
+              p_severity?: string
+              p_source?: string
+              p_talent_user_id?: string
+              p_title: string
+            }
+            Returns: string
+          }
       find_available_talents: {
         Args: { p_end_ts: string; p_location: string; p_start_ts: string }
         Returns: {

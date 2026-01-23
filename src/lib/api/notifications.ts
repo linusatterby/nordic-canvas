@@ -3,9 +3,15 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
+export type NotificationSeverity = "info" | "success" | "warning" | "urgent";
+
 export interface NotificationFilters {
   unreadOnly?: boolean;
   limit?: number;
+}
+
+export interface NotificationWithSeverity extends Notification {
+  severity: NotificationSeverity;
 }
 
 /**
@@ -14,7 +20,7 @@ export interface NotificationFilters {
 export async function listNotifications(
   filters: NotificationFilters = {}
 ): Promise<{
-  notifications: Notification[];
+  notifications: NotificationWithSeverity[];
   error: Error | null;
 }> {
   const { limit = 50, unreadOnly = false } = filters;
@@ -32,7 +38,7 @@ export async function listNotifications(
   const { data, error } = await query;
 
   return {
-    notifications: data ?? [],
+    notifications: (data ?? []) as NotificationWithSeverity[],
     error: error ? new Error(error.message) : null,
   };
 }
@@ -110,4 +116,38 @@ export function subscribeToNotifications(
   return () => {
     supabase.removeChannel(channel);
   };
+}
+
+/**
+ * Get severity color class for styling
+ */
+export function getSeverityColor(severity: NotificationSeverity): string {
+  switch (severity) {
+    case "urgent":
+      return "bg-destructive";
+    case "warning":
+      return "bg-amber-500";
+    case "success":
+      return "bg-emerald-500";
+    case "info":
+    default:
+      return "bg-muted-foreground";
+  }
+}
+
+/**
+ * Get severity dot styling class
+ */
+export function getSeverityDotClass(severity: NotificationSeverity): string {
+  switch (severity) {
+    case "urgent":
+      return "bg-destructive animate-pulse";
+    case "warning":
+      return "bg-amber-500";
+    case "success":
+      return "bg-emerald-500";
+    case "info":
+    default:
+      return "bg-muted-foreground/50";
+  }
 }
