@@ -714,12 +714,18 @@ export type Database = {
           housing_text: string | null
           id: string
           is_demo: boolean
+          listing_type: string
           location: string | null
+          match_priority: number
           org_id: string
           required_badges: string[] | null
           role_key: string
+          shift_end: string | null
+          shift_required: boolean
+          shift_start: string | null
           start_date: string
           status: string | null
+          tags: string[] | null
           title: string
         }
         Insert: {
@@ -729,12 +735,18 @@ export type Database = {
           housing_text?: string | null
           id?: string
           is_demo?: boolean
+          listing_type?: string
           location?: string | null
+          match_priority?: number
           org_id: string
           required_badges?: string[] | null
           role_key: string
+          shift_end?: string | null
+          shift_required?: boolean
+          shift_start?: string | null
           start_date: string
           status?: string | null
+          tags?: string[] | null
           title: string
         }
         Update: {
@@ -744,12 +756,18 @@ export type Database = {
           housing_text?: string | null
           id?: string
           is_demo?: boolean
+          listing_type?: string
           location?: string | null
+          match_priority?: number
           org_id?: string
           required_badges?: string[] | null
           role_key?: string
+          shift_end?: string | null
+          shift_required?: boolean
+          shift_start?: string | null
           start_date?: string
           status?: string | null
+          tags?: string[] | null
           title?: string
         }
         Relationships: [
