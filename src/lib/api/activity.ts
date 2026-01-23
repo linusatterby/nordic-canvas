@@ -3,6 +3,8 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type ActivityEvent = Database["public"]["Tables"]["activity_events"]["Row"];
 
+export type ActivitySeverity = "info" | "success" | "warning" | "urgent";
+
 export interface ActivityFilters {
   role?: "talent" | "employer";
   orgId?: string;
@@ -12,6 +14,7 @@ export interface ActivityFilters {
 
 export interface ActivityItem extends ActivityEvent {
   href?: string;
+  severity: ActivitySeverity;
 }
 
 /**
@@ -86,10 +89,11 @@ export async function listMyActivity(
     return { activities: [], error: new Error(error.message) };
   }
 
-  // Enrich with hrefs
+  // Enrich with hrefs and ensure severity type
   const activities: ActivityItem[] = (data ?? []).map((event) => ({
     ...event,
     href: getActivityHref(event, role),
+    severity: (event.severity as ActivitySeverity) || "info",
   }));
 
   return { activities, error: null };
@@ -156,5 +160,39 @@ export function getActivityTypeLabel(eventType: string): string {
       return "Pass taget";
     default:
       return "Händelse";
+  }
+}
+
+/**
+ * Get severity color class for activity styling
+ */
+export function getActivitySeverityClass(severity: ActivitySeverity): string {
+  switch (severity) {
+    case "urgent":
+      return "border-l-destructive";
+    case "warning":
+      return "border-l-amber-500";
+    case "success":
+      return "border-l-emerald-500";
+    case "info":
+    default:
+      return "border-l-muted-foreground/30";
+  }
+}
+
+/**
+ * Get severity dot class
+ */
+export function getActivitySeverityDot(severity: ActivitySeverity): string {
+  switch (severity) {
+    case "urgent":
+      return "bg-destructive animate-pulse";
+    case "warning":
+      return "bg-amber-500";
+    case "success":
+      return "bg-emerald-500";
+    case "info":
+    default:
+      return "bg-muted-foreground/50";
   }
 }
