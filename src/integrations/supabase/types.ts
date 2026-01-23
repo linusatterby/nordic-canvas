@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          event_type: string
+          id: string
+          metadata: Json
+          org_id: string | null
+          summary: string | null
+          talent_user_id: string | null
+          title: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          org_id?: string | null
+          summary?: string | null
+          talent_user_id?: string | null
+          title: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          org_id?: string | null
+          summary?: string | null
+          talent_user_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_schema_config: {
         Row: {
           key: string
@@ -889,6 +946,72 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          href: string | null
+          id: string
+          is_read: boolean
+          metadata: Json
+          notification_type: string
+          org_id: string | null
+          read_at: string | null
+          recipient_user_id: string
+          talent_user_id: string | null
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          href?: string | null
+          id?: string
+          is_read?: boolean
+          metadata?: Json
+          notification_type: string
+          org_id?: string | null
+          read_at?: string | null
+          recipient_user_id: string
+          talent_user_id?: string | null
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          href?: string | null
+          id?: string
+          is_read?: boolean
+          metadata?: Json
+          notification_type?: string
+          org_id?: string | null
+          read_at?: string | null
+          recipient_user_id?: string
+          talent_user_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           org_id: string
@@ -1367,8 +1490,39 @@ export type Database = {
         Args: { p_circle_id: string; p_member_org_id: string }
         Returns: undefined
       }
+      create_activity_event: {
+        Args: {
+          p_actor_user_id?: string
+          p_dedup_key?: string
+          p_entity_id?: string
+          p_entity_type?: string
+          p_event_type?: string
+          p_metadata?: Json
+          p_org_id?: string
+          p_summary?: string
+          p_talent_user_id?: string
+          p_title?: string
+        }
+        Returns: string
+      }
       create_circle: {
         Args: { p_name: string; p_org_id: string }
+        Returns: string
+      }
+      create_notification: {
+        Args: {
+          p_body?: string
+          p_dedup_key?: string
+          p_entity_id: string
+          p_entity_type: string
+          p_href?: string
+          p_metadata?: Json
+          p_notification_type: string
+          p_org_id?: string
+          p_recipient_user_id: string
+          p_talent_user_id?: string
+          p_title: string
+        }
         Returns: string
       }
       find_available_talents: {
@@ -1419,12 +1573,14 @@ export type Database = {
           name: string
         }[]
       }
+      get_org_member_ids: { Args: { p_org_id: string }; Returns: string[] }
       get_trusted_circle_orgs: {
         Args: { p_org_id: string }
         Returns: {
           org_id: string
         }[]
       }
+      get_unread_notification_count: { Args: never; Returns: number }
       has_match_access: {
         Args: { _match_id: string; _user_id: string }
         Returns: boolean
@@ -1447,7 +1603,12 @@ export type Database = {
         Returns: boolean
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
+      mark_all_notifications_read: { Args: never; Returns: number }
       mark_me_as_demo: { Args: { p_role?: string }; Returns: Json }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: boolean
+      }
       remove_circle_member: {
         Args: { p_circle_id: string; p_member_org_id: string }
         Returns: undefined

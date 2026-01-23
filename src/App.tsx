@@ -21,7 +21,8 @@ import TalentProfile from "@/app/routes/(talent)/TalentProfile";
 import TalentSwipeJobs from "@/app/routes/(talent)/TalentSwipeJobs";
 import TalentMatches from "@/app/routes/(talent)/TalentMatches";
 import TalentMatchChat from "@/app/routes/(talent)/TalentMatchChat";
-
+import TalentActivity from "@/app/routes/(talent)/TalentActivity";
+import TalentInbox from "@/app/routes/(talent)/TalentInbox";
 // Employer routes
 import EmployerDashboard from "@/app/routes/(employer)/EmployerDashboard";
 import EmployerScheduler from "@/app/routes/(employer)/EmployerScheduler";
