@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { debugWarn } from "@/lib/utils/debug";
 
 // Core types from database
 export type JobPost = Database["public"]["Tables"]["job_posts"]["Row"];
@@ -12,6 +13,10 @@ export type ListingStatus = "draft" | "published" | "matching" | "closed";
 
 export interface JobWithOrg extends JobPost {
   org_name: string;
+  // Computed display fields
+  display_title?: string;
+  display_location?: string;
+  display_role?: string;
 }
 
 // Alias for new Listing terminology
@@ -27,9 +32,94 @@ export interface JobFilters {
 
 // Extended filters for Listing API
 export interface ListingFilters extends JobFilters {
-  listingType?: ListingType | null;
-  status?: ListingStatus | null;
+  listingType?: ListingType | ListingType[] | null;
+  status?: ListingStatus | ListingStatus[] | null;
   shiftRequired?: boolean;
+  includeShiftCover?: boolean; // Toggle to include shift_cover type
+  orgId?: string; // For employer queries
+  excludeSwipedByUserId?: string; // Exclude jobs user has swiped
+}
+
+// ============================================================
+// FIELD MAPPING - Auto-resolve column names for flexible schema
+// ============================================================
+
+interface ResolvedColumns {
+  location: string | null;
+  role: string | null;
+  title: string | null;
+  hasHousingOffered: boolean;
+}
+
+// Column candidates for each logical field
+const LOCATION_CANDIDATES = ["location", "city", "town", "location_text", "workplace_location", "area"];
+const ROLE_CANDIDATES = ["role_key", "role_title", "role", "category", "position", "job_title"];
+const TITLE_CANDIDATES = ["title", "role_title", "job_title", "headline"];
+
+// Cached resolved columns (module scope - once per session)
+let resolvedColumnsCache: ResolvedColumns | null = null;
+
+/**
+ * Probe job_posts table to determine which columns exist
+ * Results are cached for the session
+ */
+async function resolveJobPostsColumns(): Promise<ResolvedColumns> {
+  if (resolvedColumnsCache) {
+    return resolvedColumnsCache;
+  }
+
+  // Probe with a single row to get column names
+  const { data, error } = await supabase
+    .from("job_posts")
+    .select("*")
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    // Fallback to known columns from our schema
+    resolvedColumnsCache = {
+      location: "location",
+      role: "role_key", 
+      title: "title",
+      hasHousingOffered: true,
+    };
+    return resolvedColumnsCache;
+  }
+
+  const columns = Object.keys(data[0]);
+  
+  const findColumn = (candidates: string[]): string | null => {
+    for (const candidate of candidates) {
+      if (columns.includes(candidate)) {
+        return candidate;
+      }
+    }
+    return null;
+  };
+
+  resolvedColumnsCache = {
+    location: findColumn(LOCATION_CANDIDATES),
+    role: findColumn(ROLE_CANDIDATES),
+    title: findColumn(TITLE_CANDIDATES),
+    hasHousingOffered: columns.includes("housing_offered"),
+  };
+
+  debugWarn("Resolved job_posts columns:", resolvedColumnsCache);
+  return resolvedColumnsCache;
+}
+
+/**
+ * Add computed display fields to listing
+ */
+function enrichListingWithDisplayFields(
+  listing: Record<string, unknown>,
+  cols: ResolvedColumns
+): Record<string, unknown> {
+  return {
+    ...listing,
+    display_title: cols.title ? listing[cols.title] : listing.title,
+    display_location: cols.location ? listing[cols.location] : listing.location,
+    display_role: cols.role ? listing[cols.role] : listing.role_key,
+  };
 }
 
 /**
@@ -441,12 +531,27 @@ export async function resetTalentDemoSwipes(): Promise<{
 
 /**
  * List listings with unified filters (new API)
- * Supports job, shift_cover, housing types
+ * Supports job, shift_cover, housing types with field-mapping
  */
-export async function listListings(filters?: ListingFilters): Promise<{
+export async function listListings(filters?: ListingFilters, isDemoMode?: boolean): Promise<{
   listings: ListingWithOrg[];
   error: Error | null;
 }> {
+  // Resolve column names for flexible schema
+  const cols = await resolveJobPostsColumns();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get swiped job IDs if we need to exclude them
+  let swipedJobIds: string[] = [];
+  if (filters?.excludeSwipedByUserId && user) {
+    const { data: swipes } = await supabase
+      .from("talent_job_swipes")
+      .select("job_post_id")
+      .eq("talent_user_id", user.id);
+    swipedJobIds = (swipes ?? []).map((s) => s.job_post_id);
+  }
+
   let query = supabase
     .from("job_posts")
     .select(`
@@ -454,39 +559,69 @@ export async function listListings(filters?: ListingFilters): Promise<{
       orgs ( name )
     `);
 
-  // Filter by listing type
-  if (filters?.listingType) {
-    query = query.eq("listing_type", filters.listingType);
+  // Filter by org (for employer queries)
+  if (filters?.orgId) {
+    query = query.eq("org_id", filters.orgId);
   }
 
-  // Filter by status (default to published for public queries)
+  // Filter by listing type (supports array or single value)
+  if (filters?.listingType) {
+    if (Array.isArray(filters.listingType)) {
+      query = query.in("listing_type", filters.listingType);
+    } else {
+      query = query.eq("listing_type", filters.listingType);
+    }
+  } else if (filters?.includeShiftCover) {
+    // Include both job and shift_cover
+    query = query.in("listing_type", ["job", "shift_cover"]);
+  }
+
+  // Filter by status (supports array or single value)
+  // For org queries, don't default to published
   if (filters?.status) {
-    query = query.eq("status", filters.status);
-  } else {
+    if (Array.isArray(filters.status)) {
+      query = query.in("status", filters.status);
+    } else {
+      query = query.eq("status", filters.status);
+    }
+  } else if (!filters?.orgId) {
+    // Default to published for public/talent queries
     query = query.eq("status", "published");
   }
 
-  // Apply location filter
-  if (filters?.location && filters.location !== "all") {
-    query = query.eq("location", filters.location);
+  // Apply location filter using resolved column with ilike for fuzzy match
+  if (filters?.location && filters.location !== "all" && filters.location !== "") {
+    if (cols.location) {
+      query = query.ilike(cols.location, `%${filters.location}%`);
+    } else {
+      debugWarn("No location column found, skipping location filter");
+    }
   }
 
-  // Apply role filter
-  if (filters?.roleKey && filters.roleKey !== "all") {
-    query = query.eq("role_key", filters.roleKey);
+  // Apply role filter using resolved column
+  if (filters?.roleKey && filters.roleKey !== "all" && filters.roleKey !== "") {
+    if (cols.role) {
+      query = query.ilike(cols.role, `%${filters.roleKey}%`);
+    } else {
+      debugWarn("No role column found, skipping role filter");
+    }
   }
 
-  // Apply date filters
-  if (filters?.startDate) {
-    query = query.gte("end_date", filters.startDate);
+  // Apply date filters for shift_cover type
+  if (filters?.startDate && filters?.includeShiftCover) {
+    query = query.or(`end_date.gte.${filters.startDate},shift_end.gte.${filters.startDate}`);
   }
-  if (filters?.endDate) {
-    query = query.lte("start_date", filters.endDate);
+  if (filters?.endDate && filters?.includeShiftCover) {
+    query = query.or(`start_date.lte.${filters.endDate},shift_start.lte.${filters.endDate}`);
   }
 
   // Apply housing filter
   if (filters?.housingOnly) {
-    query = query.or("housing_offered.eq.true,housing_text.neq.null");
+    if (cols.hasHousingOffered) {
+      query = query.or("housing_offered.eq.true,housing_text.neq.null");
+    } else {
+      query = query.not("housing_text", "is", null);
+    }
   }
 
   // Apply shift required filter
@@ -494,7 +629,13 @@ export async function listListings(filters?: ListingFilters): Promise<{
     query = query.eq("shift_required", filters.shiftRequired);
   }
 
+  // Exclude swiped jobs
+  if (swipedJobIds.length > 0) {
+    query = query.not("id", "in", `(${swipedJobIds.join(",")})`);
+  }
+
   query = query.order("match_priority", { ascending: false })
+    .order("is_demo", { ascending: false }) // Demo first in demo mode
     .order("created_at", { ascending: false });
 
   const { data, error } = await query;
@@ -503,10 +644,31 @@ export async function listListings(filters?: ListingFilters): Promise<{
     return { listings: [], error: new Error(error.message) };
   }
 
+  // Enrich with display fields
   const listings: ListingWithOrg[] = (data ?? []).map((listing) => ({
-    ...listing,
+    ...enrichListingWithDisplayFields(listing, cols),
     org_name: (listing.orgs as { name: string } | null)?.name ?? "Okänd",
-  }));
+  } as ListingWithOrg));
+
+  // Demo fallback: if in demo mode and no listings, get demo listings
+  if (isDemoMode && listings.length === 0 && !filters?.orgId) {
+    const { data: demoData, error: demoError } = await supabase
+      .from("job_posts")
+      .select(`*, orgs ( name )`)
+      .eq("is_demo", true)
+      .eq("status", "published")
+      .limit(6);
+    
+    if (!demoError && demoData && demoData.length > 0) {
+      return {
+        listings: demoData.map((listing) => ({
+          ...enrichListingWithDisplayFields(listing, cols),
+          org_name: (listing.orgs as { name: string } | null)?.name ?? "Demo",
+        } as ListingWithOrg)),
+        error: null,
+      };
+    }
+  }
 
   return { listings, error: null };
 }

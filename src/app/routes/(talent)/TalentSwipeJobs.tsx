@@ -1,50 +1,54 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp, RefreshCw, Bug } from "lucide-react";
+import { ChevronDown, ChevronUp, RefreshCw, Bug, Briefcase, Clock } from "lucide-react";
 import { AppShell } from "@/app/layout/AppShell";
 import { JobCard } from "@/components/cards/JobCard";
-import { JobFilters, DEFAULT_FILTERS, type JobFilterValues } from "@/components/jobs/JobFilters";
+import { TalentListingsFilters, DEFAULT_TALENT_FILTERS, type TalentListingFilterValues } from "@/components/filters/TalentListingsFilters";
 import { EmptyState } from "@/components/delight/EmptyStates";
 import { ConfettiPulse } from "@/components/delight/ConfettiPulse";
 import { useToasts } from "@/components/delight/Toasts";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { HOUSING_STATUS } from "@/lib/constants/status";
-import { useJobsFeed, useResetTalentDemoSwipes, useDemoJobsHard } from "@/hooks/useJobsFeed";
+import { useListings } from "@/hooks/useListings";
+import { useResetTalentDemoSwipes, useDemoJobsHard } from "@/hooks/useJobsFeed";
 import { useSwipeTalentJob } from "@/hooks/useSwipes";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode } from "@/hooks/useDemo";
 import { shouldShowDemoDebug } from "@/lib/utils/debug";
-import type { JobFilters as JobFiltersType } from "@/lib/api/jobs";
+import type { ListingFilters, ListingType } from "@/lib/api/jobs";
 
 export function TalentSwipeJobs() {
   useDemoCoachToast("swipe-jobs");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isDemoMode } = useDemoMode();
-  const [filters, setFilters] = React.useState<JobFilterValues>(DEFAULT_FILTERS);
+  const [filters, setFilters] = React.useState<TalentListingFilterValues>(DEFAULT_TALENT_FILTERS);
   const [showFilters, setShowFilters] = React.useState(true);
   const [showDebug, setShowDebug] = React.useState(false);
   const { addToast } = useToasts();
 
   // Convert UI filter values to API filter format
-  const apiFilters: JobFiltersType = React.useMemo(() => ({
-    location: filters.location !== "all" ? filters.location : null,
-    roleKey: filters.roleKey !== "all" ? filters.roleKey : null,
+  const apiFilters: ListingFilters = React.useMemo(() => ({
+    location: filters.location || null,
+    roleKey: filters.role || null,
     startDate: filters.startDate || null,
     endDate: filters.endDate || null,
     housingOnly: filters.housingOnly,
-  }), [filters]);
+    includeShiftCover: filters.includeShiftCover,
+    excludeSwipedByUserId: user?.id,
+  }), [filters, user?.id]);
 
-  const { data: jobs, isLoading, error: feedError, refetch: refetchFeed } = useJobsFeed(apiFilters);
+  const { data: listings, isLoading, error: feedError, refetch: refetchFeed } = useListings(apiFilters);
   const swipeMutation = useSwipeTalentJob();
   const resetSwipesMutation = useResetTalentDemoSwipes();
   const [showConfetti, setShowConfetti] = React.useState(false);
 
   // Use hard demo fetch as fallback when normal feed is empty in demo mode
-  const shouldUseHardFetch = isDemoMode && !isLoading && (!jobs || jobs.length === 0);
+  const shouldUseHardFetch = isDemoMode && !isLoading && (!listings || listings.length === 0);
   const { 
     data: hardDemoJobs, 
     error: hardDemoError, 
@@ -52,39 +56,40 @@ export function TalentSwipeJobs() {
     isLoading: isHardLoading 
   } = useDemoJobsHard(shouldUseHardFetch);
 
-  // Determine which jobs to show - use effectiveJobs as a stack (first item = current)
-  const effectiveJobs = React.useMemo(() => {
-    if (jobs && jobs.length > 0) return jobs;
+  // Determine which listings to show - use as a stack (first item = current)
+  const effectiveListings = React.useMemo(() => {
+    if (listings && listings.length > 0) return listings;
     if (shouldUseHardFetch && hardDemoJobs && hardDemoJobs.length > 0) {
-      // Convert hard demo jobs to JobWithOrg format
+      // Convert hard demo jobs to ListingWithOrg format
       return hardDemoJobs.map(job => ({
         ...job,
         org_name: "Demo-företag",
         required_badges: null,
         housing_text: job.housing_text ?? null,
+        listing_type: "job" as ListingType,
       }));
     }
     return [];
-  }, [jobs, shouldUseHardFetch, hardDemoJobs]);
+  }, [listings, shouldUseHardFetch, hardDemoJobs]);
 
-  // Current job is always the first in the stack (optimistic updates remove swiped jobs)
-  const currentJob = effectiveJobs[0];
+  // Current listing is always the first in the stack
+  const currentListing = effectiveListings[0];
 
   const handleSwipe = async (direction: "yes" | "no") => {
-    if (!currentJob || !user) return;
+    if (!currentListing || !user) return;
 
     try {
-      await swipeMutation.mutateAsync({ jobId: currentJob.id, direction });
+      await swipeMutation.mutateAsync({ jobId: currentListing.id, direction });
 
       if (direction === "yes") {
         // Check for mutual match
-        const { match } = await getMatchByJobAndTalent(currentJob.id, user.id);
+        const { match } = await getMatchByJobAndTalent(currentListing.id, user.id);
         if (match) {
           setShowConfetti(true);
           addToast({
             type: "match",
             title: "Match!",
-            message: `${currentJob.org_name} vill också träffa dig!`,
+            message: `${currentListing.org_name} vill också träffa dig!`,
             action: {
               label: "Öppna chatten",
               onClick: () => navigate(`/talent/matches/${match.id}`),
@@ -94,25 +99,22 @@ export function TalentSwipeJobs() {
           addToast({
             type: "info",
             title: "Intresse skickat",
-            message: `Ditt intresse för ${currentJob.org_name} har skickats.`,
+            message: `Ditt intresse för ${currentListing.org_name} har skickats.`,
           });
         }
       }
-
-      // Job is removed optimistically by mutation - no index management needed
     } catch (err) {
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara." });
     }
   };
 
   const handleClearFilters = () => {
-    setFilters(DEFAULT_FILTERS);
+    setFilters(DEFAULT_TALENT_FILTERS);
   };
 
   const handleResetDemoSwipes = async () => {
     try {
       await resetSwipesMutation.mutateAsync();
-      // Jobs will be refetched automatically via query invalidation
       addToast({
         type: "success",
         title: "Återställt",
@@ -129,11 +131,12 @@ export function TalentSwipeJobs() {
   };
 
   const hasActiveFilters =
-    filters.location !== "all" ||
-    filters.roleKey !== "all" ||
+    filters.location !== "" ||
+    filters.role !== "" ||
+    filters.housingOnly ||
+    filters.includeShiftCover ||
     filters.startDate ||
-    filters.endDate ||
-    filters.housingOnly;
+    filters.endDate;
 
   if (isLoading || isHardLoading) {
     return (
@@ -154,7 +157,25 @@ export function TalentSwipeJobs() {
     return `${s.toLocaleDateString("sv-SE", opts)} – ${e.toLocaleDateString("sv-SE", opts)}`;
   };
 
-  const isEmpty = !currentJob;
+  const isEmpty = !currentListing;
+
+  // Get listing type for badge
+  const getListingTypeBadge = (listingType?: string) => {
+    if (listingType === "shift_cover") {
+      return (
+        <Badge variant="warn" className="flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          Pass
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="default" className="flex items-center gap-1">
+        <Briefcase className="h-3 w-3" />
+        Jobb
+      </Badge>
+    );
+  };
 
   return (
     <AppShell role="talent">
@@ -187,7 +208,7 @@ export function TalentSwipeJobs() {
         {/* Filters Panel */}
         {showFilters && (
           <div className="mb-4 p-3 rounded-xl bg-card border border-border animate-fade-in">
-            <JobFilters
+            <TalentListingsFilters
               values={filters}
               onChange={setFilters}
               onClear={handleClearFilters}
@@ -195,21 +216,21 @@ export function TalentSwipeJobs() {
           </div>
         )}
 
-        {/* Job Card or Empty State */}
+        {/* Listing Card or Empty State */}
         {isEmpty ? (
           <div className="space-y-4">
             <EmptyState
               type="no-matches"
               title={
                 hasActiveFilters 
-                  ? "Inga jobb matchar dina filter" 
+                  ? "Inga uppdrag matchar dina filter"
                   : isDemoMode 
                     ? "Inga demo-jobb kvar" 
                     : "Du är ikapp!"
               }
               message={
                 hasActiveFilters
-                  ? "Prova att ändra eller rensa filtren för att se fler jobb."
+                  ? "Testa att ta bort ett filter eller slå av 'Endast boende'."
                   : isDemoMode
                     ? "Rensa filter eller återställ demo för att se fler jobb."
                     : "Uppdatera din tillgänglighet i profilen för fler matchningar."
@@ -250,7 +271,7 @@ export function TalentSwipeJobs() {
               )}
             </div>
 
-            {/* Debug Panel - only with VITE_DEMO_DEBUG=true */}
+            {/* Debug Panel */}
             {shouldShowDemoDebug(isDemoMode) && (
               <div className="mt-6">
                 <button
@@ -264,40 +285,17 @@ export function TalentSwipeJobs() {
                 {showDebug && (
                   <div className="mt-2 p-3 rounded-lg bg-muted/50 border border-border text-xs font-mono space-y-1">
                     <p><span className="text-muted-foreground">demoMode:</span> {isDemoMode ? "true" : "false"}</p>
-                    <p><span className="text-muted-foreground">normalFeedCount:</span> {jobs?.length ?? 0}</p>
-                    <p><span className="text-muted-foreground">normalFeedError:</span> {feedError?.message ?? "null"}</p>
+                    <p><span className="text-muted-foreground">listingsCount:</span> {listings?.length ?? 0}</p>
+                    <p><span className="text-muted-foreground">feedError:</span> {feedError?.message ?? "null"}</p>
                     <p><span className="text-muted-foreground">hardDemoCount:</span> {hardDemoJobs?.length ?? 0}</p>
-                    <p><span className="text-muted-foreground">hardDemoError:</span> {hardDemoError?.message ?? "null"}</p>
-                    <p><span className="text-muted-foreground">effectiveJobsCount:</span> {effectiveJobs.length}</p>
+                    <p><span className="text-muted-foreground">effectiveCount:</span> {effectiveListings.length}</p>
                     <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {shouldUseHardFetch ? "true" : "false"}</p>
                     
-                    {/* Show status values from hard demo jobs */}
-                    {hardDemoJobs && hardDemoJobs.length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-border">
-                        <p className="text-muted-foreground mb-1">hardDemoJobs status-värden:</p>
-                        {hardDemoJobs.map((job, i) => (
-                          <p key={job.id} className="pl-2">
-                            [{i}] {job.title?.slice(0, 20)}... → status: "{job.status}", is_demo: {String(job.is_demo)}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                    
                     <div className="flex gap-2 mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => refetchFeed()}
-                        className="text-xs"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => refetchFeed()} className="text-xs">
                         Refetch normal
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => refetchHardDemo()}
-                        className="text-xs"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => refetchHardDemo()} className="text-xs">
                         Refetch hard demo
                       </Button>
                     </div>
@@ -308,21 +306,26 @@ export function TalentSwipeJobs() {
           </div>
         ) : (
           <div className="animate-fade-in">
+            {/* Listing type badge */}
+            <div className="flex justify-center mb-3">
+              {getListingTypeBadge((currentListing as { listing_type?: string }).listing_type)}
+            </div>
+            
             <JobCard
-              id={currentJob.id}
-              title={currentJob.title}
-              company={currentJob.org_name}
-              location={currentJob.location ?? "Okänd plats"}
-              period={formatPeriod(currentJob.start_date, currentJob.end_date)}
-              housingStatus={mapHousingStatus(currentJob.housing_offered, currentJob.housing_text)}
-              housingText={currentJob.housing_text}
+              id={currentListing.id}
+              title={currentListing.title}
+              company={currentListing.org_name}
+              location={currentListing.location ?? "Okänd plats"}
+              period={formatPeriod(currentListing.start_date, currentListing.end_date)}
+              housingStatus={mapHousingStatus(currentListing.housing_offered, currentListing.housing_text)}
+              housingText={currentListing.housing_text}
               onSwipeYes={() => handleSwipe("yes")}
               onSwipeNo={() => handleSwipe("no")}
             />
             <p className="text-center text-xs text-muted-foreground mt-4">
-              {effectiveJobs && effectiveJobs.length > 0 && (
+              {effectiveListings && effectiveListings.length > 0 && (
                 <span className="block mb-1">
-                  {effectiveJobs.length} jobb kvar
+                  {effectiveListings.length} uppdrag kvar
                 </span>
               )}
               Använd piltangenter eller J/K för att swipea
