@@ -14,12 +14,19 @@ import { HOUSING_STATUS } from "@/lib/constants/status";
 import { useListings } from "@/hooks/useListings";
 import { useResetTalentDemoSwipes, useDemoJobsHard } from "@/hooks/useJobsFeed";
 import { useSwipeTalentJob } from "@/hooks/useSwipes";
+import { useListingScores } from "@/hooks/useRanking";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode } from "@/hooks/useDemo";
 import { shouldShowDemoDebug } from "@/lib/utils/debug";
-import type { ListingFilters, ListingType } from "@/lib/api/jobs";
+import type { ListingFilters, ListingType, ListingWithOrg } from "@/lib/api/jobs";
+
+// Listing with optional match score attached
+interface ScoredListing extends ListingWithOrg {
+  match_score?: number;
+  match_reasons?: Array<{ key: string; label: string; impact: number }>;
+}
 
 export function TalentSwipeJobs() {
   useDemoCoachToast("swipe-jobs");
@@ -56,8 +63,8 @@ export function TalentSwipeJobs() {
     isLoading: isHardLoading 
   } = useDemoJobsHard(shouldUseHardFetch);
 
-  // Determine which listings to show - use as a stack (first item = current)
-  const effectiveListings = React.useMemo(() => {
+  // Build raw listings (before scoring)
+  const rawListings = React.useMemo((): ListingWithOrg[] => {
     if (listings && listings.length > 0) return listings;
     if (shouldUseHardFetch && hardDemoJobs && hardDemoJobs.length > 0) {
       // Convert hard demo jobs to ListingWithOrg format
@@ -67,10 +74,46 @@ export function TalentSwipeJobs() {
         required_badges: null,
         housing_text: job.housing_text ?? null,
         listing_type: "job" as ListingType,
-      }));
+      })) as ListingWithOrg[];
     }
     return [];
   }, [listings, shouldUseHardFetch, hardDemoJobs]);
+
+  // Get listing IDs for batch scoring (max 12)
+  const listingIds = React.useMemo(() => 
+    rawListings.slice(0, 12).map(l => l.id), 
+    [rawListings]
+  );
+
+  // Fetch scores in batch (graceful: returns empty map on error)
+  const { data: scoresMap } = useListingScores(
+    user?.id,
+    listingIds,
+    listingIds.length > 0
+  );
+
+  // Merge scores and sort by match_score DESC
+  const effectiveListings = React.useMemo((): ScoredListing[] => {
+    if (rawListings.length === 0) return [];
+    
+    // Attach scores to listings
+    const scored: ScoredListing[] = rawListings.map(listing => {
+      const scoreData = scoresMap?.get(listing.id);
+      return {
+        ...listing,
+        match_score: scoreData?.score,
+        match_reasons: scoreData?.reasons,
+      };
+    });
+
+    // Sort by score (descending), items without score keep original order at end
+    return scored.sort((a, b) => {
+      const scoreA = a.match_score ?? -1;
+      const scoreB = b.match_score ?? -1;
+      if (scoreA === scoreB) return 0;
+      return scoreB - scoreA;
+    });
+  }, [rawListings, scoresMap]);
 
   // Current listing is always the first in the stack
   const currentListing = effectiveListings[0];
@@ -319,6 +362,8 @@ export function TalentSwipeJobs() {
               period={formatPeriod(currentListing.start_date, currentListing.end_date)}
               housingStatus={mapHousingStatus(currentListing.housing_offered, currentListing.housing_text)}
               housingText={currentListing.housing_text}
+              matchScore={currentListing.match_score}
+              matchReasons={currentListing.match_reasons}
               onSwipeYes={() => handleSwipe("yes")}
               onSwipeNo={() => handleSwipe("no")}
             />
