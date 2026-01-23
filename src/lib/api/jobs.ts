@@ -41,7 +41,7 @@ export interface ListingFilters extends JobFilters {
 }
 
 // ============================================================
-// FIELD MAPPING - Auto-resolve column names for flexible schema
+// FIELD MAPPING - Server-side resolved via RPC for bulletproof mapping
 // ============================================================
 
 interface ResolvedColumns {
@@ -49,76 +49,127 @@ interface ResolvedColumns {
   role: string | null;
   title: string | null;
   hasHousingOffered: boolean;
+  hasHousingText: boolean;
 }
 
-// Column candidates for each logical field
-const LOCATION_CANDIDATES = ["location", "city", "town", "location_text", "workplace_location", "area"];
-const ROLE_CANDIDATES = ["role_key", "role_title", "role", "category", "position", "job_title"];
-const TITLE_CANDIDATES = ["title", "role_title", "job_title", "headline"];
+interface FieldMapRPCResponse {
+  candidates: {
+    location: string[];
+    role: string[];
+    title: string[];
+    housing_flag: string[];
+    housing_text: string[];
+  };
+  resolved: {
+    location_col: string | null;
+    role_col: string | null;
+    title_col: string | null;
+    has_housing_offered: boolean;
+    has_housing_text: boolean;
+  };
+}
 
-// Cached resolved columns (module scope - once per session)
+// Hardcoded fallback defaults (used if RPC fails)
+const FALLBACK_COLUMNS: ResolvedColumns = {
+  location: "location",
+  role: "role_key",
+  title: "title",
+  hasHousingOffered: true,
+  hasHousingText: true,
+};
+
+// Cache with TTL (10 minutes)
 let resolvedColumnsCache: ResolvedColumns | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 /**
- * Probe job_posts table to determine which columns exist
- * Results are cached for the session
+ * Resolve job_posts field mapping via server-side RPC
+ * Uses information_schema for deterministic column resolution
+ * Results are cached for 10 minutes
  */
 async function resolveJobPostsColumns(): Promise<ResolvedColumns> {
-  if (resolvedColumnsCache) {
-    return resolvedColumnsCache;
-  }
-
-  // Probe with a single row to get column names
-  const { data, error } = await supabase
-    .from("job_posts")
-    .select("*")
-    .limit(1);
-
-  if (error || !data || data.length === 0) {
-    // Fallback to known columns from our schema
-    resolvedColumnsCache = {
-      location: "location",
-      role: "role_key", 
-      title: "title",
-      hasHousingOffered: true,
-    };
-    return resolvedColumnsCache;
-  }
-
-  const columns = Object.keys(data[0]);
+  const now = Date.now();
   
-  const findColumn = (candidates: string[]): string | null => {
-    for (const candidate of candidates) {
-      if (columns.includes(candidate)) {
-        return candidate;
-      }
+  // Return cached result if still valid
+  if (resolvedColumnsCache && (now - cacheTimestamp) < CACHE_TTL_MS) {
+    return resolvedColumnsCache;
+  }
+
+  try {
+    // Call server-side RPC for deterministic field mapping
+    const { data, error } = await supabase.rpc("get_job_posts_field_map");
+
+    if (error) {
+      debugWarn("Field map RPC failed, using fallback:", error.message);
+      resolvedColumnsCache = FALLBACK_COLUMNS;
+      cacheTimestamp = now;
+      return resolvedColumnsCache;
     }
-    return null;
-  };
 
-  resolvedColumnsCache = {
-    location: findColumn(LOCATION_CANDIDATES),
-    role: findColumn(ROLE_CANDIDATES),
-    title: findColumn(TITLE_CANDIDATES),
-    hasHousingOffered: columns.includes("housing_offered"),
-  };
+    const response = data as unknown as FieldMapRPCResponse;
+    
+    if (!response || !response.resolved) {
+      debugWarn("Field map RPC returned invalid data, using fallback");
+      resolvedColumnsCache = FALLBACK_COLUMNS;
+      cacheTimestamp = now;
+      return resolvedColumnsCache;
+    }
 
-  debugWarn("Resolved job_posts columns:", resolvedColumnsCache);
-  return resolvedColumnsCache;
+    resolvedColumnsCache = {
+      location: response.resolved.location_col,
+      role: response.resolved.role_col,
+      title: response.resolved.title_col,
+      hasHousingOffered: response.resolved.has_housing_offered,
+      hasHousingText: response.resolved.has_housing_text,
+    };
+    cacheTimestamp = now;
+
+    debugWarn("Resolved job_posts columns via RPC:", resolvedColumnsCache);
+    return resolvedColumnsCache;
+  } catch (err) {
+    // Network or other failure - use fallback
+    debugWarn("Field map resolution failed, using fallback:", err);
+    resolvedColumnsCache = FALLBACK_COLUMNS;
+    cacheTimestamp = now;
+    return resolvedColumnsCache;
+  }
+}
+
+/**
+ * Force refresh of column cache (useful after schema changes)
+ */
+export function invalidateFieldMapCache(): void {
+  resolvedColumnsCache = null;
+  cacheTimestamp = 0;
 }
 
 /**
  * Add computed display fields to listing
+ * Safe fallback: never returns undefined for display fields
  */
 function enrichListingWithDisplayFields(
   listing: Record<string, unknown>,
   cols: ResolvedColumns
 ): Record<string, unknown> {
+  // Safe access with fallback chain
+  const displayTitle = cols.title && listing[cols.title] 
+    ? String(listing[cols.title]) 
+    : (listing.title ? String(listing.title) : "—");
+  
+  const displayLocation = cols.location && listing[cols.location]
+    ? String(listing[cols.location])
+    : (listing.location ? String(listing.location) : "—");
+  
+  const displayRole = cols.role && listing[cols.role]
+    ? String(listing[cols.role])
+    : (listing.role_key ? String(listing.role_key) : "—");
+
   return {
     ...listing,
-    display_title: cols.title ? listing[cols.title] : listing.title,
-    display_location: cols.location ? listing[cols.location] : listing.location,
-    display_role: cols.role ? listing[cols.role] : listing.role_key,
+    display_title: displayTitle,
+    display_location: displayLocation,
+    display_role: displayRole,
   };
 }
 

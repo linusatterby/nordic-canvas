@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_schema_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       availability_blocks: {
         Row: {
           end_date: string
@@ -1392,6 +1410,7 @@ export type Database = {
           partner_org_name: string
         }[]
       }
+      get_job_posts_field_map: { Args: never; Returns: Json }
       get_my_circles: {
         Args: { p_org_id: string }
         Returns: {
