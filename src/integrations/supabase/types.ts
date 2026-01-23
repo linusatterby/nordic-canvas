@@ -227,6 +227,58 @@ export type Database = {
           },
         ]
       }
+      candidate_interactions: {
+        Row: {
+          action: string
+          created_at: string
+          demo_card_id: string | null
+          id: string
+          job_post_id: string
+          org_id: string
+          talent_user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          demo_card_id?: string | null
+          id?: string
+          job_post_id: string
+          org_id: string
+          talent_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          demo_card_id?: string | null
+          id?: string
+          job_post_id?: string
+          org_id?: string
+          talent_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_interactions_job_post_id_fkey"
+            columns: ["job_post_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_interactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_interactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       circle_members: {
         Row: {
           added_at: string
@@ -864,6 +916,83 @@ export type Database = {
           },
           {
             foreignKeyName: "job_posts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_interactions: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          listing_id: string
+          talent_user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          listing_id: string
+          talent_user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          listing_id?: string
+          talent_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_interactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_config: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          org_id: string | null
+          scope: string
+          updated_at: string
+          weights: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          org_id?: string | null
+          scope?: string
+          updated_at?: string
+          weights?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          org_id?: string | null
+          scope?: string
+          updated_at?: string
+          weights?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_config_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_config_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -1624,6 +1753,10 @@ export type Database = {
         }[]
       }
       get_job_posts_field_map: { Args: never; Returns: Json }
+      get_match_weights: {
+        Args: { p_location?: string; p_org_id?: string }
+        Returns: Json
+      }
       get_my_circles: {
         Args: { p_org_id: string }
         Returns: {
@@ -1662,6 +1795,20 @@ export type Database = {
         Returns: boolean
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
+      log_candidate_interaction: {
+        Args: {
+          p_action: string
+          p_demo_card_id: string
+          p_job_post_id: string
+          p_org_id: string
+          p_talent_user_id: string
+        }
+        Returns: string
+      }
+      log_listing_interaction: {
+        Args: { p_action: string; p_listing_id: string }
+        Returns: string
+      }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_me_as_demo: { Args: { p_role?: string }; Returns: Json }
       mark_notification_read: {
@@ -1675,6 +1822,41 @@ export type Database = {
       reset_demo: { Args: { p_org_id: string }; Returns: Json }
       reset_demo_for_user: { Args: never; Returns: Json }
       reset_talent_demo_swipes: { Args: never; Returns: Json }
+      score_candidate_for_job: {
+        Args: {
+          p_demo_card_id?: string
+          p_job_post_id: string
+          p_org_id: string
+          p_talent_user_id?: string
+        }
+        Returns: Json
+      }
+      score_candidates_for_job: {
+        Args: {
+          p_demo_card_ids: string[]
+          p_job_post_id: string
+          p_org_id: string
+          p_talent_user_ids: string[]
+        }
+        Returns: {
+          candidate_id: string
+          candidate_type: string
+          reasons: Json
+          score: number
+        }[]
+      }
+      score_listing_for_talent: {
+        Args: { p_listing_id: string; p_talent_user_id: string }
+        Returns: Json
+      }
+      score_listings_for_talent: {
+        Args: { p_listing_ids: string[]; p_talent_user_id: string }
+        Returns: {
+          listing_id: string
+          reasons: Json
+          score: number
+        }[]
+      }
       seed_demo_scenario: { Args: { p_org_id: string }; Returns: Json }
       take_release_offer: { Args: { p_offer_id: string }; Returns: Json }
       toggle_talent_circle_visibility: {

@@ -1,10 +1,12 @@
 import * as React from "react";
-import { MapPin, Calendar, Home, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Calendar, Home, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/classnames";
 import { HOUSING_STATUS, type HousingStatus } from "@/lib/constants/status";
+import { MatchScoreBadge } from "@/components/matching/MatchScoreBadge";
+import type { MatchReason } from "@/lib/api/ranking";
 
 export interface JobCardProps {
   id: string;
@@ -15,6 +17,8 @@ export interface JobCardProps {
   housingStatus: HousingStatus;
   housingText?: string | null;
   matchHint?: string;
+  matchScore?: number;
+  matchReasons?: MatchReason[];
   onSwipeYes?: (id: string) => void;
   onSwipeNo?: (id: string) => void;
   onViewDetails?: (id: string) => void;
@@ -44,6 +48,8 @@ export function JobCard({
   housingStatus,
   housingText,
   matchHint,
+  matchScore,
+  matchReasons,
   onSwipeYes,
   onSwipeNo,
   onViewDetails,
@@ -126,9 +132,16 @@ export function JobCard({
         )}
       </div>
 
-      {/* Match Hint */}
-      {matchHint && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-primary bg-primary-muted rounded-lg px-3 py-2">
+      {/* Match Score */}
+      {matchScore !== undefined && matchScore > 0 && (
+        <div className="mt-4">
+          <MatchScoreBadge score={matchScore} reasons={matchReasons} variant="full" />
+        </div>
+      )}
+
+      {/* Match Hint (legacy fallback) */}
+      {!matchScore && matchHint && (
+        <div className="mt-4 flex items-center gap-2 text-sm text-primary bg-primary/10 rounded-lg px-3 py-2">
           <Sparkles className="h-4 w-4 shrink-0" />
           <span>{matchHint}</span>
         </div>
