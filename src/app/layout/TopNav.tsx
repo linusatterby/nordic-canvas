@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Bell, User, Menu, X, LogOut, Settings, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/supabase/auth";
 import { toast } from "sonner";
+import { useUnreadCount } from "@/hooks/useNotifications";
 
 interface TopNavProps {
   onMenuToggle?: () => void;
@@ -19,8 +20,10 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
   const menuRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { profile, user } = useAuth();
+  const { data: unreadCount, isLoading: unreadLoading } = useUnreadCount();
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Användare";
+  const inboxPath = profile?.type === "employer" ? "/employer/inbox" : "/talent/inbox";
 
   // Close menu when clicking outside
   React.useEffect(() => {
@@ -85,9 +88,19 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
       {/* Quick Actions */}
       <div className="flex items-center gap-2">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifikationer">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative" 
+          aria-label="Notifikationer"
+          onClick={() => navigate(inboxPath)}
+        >
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-delight rounded-full" />
+          {!unreadLoading && unreadCount != null && unreadCount > 0 && (
+            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-delight text-delight-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </Button>
 
         {/* Profile Menu */}

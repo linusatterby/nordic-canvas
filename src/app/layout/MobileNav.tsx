@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Briefcase, Users, User } from "lucide-react";
+import { LayoutDashboard, Briefcase, Users, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import type { Role } from "@/lib/constants/roles";
 
@@ -14,14 +14,14 @@ const talentNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Hem", href: "/talent/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
   { icon: <Users className="h-5 w-5" />, label: "Match", href: "/talent/matches" },
-  { icon: <User className="h-5 w-5" />, label: "Profil", href: "/talent/profile" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/talent/inbox" },
 ];
 
 const employerNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Hem", href: "/employer/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/employer/jobs" },
   { icon: <Users className="h-5 w-5" />, label: "Talang", href: "/employer/swipe-talent" },
-  { icon: <User className="h-5 w-5" />, label: "Mer", href: "/employer/scheduler" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/employer/inbox" },
 ];
 
 interface MobileNavProps {

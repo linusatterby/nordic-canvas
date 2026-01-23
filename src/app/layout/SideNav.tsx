@@ -10,6 +10,8 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  Activity,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +27,8 @@ const talentNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard", href: "/talent/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Hitta jobb", href: "/talent/swipe-jobs" },
   { icon: <Users className="h-5 w-5" />, label: "Matchningar", href: "/talent/matches" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/talent/inbox" },
+  { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/talent/activity" },
   { icon: <User className="h-5 w-5" />, label: "Min profil", href: "/talent/profile" },
 ];
 
@@ -32,6 +36,8 @@ const employerNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard", href: "/employer/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Mina jobb", href: "/employer/jobs" },
   { icon: <Users className="h-5 w-5" />, label: "Hitta talanger", href: "/employer/swipe-talent" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/employer/inbox" },
+  { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/employer/activity" },
   { icon: <Calendar className="h-5 w-5" />, label: "Schemaläggare", href: "/employer/scheduler" },
   { icon: <ArrowLeftRight className="h-5 w-5" />, label: "Låna personal", href: "/employer/borrow" },
 ];

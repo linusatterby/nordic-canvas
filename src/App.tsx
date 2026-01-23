@@ -23,6 +23,8 @@ import TalentMatches from "@/app/routes/(talent)/TalentMatches";
 import TalentMatchChat from "@/app/routes/(talent)/TalentMatchChat";
 import TalentActivity from "@/app/routes/(talent)/TalentActivity";
 import TalentInbox from "@/app/routes/(talent)/TalentInbox";
+import EmployerActivity from "@/app/routes/(employer)/EmployerActivity";
+import EmployerInbox from "@/app/routes/(employer)/EmployerInbox";
 // Employer routes
 import EmployerDashboard from "@/app/routes/(employer)/EmployerDashboard";
 import EmployerScheduler from "@/app/routes/(employer)/EmployerScheduler";
@@ -69,6 +71,8 @@ const App = () => (
               <Route path="/talent/swipe-jobs" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentSwipeJobs /></RoleGate></ProtectedRoute>} />
               <Route path="/talent/matches" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentMatches /></RoleGate></ProtectedRoute>} />
               <Route path="/talent/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentMatchChat /></RoleGate></ProtectedRoute>} />
+              <Route path="/talent/activity" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentActivity /></RoleGate></ProtectedRoute>} />
+              <Route path="/talent/inbox" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentInbox /></RoleGate></ProtectedRoute>} />
 
               {/* Employer */}
               <Route path="/employer/dashboard" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerDashboard /></RoleGate></ProtectedRoute>} />
@@ -78,6 +82,8 @@ const App = () => (
               <Route path="/employer/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["employer"]}><TalentMatchChat /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/scheduler" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerScheduler /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/borrow" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerBorrow /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/activity" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerActivity /></RoleGate></ProtectedRoute>} />
+              <Route path="/employer/inbox" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerInbox /></RoleGate></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
