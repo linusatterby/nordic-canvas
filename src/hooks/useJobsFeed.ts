@@ -1,9 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listUnswipedJobs, getJob, listOrgJobs, resetTalentDemoSwipes, listDemoJobsHard, type JobWithOrg, type JobFilters, type JobFetchResult } from "@/lib/api/jobs";
+import { 
+  listUnswipedJobs, 
+  getJob, 
+  listOrgJobs, 
+  resetTalentDemoSwipes, 
+  listDemoJobsHard, 
+  listListings,
+  listOrgListings,
+  type JobWithOrg, 
+  type JobFilters, 
+  type JobFetchResult,
+  type ListingFilters,
+  type ListingStatus,
+} from "@/lib/api/jobs";
 import { useDemoMode } from "@/hooks/useDemo";
 
 /**
  * Hook to fetch unswiped published jobs for talent with filters
+ * Now uses unified listListings under the hood
  * In demo mode, always shows demo jobs even if all have been swiped
  */
 export function useJobsFeed(filters?: JobFilters) {
@@ -36,16 +50,17 @@ export function useJob(jobId: string | undefined) {
 }
 
 /**
- * Hook to fetch jobs for an org
+ * Hook to fetch jobs for an org (backward compatible)
+ * Now uses listOrgListings for status filtering support
  */
-export function useOrgJobs(orgId: string | undefined) {
+export function useOrgJobs(orgId: string | undefined, statusFilter?: ListingStatus) {
   return useQuery({
-    queryKey: ["jobs", "org", orgId],
+    queryKey: ["jobs", "org", orgId, statusFilter],
     queryFn: async () => {
       if (!orgId) return [];
-      const { jobs, error } = await listOrgJobs(orgId);
+      const { listings, error } = await listOrgListings(orgId, { status: statusFilter });
       if (error) throw error;
-      return jobs;
+      return listings;
     },
     enabled: !!orgId,
   });
@@ -68,6 +83,7 @@ export function useResetTalentDemoSwipes() {
       // Invalidate all job feed queries (partial match on key prefix)
       queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
       queryClient.invalidateQueries({ queryKey: ["jobs", "demo-hard"] });
+      queryClient.invalidateQueries({ queryKey: ["listings"] });
       // Force immediate refetch
       queryClient.refetchQueries({ queryKey: ["jobs", "unswiped"] });
     },
@@ -95,3 +111,6 @@ export function useDemoJobsHard(enabled: boolean = false) {
     staleTime: 1000 * 30, // 30 seconds
   });
 }
+
+// Re-export types for convenience
+export type { ListingFilters, ListingStatus };
