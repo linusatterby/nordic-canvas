@@ -8,7 +8,7 @@ import { ShieldX, ArrowRight } from "lucide-react";
 import type { ProfileType } from "@/lib/api/profile";
 
 interface RoleGateProps {
-  allow: Array<"talent" | "employer">;
+  allow: Array<"talent" | "employer" | "host">;
   children: React.ReactNode;
 }
 
