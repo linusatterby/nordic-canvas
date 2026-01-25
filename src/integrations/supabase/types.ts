@@ -1789,6 +1789,15 @@ export type Database = {
         Args: { p_recipient_user_id: string; p_thread_id: string }
         Returns: boolean
       }
+      check_offer_conflict: {
+        Args: {
+          p_listing_id?: string
+          p_match_id?: string
+          p_org_id: string
+          p_talent_user_id: string
+        }
+        Returns: Json
+      }
       create_activity_event:
         | {
             Args: {
@@ -1933,6 +1942,7 @@ export type Database = {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
       }
+      healthcheck_events: { Args: { p_minutes?: number }; Returns: Json }
       is_demo_allowlisted: { Args: { p_email: string }; Returns: boolean }
       is_listing_owner: {
         Args: { _listing_id: string; _user_id: string }
