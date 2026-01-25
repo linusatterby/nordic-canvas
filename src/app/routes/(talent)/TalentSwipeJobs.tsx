@@ -15,18 +15,13 @@ import { useListings } from "@/hooks/useListings";
 import { useResetTalentDemoSwipes, useDemoJobsHard } from "@/hooks/useJobsFeed";
 import { useSwipeTalentJob } from "@/hooks/useSwipes";
 import { useListingScores } from "@/hooks/useRanking";
+import { useStableRankedStack, hashFilters } from "@/hooks/useStableRankedStack";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode } from "@/hooks/useDemo";
 import { shouldShowDemoDebug } from "@/lib/utils/debug";
 import type { ListingFilters, ListingType, ListingWithOrg } from "@/lib/api/jobs";
-
-// Listing with optional match score attached
-interface ScoredListing extends ListingWithOrg {
-  match_score?: number;
-  match_reasons?: Array<{ key: string; label: string; impact: number }>;
-}
 
 export function TalentSwipeJobs() {
   useDemoCoachToast("swipe-jobs");
@@ -92,34 +87,35 @@ export function TalentSwipeJobs() {
     listingIds.length > 0
   );
 
-  // Merge scores and sort by match_score DESC
-  const effectiveListings = React.useMemo((): ScoredListing[] => {
-    if (rawListings.length === 0) return [];
-    
-    // Attach scores to listings
-    const scored: ScoredListing[] = rawListings.map(listing => {
-      const scoreData = scoresMap?.get(listing.id);
-      return {
-        ...listing,
-        match_score: scoreData?.score,
-        match_reasons: scoreData?.reasons,
-      };
+  // Create stable context key for ranking lock
+  const contextKey = React.useMemo(() => {
+    const filterHash = hashFilters({
+      location: filters.location,
+      role: filters.role,
+      housingOnly: filters.housingOnly,
+      includeShiftCover: filters.includeShiftCover,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
     });
+    return `talent:${filterHash}:${isDemoMode ? "demo" : "real"}`;
+  }, [filters, isDemoMode]);
 
-    // Sort by score (descending), items without score keep original order at end
-    return scored.sort((a, b) => {
-      const scoreA = a.match_score ?? -1;
-      const scoreB = b.match_score ?? -1;
-      if (scoreA === scoreB) return 0;
-      return scoreB - scoreA;
-    });
-  }, [rawListings, scoresMap]);
+  // Use stable ranked stack - locks order once scores arrive
+  const { ordered: effectiveListings, removeTop, reset: resetStack, debug: stackDebug } = useStableRankedStack({
+    items: rawListings,
+    scores: scoresMap,
+    contextKey,
+    topN: 12,
+  });
 
   // Current listing is always the first in the stack
   const currentListing = effectiveListings[0];
 
   const handleSwipe = async (direction: "yes" | "no") => {
     if (!currentListing || !user) return;
+
+    // Optimistically remove from stack immediately
+    removeTop();
 
     try {
       await swipeMutation.mutateAsync({ jobId: currentListing.id, direction });
@@ -147,6 +143,8 @@ export function TalentSwipeJobs() {
         }
       }
     } catch (err) {
+      // On error, reset the stack to restore the card
+      resetStack();
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara." });
     }
   };
@@ -333,6 +331,11 @@ export function TalentSwipeJobs() {
                     <p><span className="text-muted-foreground">hardDemoCount:</span> {hardDemoJobs?.length ?? 0}</p>
                     <p><span className="text-muted-foreground">effectiveCount:</span> {effectiveListings.length}</p>
                     <p><span className="text-muted-foreground">shouldUseHardFetch:</span> {shouldUseHardFetch ? "true" : "false"}</p>
+                    <hr className="border-border my-2" />
+                    <p><span className="text-muted-foreground">stackLocked:</span> {stackDebug?.locked ? "true" : "false"}</p>
+                    <p><span className="text-muted-foreground">stackSize:</span> {stackDebug?.size ?? 0}</p>
+                    <p><span className="text-muted-foreground">removedCount:</span> {stackDebug?.removedCount ?? 0}</p>
+                    <p><span className="text-muted-foreground">contextKey:</span> {stackDebug?.contextKey ?? "N/A"}</p>
                     
                     <div className="flex gap-2 mt-3">
                       <Button variant="outline" size="sm" onClick={() => refetchFeed()} className="text-xs">

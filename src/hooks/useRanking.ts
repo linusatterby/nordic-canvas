@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
   scoreListingsForTalent,
@@ -5,6 +6,17 @@ import {
   type ScoredListing,
   type ScoredCandidate,
 } from "@/lib/api/ranking";
+
+/**
+ * Create a stable hash from an array of IDs for query keys
+ */
+function hashIds(ids: string[]): string {
+  if (ids.length === 0) return "empty";
+  // Use first 10 chars of first+last id plus length for uniqueness
+  const first = ids[0]?.slice(0, 8) ?? "";
+  const last = ids[ids.length - 1]?.slice(0, 8) ?? "";
+  return `${first}_${last}_${ids.length}`;
+}
 
 /**
  * Hook to batch score listings for the current talent
@@ -15,14 +27,19 @@ export function useListingScores(
   listingIds: string[],
   enabled: boolean = true
 ) {
+  // Memoize the ID list to prevent unnecessary query key changes
+  const stableIds = React.useMemo(() => {
+    return listingIds.slice(0, 12);
+  }, [listingIds.join("|")]);
+  
+  const idsHash = React.useMemo(() => hashIds(stableIds), [stableIds]);
+
   return useQuery({
-    queryKey: ["listingScores", talentUserId, listingIds.slice(0, 10).join(",")],
+    queryKey: ["ranking", "listings", talentUserId, idsHash],
     queryFn: async () => {
-      if (!talentUserId || listingIds.length === 0) return new Map<string, ScoredListing>();
+      if (!talentUserId || stableIds.length === 0) return new Map<string, ScoredListing>();
       
-      // Only score top 10 for performance
-      const idsToScore = listingIds.slice(0, 10);
-      const { scores, error } = await scoreListingsForTalent(talentUserId, idsToScore);
+      const { scores, error } = await scoreListingsForTalent(talentUserId, stableIds);
       
       if (error) {
         console.warn("[useListingScores] Scoring failed, returning empty:", error);
@@ -33,9 +50,11 @@ export function useListingScores(
       scores.forEach((s) => scoreMap.set(s.listing_id, s));
       return scoreMap;
     },
-    enabled: enabled && !!talentUserId && listingIds.length > 0,
+    enabled: enabled && !!talentUserId && stableIds.length > 0,
     staleTime: 1000 * 60 * 2, // 2 minutes
     refetchOnWindowFocus: false,
+    // Keep previous data while refetching to prevent jitter
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -50,32 +69,34 @@ export function useCandidateScores(
   demoCardIds: string[],
   enabled: boolean = true
 ) {
-  const queryKey = [
-    "candidateScores",
-    orgId,
-    jobPostId,
-    talentUserIds.slice(0, 10).join(","),
-    demoCardIds.slice(0, 10).join(","),
-  ];
+  // Memoize the ID lists to prevent unnecessary query key changes
+  const stableTalentIds = React.useMemo(() => {
+    return talentUserIds.slice(0, 12);
+  }, [talentUserIds.join("|")]);
+  
+  const stableDemoIds = React.useMemo(() => {
+    return demoCardIds.slice(0, 12);
+  }, [demoCardIds.join("|")]);
+  
+  const idsHash = React.useMemo(
+    () => `t:${hashIds(stableTalentIds)}_d:${hashIds(stableDemoIds)}`,
+    [stableTalentIds, stableDemoIds]
+  );
 
   return useQuery({
-    queryKey,
+    queryKey: ["ranking", "candidates", orgId, jobPostId, idsHash],
     queryFn: async () => {
       if (!orgId || !jobPostId) return new Map<string, ScoredCandidate>();
       
-      // Only score top 10 for performance
-      const talentsToScore = talentUserIds.slice(0, 10);
-      const demosToScore = demoCardIds.slice(0, 10);
-      
-      if (talentsToScore.length === 0 && demosToScore.length === 0) {
+      if (stableTalentIds.length === 0 && stableDemoIds.length === 0) {
         return new Map<string, ScoredCandidate>();
       }
 
       const { scores, error } = await scoreCandidatesForJob(
         orgId,
         jobPostId,
-        talentsToScore,
-        demosToScore
+        stableTalentIds,
+        stableDemoIds
       );
       
       if (error) {
@@ -87,14 +108,17 @@ export function useCandidateScores(
       scores.forEach((s) => scoreMap.set(s.candidate_id, s));
       return scoreMap;
     },
-    enabled: enabled && !!orgId && !!jobPostId && (talentUserIds.length > 0 || demoCardIds.length > 0),
+    enabled: enabled && !!orgId && !!jobPostId && (stableTalentIds.length > 0 || stableDemoIds.length > 0),
     staleTime: 1000 * 60 * 2, // 2 minutes
     refetchOnWindowFocus: false,
+    // Keep previous data while refetching to prevent jitter
+    placeholderData: (previousData) => previousData,
   });
 }
 
 /**
  * Attach scores to a list of items and sort by score
+ * @deprecated Use useStableRankedStack instead for swipe feeds
  */
 export function attachAndSortByScore<T extends { id: string }>(
   items: T[],
