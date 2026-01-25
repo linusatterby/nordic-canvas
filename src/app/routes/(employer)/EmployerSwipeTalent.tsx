@@ -14,16 +14,24 @@ import { useTalentFeed } from "@/hooks/useTalentFeed";
 import { useDefaultOrgId } from "@/hooks/useOrgs";
 import { useSwipeEmployerTalent } from "@/hooks/useSwipes";
 import { useCandidateScores } from "@/hooks/useRanking";
+import { useStableRankedStack } from "@/hooks/useStableRankedStack";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode, useResetDemo } from "@/hooks/useDemo";
 import { shouldShowDemoDebug } from "@/lib/utils/debug";
 import type { CandidateCardDTO } from "@/lib/api/talent";
 
-// Candidate with optional match score attached
-interface ScoredCandidate extends CandidateCardDTO {
-  match_score?: number;
-  match_reasons?: Array<{ key: string; label: string; impact: number }>;
+// Unified ID helper for candidates
+function getCandidateId(candidate: CandidateCardDTO): string {
+  if (candidate.type === "demo_card" && candidate.demo_card_id) {
+    return `demo:${candidate.demo_card_id}`;
+  }
+  return `talent:${candidate.user_id}`;
+}
+
+// Candidate with unified id for stable stack
+interface StackableCandidate extends CandidateCardDTO {
+  id: string; // unified id
 }
 
 export function EmployerSwipeTalent() {
@@ -56,12 +64,20 @@ export function EmployerSwipeTalent() {
   const [showDebug, setShowDebug] = React.useState(false);
   const [seenCount, setSeenCount] = React.useState(0);
 
+  // Convert raw talents to stackable format with unified id
+  const stackableItems = React.useMemo((): StackableCandidate[] => {
+    return (rawTalents ?? []).map(t => ({
+      ...t,
+      id: getCandidateId(t),
+    }));
+  }, [rawTalents]);
+
   // Extract IDs for batch scoring (max 12)
   const { talentUserIds, demoCardIds } = React.useMemo(() => {
     const talents: string[] = [];
     const demos: string[] = [];
     
-    (rawTalents ?? []).slice(0, 12).forEach(t => {
+    stackableItems.slice(0, 12).forEach(t => {
       if (t.type === "demo_card" && t.demo_card_id) {
         demos.push(t.demo_card_id);
       } else if (t.user_id) {
@@ -70,10 +86,10 @@ export function EmployerSwipeTalent() {
     });
     
     return { talentUserIds: talents, demoCardIds: demos };
-  }, [rawTalents]);
+  }, [stackableItems]);
 
   // Fetch scores in batch (graceful: returns empty map on error)
-  const { data: scoresMap } = useCandidateScores(
+  const { data: rawScoresMap } = useCandidateScores(
     orgId,
     jobId,
     talentUserIds,
@@ -81,29 +97,35 @@ export function EmployerSwipeTalent() {
     !!orgId && !!jobId && (talentUserIds.length > 0 || demoCardIds.length > 0)
   );
 
-  // Merge scores and sort by match_score DESC
-  const talents = React.useMemo((): ScoredCandidate[] => {
-    if (!rawTalents || rawTalents.length === 0) return [];
-    
-    // Attach scores to candidates
-    const scored: ScoredCandidate[] = rawTalents.map(candidate => {
-      const id = candidate.type === "demo_card" ? candidate.demo_card_id : candidate.user_id;
-      const scoreData = id ? scoresMap?.get(id) : undefined;
-      return {
-        ...candidate,
-        match_score: scoreData?.score,
-        match_reasons: scoreData?.reasons,
-      };
+  // Convert score map keys to unified id format
+  const scoresMap = React.useMemo(() => {
+    if (!rawScoresMap) return undefined;
+    const converted = new Map<string, { score: number; reasons?: any[] }>();
+    rawScoresMap.forEach((data, candidateId) => {
+      // The RPC returns candidate_id which could be talent or demo card id
+      // We need to match it with our unified format
+      stackableItems.forEach(item => {
+        const rawId = item.type === "demo_card" ? item.demo_card_id : item.user_id;
+        if (rawId === candidateId) {
+          converted.set(item.id, data);
+        }
+      });
     });
+    return converted;
+  }, [rawScoresMap, stackableItems]);
 
-    // Sort by score (descending), items without score keep original order at end
-    return scored.sort((a, b) => {
-      const scoreA = a.match_score ?? -1;
-      const scoreB = b.match_score ?? -1;
-      if (scoreA === scoreB) return 0;
-      return scoreB - scoreA;
-    });
-  }, [rawTalents, scoresMap]);
+  // Create stable context key for ranking lock
+  const contextKey = React.useMemo(() => {
+    return `employer:${orgId ?? "none"}:${jobId ?? "none"}:${isDemoMode ? "demo" : "real"}`;
+  }, [orgId, jobId, isDemoMode]);
+
+  // Use stable ranked stack - locks order once scores arrive
+  const { ordered: talents, removeTop, reset: resetStack, debug: stackDebug } = useStableRankedStack({
+    items: stackableItems,
+    scores: scoresMap,
+    contextKey,
+    topN: 12,
+  });
 
   // Always show first talent in the stack (optimistic updates remove swiped ones)
   const currentTalent = talents?.[0];
@@ -112,6 +134,9 @@ export function EmployerSwipeTalent() {
 
   const handleSwipe = async (direction: "yes" | "no") => {
     if (!currentTalent || !orgId || !jobId) return;
+
+    // Optimistically remove from stack immediately
+    removeTop();
 
     try {
       // Handle both real talents and demo cards
@@ -158,9 +183,11 @@ export function EmployerSwipeTalent() {
         }
       }
 
-      // Optimistic UI already removed the talent, just increment seen count
+      // Increment seen count
       setSeenCount((prev) => prev + 1);
     } catch {
+      // On error, reset the stack to restore the card
+      resetStack();
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara." });
     }
   };
@@ -169,6 +196,7 @@ export function EmployerSwipeTalent() {
     try {
       await resetDemo.mutateAsync(undefined);
       setSeenCount(0);
+      resetStack();
       refetchTalents();
       addToast({ type: "success", title: "Demo återställt", message: "Du kan nu swipa igen." });
     } catch (err) {
@@ -364,6 +392,10 @@ export function EmployerSwipeTalent() {
                   <p><span className="text-muted-foreground">realCount:</span> {talentDebug.realCount}</p>
                   <p><span className="text-muted-foreground">demoCardCount:</span> {talentDebug.demoCardCount}</p>
                   <p className="text-xs opacity-70">tables: {talentDebug.tables?.demoCards}, {talentDebug.tables?.demoSwipes}</p>
+                  <hr className="border-border my-2" />
+                  <p><span className="text-muted-foreground">stackLocked:</span> {stackDebug?.locked ? "true" : "false"}</p>
+                  <p><span className="text-muted-foreground">stackSize:</span> {stackDebug?.size ?? 0}</p>
+                  <p><span className="text-muted-foreground">removedCount:</span> {stackDebug?.removedCount ?? 0}</p>
                   {talentDebug.normalError && (
                     <p className="text-destructive"><span className="text-muted-foreground">normalError:</span> {talentDebug.normalError}</p>
                   )}
@@ -400,6 +432,10 @@ export function EmployerSwipeTalent() {
               <p><span className="text-muted-foreground">seen / remaining:</span> {seenCount} / {remainingCount}</p>
               <p><span className="text-muted-foreground">realCount:</span> {talentDebug.realCount}</p>
               <p><span className="text-muted-foreground">demoCardCount:</span> {talentDebug.demoCardCount}</p>
+              <hr className="border-border my-2" />
+              <p><span className="text-muted-foreground">stackLocked:</span> {stackDebug?.locked ? "true" : "false"}</p>
+              <p><span className="text-muted-foreground">stackSize:</span> {stackDebug?.size ?? 0}</p>
+              <p><span className="text-muted-foreground">removedCount:</span> {stackDebug?.removedCount ?? 0}</p>
             </div>
           </Card>
         )}
