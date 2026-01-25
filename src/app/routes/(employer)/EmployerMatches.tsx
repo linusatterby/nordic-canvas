@@ -7,14 +7,43 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/delight/EmptyStates";
-import { MessageCircle, Calendar, MapPin, Send, Sparkles } from "lucide-react";
+import { OfferComposerModal } from "@/components/offers";
+import { MessageCircle, Calendar, MapPin, Send, Sparkles, FileText } from "lucide-react";
 import { useMatches } from "@/hooks/useMatches";
 import { useDefaultOrgId } from "@/hooks/useOrgs";
+import { useOrgOffers } from "@/hooks/useOffers";
 
 export function EmployerMatches() {
   const navigate = useNavigate();
   const { data: orgId } = useDefaultOrgId();
   const { data: matches, isLoading } = useMatches("employer", orgId);
+  const { data: orgOffers } = useOrgOffers(orgId);
+
+  // Offer composer state
+  const [offerModalOpen, setOfferModalOpen] = React.useState(false);
+  const [selectedMatch, setSelectedMatch] = React.useState<{
+    id: string;
+    talent_user_id: string;
+    job_post_id?: string;
+    job_title?: string;
+    job_location?: string;
+    job_start_date?: string;
+    job_end_date?: string;
+  } | null>(null);
+
+  // Check if a match already has a sent/accepted offer
+  const hasActiveOffer = (matchId: string, talentUserId: string) => {
+    return orgOffers?.some(
+      (o) => 
+        (o.match_id === matchId || o.talent_user_id === talentUserId) && 
+        ["sent", "accepted"].includes(o.status)
+    );
+  };
+
+  const handleSendOffer = (match: typeof selectedMatch) => {
+    setSelectedMatch(match);
+    setOfferModalOpen(true);
+  };
 
   const formatPeriod = (start: string, end: string) => {
     const s = new Date(start);
@@ -48,6 +77,7 @@ export function EmployerMatches() {
           <div className="space-y-4">
             {matches.map((match) => {
               const hasNoMessages = !match.last_message;
+              const alreadyHasOffer = hasActiveOffer(match.id, match.talent_user_id ?? "");
               
               return (
                 <Card key={match.id} variant="interactive" padding="md">
@@ -103,6 +133,26 @@ export function EmployerMatches() {
                           </>
                         )}
                       </Button>
+                      
+                      {/* Send Offer Button */}
+                      <Button
+                        variant={alreadyHasOffer ? "ghost" : "secondary"}
+                        size="sm"
+                        className="gap-1"
+                        disabled={alreadyHasOffer}
+                        onClick={() => handleSendOffer({
+                          id: match.id,
+                          talent_user_id: match.talent_user_id ?? "",
+                          job_post_id: match.job_post_id,
+                          job_title: match.job_title,
+                          job_location: match.job_location,
+                          job_start_date: match.job_start_date,
+                          job_end_date: match.job_end_date,
+                        })}
+                      >
+                        <FileText className="h-4 w-4" />
+                        {alreadyHasOffer ? "Erbjudande skickat" : "Erbjudande"}
+                      </Button>
                     </div>
                   </div>
                 </Card>
@@ -118,6 +168,27 @@ export function EmployerMatches() {
           />
         )}
       </div>
+
+      {/* Offer Composer Modal */}
+      {orgId && selectedMatch && (
+        <OfferComposerModal
+          open={offerModalOpen}
+          onClose={() => {
+            setOfferModalOpen(false);
+            setSelectedMatch(null);
+          }}
+          orgId={orgId}
+          talentUserId={selectedMatch.talent_user_id}
+          matchId={selectedMatch.id}
+          listingId={selectedMatch.job_post_id}
+          prefill={{
+            role_title: selectedMatch.job_title,
+            location: selectedMatch.job_location,
+            start_date: selectedMatch.job_start_date,
+            end_date: selectedMatch.job_end_date,
+          }}
+        />
+      )}
     </AppShell>
   );
 }

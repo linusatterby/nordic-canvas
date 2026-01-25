@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import { AppShell } from "@/app/layout";
@@ -11,6 +11,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { useMatches } from "@/hooks/useMatches";
 import { useTalentBorrowOffers } from "@/hooks/useBorrow";
 import { useNotifications, useUnreadCount, useMarkNotificationRead } from "@/hooks/useNotifications";
+import { useTalentOffers, usePendingOffersCount } from "@/hooks/useOffers";
+import { OffersList, OfferDetailModal } from "@/components/offers";
 import { getSeverityDotClass } from "@/lib/api/notifications";
 import { cn } from "@/lib/utils";
 import { 
@@ -19,19 +21,43 @@ import {
   Calendar,
   Bell,
   ChevronRight,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from "lucide-react";
 
 export default function TalentInbox() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches("talent");
-  const { data: offers, isLoading: offersLoading, refetch: refetchOffers } = useTalentBorrowOffers();
+  const { data: borrowOffers, isLoading: borrowOffersLoading, refetch: refetchBorrowOffers } = useTalentBorrowOffers();
   const { data: notifications, isLoading: notificationsLoading, refetch: refetchNotifications } = useNotifications({ limit: 30 });
   const { data: unreadCount } = useUnreadCount();
   const markRead = useMarkNotificationRead();
+  const pendingOffersCount = usePendingOffersCount();
 
-  const pendingOffers = offers?.filter((o) => o.status === "pending") ?? [];
-  const isLoading = matchesLoading || offersLoading;
+  const pendingBorrowOffers = borrowOffers?.filter((o) => o.status === "pending") ?? [];
+
+  // Handle offerId from URL (from notification deep-link)
+  const urlOfferId = searchParams.get("offerId");
+  const urlTab = searchParams.get("tab");
+  const [selectedOfferId, setSelectedOfferId] = React.useState<string | null>(urlOfferId);
+  const [activeTab, setActiveTab] = React.useState(urlTab === "offers" ? "job-offers" : "notifications");
+
+  React.useEffect(() => {
+    if (urlOfferId) {
+      setSelectedOfferId(urlOfferId);
+      setActiveTab("job-offers");
+    }
+  }, [urlOfferId]);
+
+  const handleCloseOfferModal = () => {
+    setSelectedOfferId(null);
+    // Clear URL params
+    if (urlOfferId) {
+      setSearchParams({});
+    }
+  };
 
   const handleNotificationClick = (notification: { id: string; is_read: boolean; href?: string | null }) => {
     if (!notification.is_read) {
@@ -56,32 +82,41 @@ export default function TalentInbox() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="notifications" className="w-full">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="notifications" className="gap-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full grid grid-cols-4">
+            <TabsTrigger value="notifications" className="gap-1 text-xs sm:text-sm">
               <Bell className="h-4 w-4" />
-              Notiser
+              <span className="hidden sm:inline">Notiser</span>
               {unreadCount && unreadCount > 0 && (
                 <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="matches" className="gap-2">
+            <TabsTrigger value="matches" className="gap-1 text-xs sm:text-sm">
               <MessageSquare className="h-4 w-4" />
-              Matchningar
+              <span className="hidden sm:inline">Matchningar</span>
               {matches && matches.length > 0 && (
                 <Badge variant="default" className="ml-1 h-5 px-1.5 text-xs">
                   {matches.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="offers" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              Förfrågningar
-              {pendingOffers.length > 0 && (
+            <TabsTrigger value="job-offers" className="gap-1 text-xs sm:text-sm">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Erbjudanden</span>
+              {pendingOffersCount > 0 && (
                 <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
-                  {pendingOffers.length}
+                  {pendingOffersCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="borrow-offers" className="gap-1 text-xs sm:text-sm">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Förfrågan</span>
+              {pendingBorrowOffers.length > 0 && (
+                <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
+                  {pendingBorrowOffers.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -240,21 +275,30 @@ export default function TalentInbox() {
             )}
           </TabsContent>
 
-          {/* Offers Tab */}
-          <TabsContent value="offers" className="mt-4 space-y-3">
+          {/* Job Offers Tab (NEW) */}
+          <TabsContent value="job-offers" className="mt-4">
+            <OffersList
+              role="talent"
+              onSelectOffer={(id) => setSelectedOfferId(id)}
+              selectedOfferId={selectedOfferId}
+            />
+          </TabsContent>
+
+          {/* Borrow Offers Tab */}
+          <TabsContent value="borrow-offers" className="mt-4 space-y-3">
             <div className="flex justify-end mb-2">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => refetchOffers?.()}
-                disabled={offersLoading}
+                onClick={() => refetchBorrowOffers?.()}
+                disabled={borrowOffersLoading}
               >
-                <RefreshCw className={cn("h-4 w-4 mr-1", offersLoading && "animate-spin")} />
+                <RefreshCw className={cn("h-4 w-4 mr-1", borrowOffersLoading && "animate-spin")} />
                 Uppdatera
               </Button>
             </div>
 
-            {offersLoading ? (
+            {borrowOffersLoading ? (
               Array.from({ length: 2 }).map((_, i) => (
                 <Card key={i} className="p-4">
                   <div className="space-y-2">
@@ -263,7 +307,7 @@ export default function TalentInbox() {
                   </div>
                 </Card>
               ))
-            ) : pendingOffers.length === 0 ? (
+            ) : pendingBorrowOffers.length === 0 ? (
               <Card className="p-8 text-center">
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-medium text-foreground">Inga väntande förfrågningar</h3>
@@ -272,7 +316,7 @@ export default function TalentInbox() {
                 </p>
               </Card>
             ) : (
-              pendingOffers.map((offer) => (
+              pendingBorrowOffers.map((offer) => (
                 <Card
                   key={offer.id}
                   className="p-4 cursor-pointer hover:bg-secondary/50 transition-colors"
@@ -306,6 +350,13 @@ export default function TalentInbox() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Offer Detail Modal */}
+      <OfferDetailModal
+        offerId={selectedOfferId}
+        onClose={handleCloseOfferModal}
+        role="talent"
+      />
     </AppShell>
   );
 }
