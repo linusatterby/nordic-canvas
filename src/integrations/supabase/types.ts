@@ -1159,6 +1159,154 @@ export type Database = {
           },
         ]
       }
+      offer_events: {
+        Row: {
+          actor_user_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          offer_id: string
+        }
+        Insert: {
+          actor_user_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          offer_id: string
+        }
+        Update: {
+          actor_user_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          offer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_events_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          end_date: string | null
+          expires_at: string | null
+          hourly_rate: number | null
+          hours_per_week: number | null
+          housing_included: boolean
+          housing_note: string | null
+          id: string
+          listing_id: string | null
+          listing_type: string
+          location: string | null
+          match_id: string | null
+          message: string | null
+          org_id: string
+          responded_at: string | null
+          role_title: string | null
+          sent_at: string | null
+          shift_end: string | null
+          shift_start: string | null
+          start_date: string | null
+          status: string
+          talent_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          end_date?: string | null
+          expires_at?: string | null
+          hourly_rate?: number | null
+          hours_per_week?: number | null
+          housing_included?: boolean
+          housing_note?: string | null
+          id?: string
+          listing_id?: string | null
+          listing_type?: string
+          location?: string | null
+          match_id?: string | null
+          message?: string | null
+          org_id: string
+          responded_at?: string | null
+          role_title?: string | null
+          sent_at?: string | null
+          shift_end?: string | null
+          shift_start?: string | null
+          start_date?: string | null
+          status?: string
+          talent_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          end_date?: string | null
+          expires_at?: string | null
+          hourly_rate?: number | null
+          hours_per_week?: number | null
+          housing_included?: boolean
+          housing_note?: string | null
+          id?: string
+          listing_id?: string | null
+          listing_type?: string
+          location?: string | null
+          match_id?: string | null
+          message?: string | null
+          org_id?: string
+          responded_at?: string | null
+          role_title?: string | null
+          sent_at?: string | null
+          shift_end?: string | null
+          shift_start?: string | null
+          start_date?: string | null
+          status?: string
+          talent_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           org_id: string
@@ -1777,6 +1925,10 @@ export type Database = {
         Args: { _match_id: string; _user_id: string }
         Returns: boolean
       }
+      has_offer_access: {
+        Args: { p_offer_id: string; p_user_id: string }
+        Returns: boolean
+      }
       has_thread_access: {
         Args: { _thread_id: string; _user_id: string }
         Returns: boolean
@@ -1822,6 +1974,10 @@ export type Database = {
       reset_demo: { Args: { p_org_id: string }; Returns: Json }
       reset_demo_for_user: { Args: never; Returns: Json }
       reset_talent_demo_swipes: { Args: never; Returns: Json }
+      respond_offer: {
+        Args: { p_action: string; p_offer_id: string }
+        Returns: Json
+      }
       score_candidate_for_job: {
         Args: {
           p_demo_card_id?: string
@@ -1858,11 +2014,13 @@ export type Database = {
         }[]
       }
       seed_demo_scenario: { Args: { p_org_id: string }; Returns: Json }
+      send_offer: { Args: { p_offer_id: string }; Returns: Json }
       take_release_offer: { Args: { p_offer_id: string }; Returns: Json }
       toggle_talent_circle_visibility: {
         Args: { p_extra_hours: boolean; p_scope: string }
         Returns: Json
       }
+      withdraw_offer: { Args: { p_offer_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
