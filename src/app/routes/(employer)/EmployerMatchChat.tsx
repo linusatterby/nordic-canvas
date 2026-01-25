@@ -59,17 +59,22 @@ export function EmployerMatchChat() {
           </div>
           
           {/* Send Offer Button */}
-          <Button
-            variant={hasActiveOffer ? "ghost" : "secondary"}
-            size="sm"
-            className="gap-1"
-            disabled={hasActiveOffer}
-            onClick={() => setOfferModalOpen(true)}
-            title={hasActiveOffer ? "Ett erbjudande är redan skickat" : undefined}
-          >
-            <FileText className="h-4 w-4" />
-            {hasActiveOffer ? "Erbjudande skickat" : "Skicka erbjudande"}
-          </Button>
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              variant={hasActiveOffer ? "ghost" : "secondary"}
+              size="sm"
+              className="gap-1"
+              disabled={hasActiveOffer}
+              onClick={() => setOfferModalOpen(true)}
+              title={hasActiveOffer ? "Ett erbjudande är redan skickat" : undefined}
+            >
+              <FileText className="h-4 w-4" />
+              {hasActiveOffer ? "Erbjudande skickat" : "Skicka erbjudande"}
+            </Button>
+            {hasActiveOffer && (
+              <span className="text-xs text-muted-foreground">Ett erbjudande är redan aktivt</span>
+            )}
+          </div>
         </div>
 
         {/* Shared Chat View Component */}

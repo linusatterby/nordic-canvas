@@ -197,28 +197,97 @@ export async function getOffer(offerId: string): Promise<{
 }
 
 /**
- * Send an offer (draft -> sent)
+ * Offer action result type for standardized error handling
  */
-export async function sendOffer(offerId: string): Promise<{
-  success: boolean;
-  reason?: string;
-  error: Error | null;
-}> {
+export type OfferActionResult = 
+  | { ok: true; offerId?: string }
+  | { ok: false; reason: 'conflict' | 'forbidden' | 'validation' | 'not_found' | 'invalid_status' | 'unknown'; message: string; existingOfferId?: string };
+
+/**
+ * Map server reasons to user-friendly messages
+ */
+export function getOfferErrorMessage(reason: string): string {
+  switch (reason) {
+    case 'conflict':
+      return 'Ett erbjudande är redan skickat eller accepterat för den här matchningen.';
+    case 'forbidden':
+      return 'Du saknar behörighet för den här organisationen.';
+    case 'validation':
+      return 'Erbjudandet saknar obligatorisk information.';
+    case 'not_found':
+      return 'Erbjudandet kunde inte hittas.';
+    case 'invalid_status':
+      return 'Erbjudandet kan inte skickas i nuvarande status.';
+    default:
+      return 'Något gick fel. Försök igen.';
+  }
+}
+
+/**
+ * Check if an offer conflict exists (dry-run)
+ */
+export async function checkOfferConflict(
+  orgId: string,
+  talentUserId: string,
+  matchId?: string | null,
+  listingId?: string | null
+): Promise<{ hasConflict: boolean; conflictCount: number }> {
+  const { data, error } = await supabase.rpc("check_offer_conflict", {
+    p_org_id: orgId,
+    p_talent_user_id: talentUserId,
+    p_match_id: matchId ?? undefined,
+    p_listing_id: listingId ?? undefined,
+  });
+
+  if (error) {
+    console.error("[checkOfferConflict] RPC error:", error);
+    return { hasConflict: false, conflictCount: 0 };
+  }
+
+  const result = data as { has_conflict: boolean; conflict_count: number };
+  return { hasConflict: result.has_conflict, conflictCount: result.conflict_count };
+}
+
+/**
+ * Send an offer (draft -> sent) with standardized result
+ */
+export async function sendOffer(offerId: string): Promise<OfferActionResult> {
   const { data, error } = await supabase.rpc("send_offer", {
     p_offer_id: offerId,
   });
 
   if (error) {
     console.error("[sendOffer] RPC error:", error);
-    return { success: false, error };
+    return { ok: false, reason: 'unknown', message: getOfferErrorMessage('unknown') };
   }
 
-  const result = data as { success: boolean; reason?: string };
-  return { 
-    success: result.success, 
-    reason: result.reason,
-    error: null 
-  };
+  const result = data as { success: boolean; reason?: string; offer_id?: string };
+  
+  if (!result.success) {
+    const reason = (result.reason as OfferActionResult extends { ok: false } ? OfferActionResult['reason'] : never) || 'unknown';
+    return { 
+      ok: false, 
+      reason: reason as any,
+      message: getOfferErrorMessage(result.reason || 'unknown')
+    };
+  }
+  
+  return { ok: true, offerId };
+}
+
+/**
+ * Legacy sendOffer return format for backward compatibility
+ */
+export async function sendOfferLegacy(offerId: string): Promise<{
+  success: boolean;
+  reason?: string;
+  error: Error | null;
+}> {
+  const result = await sendOffer(offerId);
+  if (result.ok === true) {
+    return { success: true, error: null };
+  }
+  return { success: false, reason: result.reason, error: null };
 }
 
 /**

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -45,6 +46,7 @@ interface OfferComposerModalProps {
 
 export function OfferComposerModal({ open, onClose, orgId, talentUserId, matchId, listingId, prefill }: OfferComposerModalProps) {
   const { addToast } = useToasts();
+  const navigate = useNavigate();
   const createDraftMutation = useCreateOfferDraft();
   const sendOfferMutation = useSendOffer();
 
@@ -84,7 +86,27 @@ export function OfferComposerModal({ open, onClose, orgId, talentUserId, matchId
 
       const draft = await createDraftMutation.mutateAsync(payload);
       if (draft?.id) {
-        await sendOfferMutation.mutateAsync(draft.id);
+        const result = await sendOfferMutation.mutateAsync(draft.id);
+        
+        // Handle conflict response with CTA
+        if (result.ok === false) {
+          const errorMsg = result.message;
+          if (result.reason === 'conflict') {
+            addToast({ 
+              type: "error", 
+              title: "Erbjudande finns redan", 
+              message: errorMsg,
+              action: {
+                label: "Öppna erbjudanden",
+                onClick: () => navigate("/employer/inbox?tab=offers"),
+              },
+            });
+          } else {
+            addToast({ type: "error", title: "Kunde inte skicka", message: errorMsg });
+          }
+          return;
+        }
+        
         addToast({ type: "success", title: "Erbjudande skickat!", message: "Talangen har fått ditt erbjudande." });
         reset();
         onClose();

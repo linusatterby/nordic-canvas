@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   listTalentOffers,
   listOrgOffers,
@@ -8,10 +9,14 @@ import {
   respondOffer,
   withdrawOffer,
   updateOfferDraft,
+  checkOfferConflict,
+  getOfferErrorMessage,
   type CreateOfferPayload,
   type Offer,
   type OfferWithOrg,
+  type OfferActionResult,
 } from "@/lib/api/offers";
+import { useToasts } from "@/components/delight/Toasts";
 
 /**
  * Hook for talent to list their received offers
@@ -102,21 +107,92 @@ export function useUpdateOfferDraft() {
 }
 
 /**
- * Hook to send an offer
+ * Send offer result type with offerId
+ */
+type SendOfferResult = 
+  | { ok: true; offerId: string }
+  | { ok: false; offerId: string; reason: string; message: string; existingOfferId?: string };
+
+/**
+ * Hook to send an offer with conflict handling
  */
 export function useSendOffer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (offerId: string) => {
-      const { success, reason, error } = await sendOffer(offerId);
-      if (error) throw error;
-      if (!success) throw new Error(reason || "Failed to send offer");
-      return { success, offerId };
+    mutationFn: async (offerId: string): Promise<SendOfferResult> => {
+      const result = await sendOffer(offerId);
+      if (result.ok === false) {
+        return { 
+          ok: false as const, 
+          offerId, 
+          reason: result.reason, 
+          message: result.message,
+          existingOfferId: result.existingOfferId
+        };
+      }
+      return { ok: true as const, offerId };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["offers"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    onSuccess: (result) => {
+      if (result.ok) {
+        queryClient.invalidateQueries({ queryKey: ["offers"] });
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      }
+    },
+  });
+}
+
+/**
+ * Hook to send an offer with toast feedback
+ */
+export function useSendOfferWithFeedback() {
+  const queryClient = useQueryClient();
+  const { addToast } = useToasts();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: async (offerId: string): Promise<SendOfferResult> => {
+      const result = await sendOffer(offerId);
+      if (result.ok === false) {
+        return { 
+          ok: false as const, 
+          offerId, 
+          reason: result.reason, 
+          message: result.message,
+          existingOfferId: result.existingOfferId
+        };
+      }
+      return { ok: true as const, offerId };
+    },
+    onSuccess: (result) => {
+      if (result.ok === true) {
+        queryClient.invalidateQueries({ queryKey: ["offers"] });
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        addToast({ 
+          type: "success", 
+          title: "Erbjudande skickat!", 
+          message: "Talangen har fått ditt erbjudande." 
+        });
+      } else {
+        const errorResult = result;
+        if (errorResult.reason === 'conflict') {
+          addToast({
+            type: "error",
+            title: "Erbjudande finns redan",
+            message: errorResult.message,
+            action: {
+              label: "Öppna erbjudanden",
+              onClick: () => navigate("/employer/inbox?tab=offers"),
+            },
+          });
+        } else {
+          addToast({
+            type: "error",
+            title: "Kunde inte skicka",
+            message: errorResult.message,
+          });
+        }
+      }
     },
   });
 }

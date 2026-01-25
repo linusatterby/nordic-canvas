@@ -9,17 +9,23 @@ import {
   FileText,
   Activity,
   RefreshCw,
-  XCircle
+  XCircle,
+  ScrollText
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { getEnvStatus, getProductionWarnings } from "@/lib/config/env";
 import { AppShell } from "@/app/layout/AppShell";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { debugWarn } from "@/lib/utils/debug";
+
+const AUDIT_LOG_KEY = "adminHealthAuditLogEnabled";
 
 interface HealthCheck {
   name: string;
@@ -74,8 +80,23 @@ function HealthCheckItem({ check }: { check: HealthCheck }) {
   );
 }
 
+// Log admin audit event (fails silently)
+async function logAdminAudit(action: string, metadata: Record<string, unknown> = {}) {
+  try {
+    const { error } = await supabase.rpc("log_admin_audit", {
+      p_action: action,
+      p_metadata: metadata as unknown as Record<string, never>,
+    });
+    if (error) {
+      debugWarn("[AdminHealth] Audit log failed:", error.message);
+    }
+  } catch (err) {
+    debugWarn("[AdminHealth] Audit log error:", err);
+  }
+}
+
 // Hook to run all health checks
-function useHealthChecks() {
+function useHealthChecks(auditEnabled: boolean) {
   return useQuery({
     queryKey: ["admin", "healthchecks"],
     queryFn: async (): Promise<HealthCheck[]> => {
@@ -249,6 +270,16 @@ function useHealthChecks() {
         });
       }
 
+      // Log audit event if enabled
+      if (auditEnabled) {
+        const summary = {
+          pass: checks.filter(c => c.status === "pass").length,
+          warn: checks.filter(c => c.status === "warn").length,
+          fail: checks.filter(c => c.status === "fail").length,
+        };
+        await logAdminAudit("health_check_run", { resultsSummary: summary });
+      }
+
       return checks;
     },
     staleTime: 0, // Always refetch
@@ -259,7 +290,31 @@ function useHealthChecks() {
 export default function AdminHealth() {
   const envStatus = getEnvStatus();
   const warnings = getProductionWarnings();
-  const { data: checks, isLoading, refetch, isFetching } = useHealthChecks();
+  
+  // Audit log toggle (persisted in localStorage)
+  const [auditEnabled, setAuditEnabled] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(AUDIT_LOG_KEY) === 'true';
+    }
+    return false;
+  });
+
+  const handleAuditToggle = (checked: boolean) => {
+    setAuditEnabled(checked);
+    localStorage.setItem(AUDIT_LOG_KEY, String(checked));
+  };
+
+  // Log page open if audit is enabled
+  React.useEffect(() => {
+    if (auditEnabled) {
+      logAdminAudit("health_opened", { 
+        env: envStatus.IS_PROD ? "production" : "development",
+        demoDebug: envStatus.DEMO_DEBUG_ENABLED,
+      });
+    }
+  }, [auditEnabled, envStatus.IS_PROD, envStatus.DEMO_DEBUG_ENABLED]);
+
+  const { data: checks, isLoading, refetch, isFetching } = useHealthChecks(auditEnabled);
 
   const groupedChecks = React.useMemo(() => {
     if (!checks) return {};
@@ -306,6 +361,30 @@ export default function AdminHealth() {
               Kör om
             </Button>
           </div>
+
+          {/* Audit Log Toggle */}
+          <Card className="mb-6">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ScrollText className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <Label htmlFor="audit-toggle" className="text-sm font-medium cursor-pointer">
+                      Logga health-check (admin audit)
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Opt-in: Sparar när du öppnar eller kör checks
+                    </p>
+                  </div>
+                </div>
+                <Checkbox
+                  id="audit-toggle"
+                  checked={auditEnabled}
+                  onCheckedChange={handleAuditToggle}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Summary */}
           <div className="grid grid-cols-3 gap-4 mb-6">

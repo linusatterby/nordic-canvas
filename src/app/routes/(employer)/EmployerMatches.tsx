@@ -135,24 +135,30 @@ export function EmployerMatches() {
                       </Button>
                       
                       {/* Send Offer Button */}
-                      <Button
-                        variant={alreadyHasOffer ? "ghost" : "secondary"}
-                        size="sm"
-                        className="gap-1"
-                        disabled={alreadyHasOffer}
-                        onClick={() => handleSendOffer({
-                          id: match.id,
-                          talent_user_id: match.talent_user_id ?? "",
-                          job_post_id: match.job_post_id,
-                          job_title: match.job_title,
-                          job_location: match.job_location,
-                          job_start_date: match.job_start_date,
-                          job_end_date: match.job_end_date,
-                        })}
-                      >
-                        <FileText className="h-4 w-4" />
-                        {alreadyHasOffer ? "Erbjudande skickat" : "Erbjudande"}
-                      </Button>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <Button
+                          variant={alreadyHasOffer ? "ghost" : "secondary"}
+                          size="sm"
+                          className="gap-1"
+                          disabled={alreadyHasOffer}
+                          onClick={() => handleSendOffer({
+                            id: match.id,
+                            talent_user_id: match.talent_user_id ?? "",
+                            job_post_id: match.job_post_id,
+                            job_title: match.job_title,
+                            job_location: match.job_location,
+                            job_start_date: match.job_start_date,
+                            job_end_date: match.job_end_date,
+                          })}
+                          title={alreadyHasOffer ? "Ett erbjudande är redan aktivt" : undefined}
+                        >
+                          <FileText className="h-4 w-4" />
+                          {alreadyHasOffer ? "Erbjudande skickat" : "Erbjudande"}
+                        </Button>
+                        {alreadyHasOffer && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">Redan aktivt</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>
