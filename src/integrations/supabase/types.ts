@@ -80,6 +80,30 @@ export type Database = {
           },
         ]
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          metadata: Json
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+        }
+        Relationships: []
+      }
       app_schema_config: {
         Row: {
           key: string
@@ -1957,6 +1981,10 @@ export type Database = {
         Returns: boolean
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
+      log_admin_audit: {
+        Args: { p_action: string; p_metadata?: Json }
+        Returns: Json
+      }
       log_candidate_interaction: {
         Args: {
           p_action: string
