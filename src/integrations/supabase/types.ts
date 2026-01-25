@@ -868,8 +868,15 @@ export type Database = {
       }
       job_posts: {
         Row: {
+          approx_area: string | null
+          available_from: string | null
+          available_to: string | null
+          contact_preference: string | null
           created_at: string
+          deposit: number | null
           end_date: string
+          furnished: boolean
+          host_user_id: string | null
           housing_offered: boolean | null
           housing_text: string | null
           id: string
@@ -878,8 +885,10 @@ export type Database = {
           location: string | null
           match_priority: number
           org_id: string
+          rent_per_month: number | null
           required_badges: string[] | null
           role_key: string
+          rooms: number | null
           shift_end: string | null
           shift_required: boolean
           shift_start: string | null
@@ -889,8 +898,15 @@ export type Database = {
           title: string
         }
         Insert: {
+          approx_area?: string | null
+          available_from?: string | null
+          available_to?: string | null
+          contact_preference?: string | null
           created_at?: string
+          deposit?: number | null
           end_date: string
+          furnished?: boolean
+          host_user_id?: string | null
           housing_offered?: boolean | null
           housing_text?: string | null
           id?: string
@@ -899,8 +915,10 @@ export type Database = {
           location?: string | null
           match_priority?: number
           org_id: string
+          rent_per_month?: number | null
           required_badges?: string[] | null
           role_key: string
+          rooms?: number | null
           shift_end?: string | null
           shift_required?: boolean
           shift_start?: string | null
@@ -910,8 +928,15 @@ export type Database = {
           title: string
         }
         Update: {
+          approx_area?: string | null
+          available_from?: string | null
+          available_to?: string | null
+          contact_preference?: string | null
           created_at?: string
+          deposit?: number | null
           end_date?: string
+          furnished?: boolean
+          host_user_id?: string | null
           housing_offered?: boolean | null
           housing_text?: string | null
           id?: string
@@ -920,8 +945,10 @@ export type Database = {
           location?: string | null
           match_priority?: number
           org_id?: string
+          rent_per_month?: number | null
           required_badges?: string[] | null
           role_key?: string
+          rooms?: number | null
           shift_end?: string | null
           shift_required?: boolean
           shift_start?: string | null
@@ -1660,18 +1687,30 @@ export type Database = {
       threads: {
         Row: {
           created_at: string
+          host_user_id: string | null
+          housing_listing_id: string | null
           id: string
-          match_id: string
+          match_id: string | null
+          talent_user_id: string | null
+          thread_type: string
         }
         Insert: {
           created_at?: string
+          host_user_id?: string | null
+          housing_listing_id?: string | null
           id?: string
-          match_id: string
+          match_id?: string | null
+          talent_user_id?: string | null
+          thread_type?: string
         }
         Update: {
           created_at?: string
+          host_user_id?: string | null
+          housing_listing_id?: string | null
           id?: string
-          match_id?: string
+          match_id?: string | null
+          talent_user_id?: string | null
+          thread_type?: string
         }
         Relationships: [
           {
@@ -1859,6 +1898,10 @@ export type Database = {
         Args: { p_name: string; p_org_id: string }
         Returns: string
       }
+      create_housing_inquiry: {
+        Args: { p_housing_listing_id: string }
+        Returns: Json
+      }
       create_notification:
         | {
             Args: {
@@ -1981,6 +2024,32 @@ export type Database = {
         Returns: boolean
       }
       is_verified_tenant: { Args: { _user_id: string }; Returns: boolean }
+      list_host_housing_threads: {
+        Args: never
+        Returns: {
+          housing_listing_id: string
+          last_message_at: string
+          listing_location: string
+          listing_title: string
+          talent_name: string
+          talent_user_id: string
+          thread_id: string
+          unread_count: number
+        }[]
+      }
+      list_talent_housing_threads: {
+        Args: never
+        Returns: {
+          host_name: string
+          host_user_id: string
+          housing_listing_id: string
+          last_message_at: string
+          listing_location: string
+          listing_title: string
+          rent_per_month: number
+          thread_id: string
+        }[]
+      }
       log_admin_audit: {
         Args: { p_action: string; p_metadata?: Json }
         Returns: Json
