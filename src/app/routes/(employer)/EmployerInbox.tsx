@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import { AppShell } from "@/app/layout";
@@ -12,6 +12,8 @@ import { useMatches } from "@/hooks/useMatches";
 import { useOrgBorrowRequests } from "@/hooks/useBorrow";
 import { useMyOrgs } from "@/hooks/useOrgs";
 import { useNotifications, useUnreadCount, useMarkNotificationRead } from "@/hooks/useNotifications";
+import { useOrgOffers } from "@/hooks/useOffers";
+import { OffersList, OfferDetailModal } from "@/components/offers";
 import { getSeverityDotClass } from "@/lib/api/notifications";
 import { cn } from "@/lib/utils";
 import { 
@@ -20,11 +22,13 @@ import {
   HandshakeIcon,
   Bell,
   ChevronRight,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from "lucide-react";
 
 export default function EmployerInbox() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: orgs } = useMyOrgs();
   const activeOrgId = orgs?.[0]?.id;
   
@@ -33,8 +37,30 @@ export default function EmployerInbox() {
   const { data: notifications, isLoading: notificationsLoading, refetch: refetchNotifications } = useNotifications({ limit: 30 });
   const { data: unreadCount } = useUnreadCount();
   const markRead = useMarkNotificationRead();
+  const { data: jobOffers } = useOrgOffers(activeOrgId);
 
   const openRequests = requests?.filter((r) => r.status === "open") ?? [];
+  const pendingOffers = jobOffers?.filter((o) => o.status === "sent") ?? [];
+
+  // Handle offerId from URL (from notification deep-link)
+  const urlOfferId = searchParams.get("offerId");
+  const urlTab = searchParams.get("tab");
+  const [selectedOfferId, setSelectedOfferId] = React.useState<string | null>(urlOfferId);
+  const [activeTab, setActiveTab] = React.useState(urlTab === "offers" ? "job-offers" : "notifications");
+
+  React.useEffect(() => {
+    if (urlOfferId) {
+      setSelectedOfferId(urlOfferId);
+      setActiveTab("job-offers");
+    }
+  }, [urlOfferId]);
+
+  const handleCloseOfferModal = () => {
+    setSelectedOfferId(null);
+    if (urlOfferId) {
+      setSearchParams({});
+    }
+  };
 
   const handleNotificationClick = (notification: { id: string; is_read: boolean; href?: string | null }) => {
     if (!notification.is_read) {
@@ -59,29 +85,38 @@ export default function EmployerInbox() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="notifications" className="w-full">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="notifications" className="gap-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full grid grid-cols-4">
+            <TabsTrigger value="notifications" className="gap-1 text-xs sm:text-sm">
               <Bell className="h-4 w-4" />
-              Notiser
+              <span className="hidden sm:inline">Notiser</span>
               {unreadCount && unreadCount > 0 && (
                 <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="matches" className="gap-2">
+            <TabsTrigger value="matches" className="gap-1 text-xs sm:text-sm">
               <MessageSquare className="h-4 w-4" />
-              Matchningar
+              <span className="hidden sm:inline">Matchningar</span>
               {matches && matches.length > 0 && (
                 <Badge variant="default" className="ml-1 h-5 px-1.5 text-xs">
                   {matches.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="borrow" className="gap-2">
+            <TabsTrigger value="job-offers" className="gap-1 text-xs sm:text-sm">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Erbjudanden</span>
+              {pendingOffers.length > 0 && (
+                <Badge variant="default" className="ml-1 h-5 px-1.5 text-xs">
+                  {pendingOffers.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="borrow" className="gap-1 text-xs sm:text-sm">
               <HandshakeIcon className="h-4 w-4" />
-              Lån
+              <span className="hidden sm:inline">Lån</span>
               {openRequests.length > 0 && (
                 <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
                   {openRequests.length}
@@ -243,6 +278,16 @@ export default function EmployerInbox() {
             )}
           </TabsContent>
 
+          {/* Job Offers Tab (NEW) */}
+          <TabsContent value="job-offers" className="mt-4">
+            <OffersList
+              role="employer"
+              orgId={activeOrgId}
+              onSelectOffer={(id) => setSelectedOfferId(id)}
+              selectedOfferId={selectedOfferId}
+            />
+          </TabsContent>
+
           {/* Borrow Tab */}
           <TabsContent value="borrow" className="mt-4 space-y-3">
             <div className="flex justify-end mb-2">
@@ -320,6 +365,13 @@ export default function EmployerInbox() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Offer Detail Modal */}
+      <OfferDetailModal
+        offerId={selectedOfferId}
+        onClose={handleCloseOfferModal}
+        role="employer"
+      />
     </AppShell>
   );
 }
