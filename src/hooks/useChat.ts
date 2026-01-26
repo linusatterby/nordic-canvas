@@ -220,3 +220,79 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
     isDemo: !!isDemo,
   };
 }
+
+/**
+ * Hook for housing thread chat (by threadId directly)
+ */
+export function useHousingChat(threadId: string | undefined) {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Get messages
+  const messagesQuery = useQuery({
+    queryKey: ["messages", threadId],
+    queryFn: async () => {
+      if (!threadId) return [];
+      const { messages, error } = await listMessages(threadId);
+      if (error) throw error;
+      return messages;
+    },
+    enabled: !!threadId,
+    staleTime: 0,
+    refetchInterval: 10000, // Poll every 10s as fallback
+  });
+
+  // Subscribe to realtime messages
+  useEffect(() => {
+    if (!threadId || !user) return;
+
+    const unsubscribe = subscribeToMessages(threadId, (newMessage: Message) => {
+      queryClient.setQueryData<MessageWithSender[]>(
+        ["messages", threadId],
+        (old) => {
+          if (!old) return [{ ...newMessage, is_own: newMessage.sender_user_id === user.id }];
+          if (old.some((m) => m.id === newMessage.id)) return old;
+          return [...old, { ...newMessage, is_own: newMessage.sender_user_id === user.id }];
+        }
+      );
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [threadId, queryClient, user]);
+
+  // Effective messages
+  const messages: EffectiveMessage[] = (messagesQuery.data ?? []).map((m) =>
+    toEffectiveMessage(m as MessageWithSender)
+  );
+
+  // Send message mutation
+  const sendMutation = useMutation({
+    mutationFn: async (body: string) => {
+      if (!threadId) throw new Error("No thread");
+      const { message, error } = await sendMessage(threadId, body);
+      if (error) throw error;
+      return message;
+    },
+    onSuccess: (newMessage) => {
+      if (!newMessage || !threadId) return;
+      queryClient.setQueryData<MessageWithSender[]>(
+        ["messages", threadId],
+        (old) => {
+          if (!old) return [{ ...newMessage, is_own: true }];
+          if (old.some((m) => m.id === newMessage.id)) return old;
+          return [...old, { ...newMessage, is_own: true }];
+        }
+      );
+    },
+  });
+
+  return {
+    messages,
+    isLoading: messagesQuery.isLoading,
+    error: messagesQuery.error,
+    sendMessage: sendMutation.mutate,
+    isSending: sendMutation.isPending,
+  };
+}
