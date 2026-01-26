@@ -34,6 +34,19 @@ export interface HousingThread {
   unread_count?: number;
 }
 
+export interface CreateHousingPayload {
+  title: string;
+  location: string | null;
+  approx_area: string | null;
+  rent_per_month: number;
+  rooms: number | null;
+  furnished: boolean;
+  available_from: string | null;
+  available_to: string | null;
+  deposit: number | null;
+  housing_text: string | null;
+}
+
 /**
  * List published housing listings with filters
  */
@@ -68,6 +81,122 @@ export async function listHousingListings(
   }
 
   return { listings: filtered, error: null };
+}
+
+/**
+ * List host's own housing listings
+ */
+export async function listMyHostHousing(): Promise<{
+  listings: HousingListing[];
+  error: Error | null;
+}> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { listings: [], error: new Error("Not authenticated") };
+  }
+
+  const { data, error } = await supabase
+    .from("job_posts")
+    .select(`*, orgs ( name )`)
+    .eq("listing_type", "housing")
+    .eq("host_user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return { listings: [], error: new Error(error.message) };
+  }
+
+  const listings: HousingListing[] = (data ?? []).map((item) => ({
+    ...item,
+    org_name: (item.orgs as { name: string } | null)?.name ?? "—",
+  }));
+
+  return { listings, error: null };
+}
+
+/**
+ * Create a housing listing as host
+ */
+export async function createHostHousingListing(payload: CreateHousingPayload): Promise<{
+  listing: HousingListing | null;
+  error: Error | null;
+}> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { listing: null, error: new Error("Not authenticated") };
+  }
+
+  // Get or create a placeholder org for private hosts
+  // For v0, we'll use a special "private_host" org or just set org_id to a demo org
+  // In production, hosts would have their own org or we'd allow null org_id
+  const { data: demoOrg } = await supabase
+    .from("orgs")
+    .select("id")
+    .eq("is_demo", true)
+    .limit(1)
+    .maybeSingle();
+
+  const orgId = demoOrg?.id;
+  if (!orgId) {
+    return { listing: null, error: new Error("No organization available") };
+  }
+
+  const { data, error } = await supabase
+    .from("job_posts")
+    .insert({
+      listing_type: "housing",
+      title: payload.title,
+      location: payload.location,
+      approx_area: payload.approx_area,
+      rent_per_month: payload.rent_per_month,
+      rooms: payload.rooms,
+      furnished: payload.furnished,
+      available_from: payload.available_from,
+      available_to: payload.available_to,
+      deposit: payload.deposit,
+      housing_text: payload.housing_text,
+      host_user_id: user.id,
+      org_id: orgId,
+      role_key: "housing",
+      start_date: payload.available_from || new Date().toISOString().split("T")[0],
+      end_date: payload.available_to || "2099-12-31",
+      status: "draft",
+    })
+    .select(`*, orgs ( name )`)
+    .single();
+
+  if (error) {
+    return { listing: null, error: new Error(error.message) };
+  }
+
+  const listing: HousingListing = {
+    ...data,
+    org_name: (data.orgs as { name: string } | null)?.name ?? "—",
+  };
+
+  return { listing, error: null };
+}
+
+/**
+ * Update housing listing status
+ */
+export async function updateHousingListingStatus(
+  id: string,
+  status: "published" | "closed"
+): Promise<{ error: Error | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: new Error("Not authenticated") };
+  }
+
+  const { error } = await supabase
+    .from("job_posts")
+    .update({ status })
+    .eq("id", id)
+    .eq("host_user_id", user.id)
+    .eq("listing_type", "housing");
+
+  return { error: error ? new Error(error.message) : null };
 }
 
 /**

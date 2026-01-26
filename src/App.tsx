@@ -34,6 +34,10 @@ import EmployerMatches from "@/app/routes/(employer)/EmployerMatches";
 import EmployerMatchChat from "@/app/routes/(employer)/EmployerMatchChat";
 import EmployerBorrow from "@/app/routes/(employer)/EmployerBorrow";
 
+// Host routes
+import HostHousing from "@/app/routes/(host)/HostHousing";
+import HostInbox from "@/app/routes/(host)/HostInbox";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -85,6 +89,10 @@ const App = () => (
               <Route path="/employer/borrow" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerBorrow /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/activity" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerActivity /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/inbox" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerInbox /></RoleGate></ProtectedRoute>} />
+
+              {/* Host */}
+              <Route path="/host/housing" element={<ProtectedRoute><RoleGate allow={["host"]}><HostHousing /></RoleGate></ProtectedRoute>} />
+              <Route path="/host/inbox" element={<ProtectedRoute><RoleGate allow={["host"]}><HostInbox /></RoleGate></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -5,9 +5,13 @@ import {
   listHostHousingThreads,
   listTalentHousingThreads,
   checkVerifiedTenant,
+  listMyHostHousing,
+  createHostHousingListing,
+  updateHousingListingStatus,
   type HousingFilters,
   type HousingListing,
   type HousingThread,
+  type CreateHousingPayload,
 } from "@/lib/api/housing";
 import { useDemoMode } from "@/hooks/useDemo";
 
@@ -90,4 +94,55 @@ export function useTalentHousingThreads() {
   });
 }
 
-export type { HousingFilters, HousingListing, HousingThread };
+/**
+ * Hook for host's own housing listings
+ */
+export function useMyHostHousing() {
+  return useQuery({
+    queryKey: ["housing", "my-listings"],
+    queryFn: async () => {
+      const { listings, error } = await listMyHostHousing();
+      if (error) throw error;
+      return listings;
+    },
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
+/**
+ * Hook for creating a housing listing
+ */
+export function useCreateHousingListing() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: CreateHousingPayload) => {
+      const { listing, error } = await createHostHousingListing(payload);
+      if (error) throw error;
+      return listing;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["housing", "my-listings"] });
+    },
+  });
+}
+
+/**
+ * Hook for updating housing listing status
+ */
+export function useUpdateHousingListingStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "published" | "closed" }) => {
+      const { error } = await updateHousingListingStatus(id, status);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["housing", "my-listings"] });
+      queryClient.invalidateQueries({ queryKey: ["housing", "listings"] });
+    },
+  });
+}
+
+export type { HousingFilters, HousingListing, HousingThread, CreateHousingPayload };

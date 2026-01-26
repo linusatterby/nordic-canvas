@@ -61,7 +61,7 @@ export default function TalentHousing() {
 
         {/* Verified tenant gate notice */}
         {!verifiedLoading && !isVerified && (
-          <Card variant="outline" padding="md" className="border-warning/50 bg-warning/5">
+          <Card variant="default" padding="md" className="border-warning/50 bg-warning/5">
             <div className="flex items-start gap-3">
               <Shield className="h-5 w-5 text-warning shrink-0 mt-0.5" />
               <div className="flex-1">
@@ -171,7 +171,7 @@ export default function TalentHousing() {
             ))}
           </div>
         ) : (
-          <Card variant="outline" padding="lg" className="text-center">
+          <Card variant="default" padding="lg" className="text-center">
             <Home className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
             <p className="text-muted-foreground">Inga boenden hittades</p>
           </Card>

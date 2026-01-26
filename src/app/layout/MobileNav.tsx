@@ -24,13 +24,22 @@ const employerNavItems: NavItem[] = [
   { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/employer/inbox" },
 ];
 
+const hostNavItems: NavItem[] = [
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Boenden", href: "/host/housing" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/host/inbox" },
+];
+
 interface MobileNavProps {
   role: Role;
 }
 
 export function MobileNav({ role }: MobileNavProps) {
   const location = useLocation();
-  const navItems = role === "talent" ? talentNavItems : employerNavItems;
+  const navItems = role === "talent" 
+    ? talentNavItems 
+    : role === "host" 
+      ? hostNavItems 
+      : employerNavItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border lg:hidden safe-area-bottom">

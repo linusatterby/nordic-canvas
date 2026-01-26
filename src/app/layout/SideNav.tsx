@@ -42,6 +42,11 @@ const employerNavItems: NavItem[] = [
   { icon: <ArrowLeftRight className="h-5 w-5" />, label: "Låna personal", href: "/employer/borrow" },
 ];
 
+const hostNavItems: NavItem[] = [
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Mina boenden", href: "/host/housing" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/host/inbox" },
+];
+
 interface SideNavProps {
   role: Role;
   isOpen: boolean;
@@ -50,7 +55,11 @@ interface SideNavProps {
 
 export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
   const location = useLocation();
-  const navItems = role === "talent" ? talentNavItems : employerNavItems;
+  const navItems = role === "talent" 
+    ? talentNavItems 
+    : role === "host" 
+      ? hostNavItems 
+      : employerNavItems;
 
   return (
     <aside
