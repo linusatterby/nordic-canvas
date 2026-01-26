@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Star, ChevronRight, Award, Calendar, TrendingUp } from "lucide-react";
+import { Star, ChevronRight, Award, Calendar, TrendingUp, Home } from "lucide-react";
 import { AppShell } from "@/app/layout/AppShell";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -207,18 +207,36 @@ export function TalentDashboard() {
           </Card>
         </div>
 
-        {/* CTA */}
-        <Card variant="interactive" padding="lg" className="mt-6 text-center">
-          <p className="text-muted-foreground mb-4">
-            Redo att hitta ditt nästa jobb?
-          </p>
-          <Link to="/talent/swipe-jobs">
-            <Button variant="primary" size="lg" className="gap-2">
-              Börja swipea jobb
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </Card>
+        {/* CTAs */}
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          <Card variant="interactive" padding="lg" className="text-center">
+            <p className="text-muted-foreground mb-4">
+              Redo att hitta ditt nästa jobb?
+            </p>
+            <Link to="/talent/swipe-jobs">
+              <Button variant="primary" size="lg" className="gap-2">
+                Börja swipea jobb
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </Card>
+
+          <Card variant="interactive" padding="lg" className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Home className="h-5 w-5 text-primary" />
+              <p className="font-medium text-foreground">Hitta boende</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Se boenden på orten (kräver accepterat erbjudande för att kontakta värd)
+            </p>
+            <Link to="/talent/housing">
+              <Button variant="secondary" size="lg" className="gap-2">
+                Se boenden
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </Card>
+        </div>
       </div>
     </AppShell>
   );

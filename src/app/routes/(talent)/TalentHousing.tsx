@@ -10,13 +10,15 @@ import { useHousingListings, useVerifiedTenant, useCreateHousingInquiry } from "
 import { MapPin, Home, Users, Sofa, Calendar, Shield, MessageCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function TalentHousing() {
   const navigate = useNavigate();
+  const { isDemoMode } = useAuth();
   const [locationFilter, setLocationFilter] = React.useState("");
   const [maxRentFilter, setMaxRentFilter] = React.useState<number | undefined>();
 
-  const { data: listings, isLoading } = useHousingListings({
+  const { data: listings, isLoading, refetch } = useHousingListings({
     location: locationFilter || undefined,
     maxRent: maxRentFilter,
   });
@@ -173,7 +175,12 @@ export default function TalentHousing() {
         ) : (
           <Card variant="default" padding="lg" className="text-center">
             <Home className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-muted-foreground">Inga boenden hittades</p>
+            <p className="text-muted-foreground mb-2">Inga boenden hittades</p>
+            {isDemoMode && (
+              <p className="text-sm text-muted-foreground">
+                Demo-boenden skapas automatiskt av arbetsgivare i demo-läge.
+              </p>
+            )}
           </Card>
         )}
       </div>
