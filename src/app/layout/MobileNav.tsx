@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Briefcase, Users, Inbox } from "lucide-react";
+import { LayoutDashboard, Briefcase, Users, Inbox, Home } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import type { Role } from "@/lib/constants/roles";
 
@@ -13,6 +13,7 @@ interface NavItem {
 const talentNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Hem", href: "/talent/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
+  { icon: <Home className="h-5 w-5" />, label: "Boende", href: "/talent/housing" },
   { icon: <Users className="h-5 w-5" />, label: "Match", href: "/talent/matches" },
   { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/talent/inbox" },
 ];

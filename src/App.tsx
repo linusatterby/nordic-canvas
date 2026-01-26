@@ -23,6 +23,7 @@ import TalentMatches from "@/app/routes/(talent)/TalentMatches";
 import TalentMatchChat from "@/app/routes/(talent)/TalentMatchChat";
 import TalentActivity from "@/app/routes/(talent)/TalentActivity";
 import TalentInbox from "@/app/routes/(talent)/TalentInbox";
+import TalentHousing from "@/app/routes/(talent)/TalentHousing";
 import EmployerActivity from "@/app/routes/(employer)/EmployerActivity";
 import EmployerInbox from "@/app/routes/(employer)/EmployerInbox";
 // Employer routes
@@ -78,8 +79,8 @@ const App = () => (
               <Route path="/talent/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentMatchChat /></RoleGate></ProtectedRoute>} />
               <Route path="/talent/activity" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentActivity /></RoleGate></ProtectedRoute>} />
               <Route path="/talent/inbox" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentInbox /></RoleGate></ProtectedRoute>} />
+              <Route path="/talent/housing" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentHousing /></RoleGate></ProtectedRoute>} />
 
-              {/* Employer */}
               <Route path="/employer/dashboard" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerDashboard /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/jobs" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerJobs /></RoleGate></ProtectedRoute>} />
               <Route path="/employer/swipe-talent/:jobId" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerSwipeTalent /></RoleGate></ProtectedRoute>} />

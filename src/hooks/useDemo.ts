@@ -117,4 +117,8 @@ function invalidateDemoQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ["demoChatThreads"] });
   queryClient.invalidateQueries({ queryKey: ["demoBookings"] });
   queryClient.invalidateQueries({ queryKey: ["demoReleaseOffers"] });
+  // Housing queries
+  queryClient.invalidateQueries({ queryKey: ["housingListings"] });
+  queryClient.invalidateQueries({ queryKey: ["hostHousing"] });
+  queryClient.invalidateQueries({ queryKey: ["housingThreads"] });
 }
