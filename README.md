@@ -62,13 +62,30 @@ This project is built with:
 
 ## Environment Variables
 
-The following environment variables can be configured:
+### Quick Start
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VITE_DEMO_DEBUG` | `false` | Enable debug panels and technical info in demo mode. Set to `true` for development. |
-| `VITE_DEMO_ENABLED` | `true` | Master switch for demo functionality. Set to `false` to completely disable demo features. |
-| `VITE_ALLOW_DEMO_SEED` | `false` | Allow demo scenario seeding. Set to `true` in development to enable "Återställ demo" button. |
+1. Copy the example file:
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Fill in your values in `.env`
+
+3. Start the app:
+   ```sh
+   npm run dev
+   ```
+
+### Available Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VITE_SUPABASE_URL` | Yes | - | Your Supabase project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Yes | - | Your Supabase anon/public key |
+| `VITE_SUPABASE_PROJECT_ID` | Yes | - | Your Supabase project ID |
+| `VITE_DEMO_DEBUG` | No | `false` | Enable debug panels and technical info in demo mode |
+| `VITE_DEMO_ENABLED` | No | `true` | Master switch for demo functionality |
+| `VITE_ALLOW_DEMO_SEED` | No | `false` | Allow demo scenario seeding |
 
 ### Development Setup
 
