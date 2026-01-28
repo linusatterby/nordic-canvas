@@ -60,6 +60,17 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Code Rules (Important)
+
+This project follows strict architectural patterns. **Read before contributing:**
+
+👉 **[src/PROJECT_RULES.md](src/PROJECT_RULES.md)**
+
+Key rules:
+- All routes defined in `src/App.tsx` only
+- No direct Supabase calls in components — use hooks from `src/hooks/*`
+- Data access goes through `src/lib/api/*`
+
 ## Environment Variables
 
 ### Quick Start
