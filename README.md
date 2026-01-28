@@ -71,6 +71,12 @@ Key rules:
 - No direct Supabase calls in components — use hooks from `src/hooks/*`
 - Data access goes through `src/lib/api/*`
 
+### Code Quality Checks
+
+```sh
+npm run check:supabase   # Verify no direct Supabase usage violations
+```
+
 ## Environment Variables
 
 ### Quick Start
