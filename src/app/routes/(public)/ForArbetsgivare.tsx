@@ -57,7 +57,7 @@ export default function ForArbetsgivare() {
             Så funkar det
           </h2>
           <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
-            Tre kraftfulla verktyg för din säsongsverksamhet
+            Tre kraftfulla verktyg för din verksamhet inom besöksnäringen
           </p>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">

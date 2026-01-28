@@ -20,15 +20,15 @@ export default function ForTalanger() {
           <div className="max-w-3xl mx-auto text-center">
             <Badge variant="default" className="mb-6">
               <Sparkles className="h-3 w-3 mr-1" />
-              Säsongsjobb som funkar
+              Jobb inom besöksnäringen
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-6">
-              Hitta säsongsjobb{" "}
+              Hitta jobb i besöksnäringen{" "}
               <span className="text-primary">som faktiskt funkar</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
               Matcha jobb + boende + extra pass i ett flöde. Bygg ett verifierat rykte 
-              som följer dig mellan säsonger.
+              som följer dig mellan uppdrag.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/auth?role=talent">
@@ -57,7 +57,7 @@ export default function ForTalanger() {
             Så funkar det
           </h2>
           <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
-            Tre enkla steg till ditt nästa säsongsjobb
+            Tre enkla steg till ditt nästa jobb
           </p>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
