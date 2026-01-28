@@ -4,15 +4,6 @@
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
-## Code Rules (Important)
-
-See **[src/PROJECT_RULES.md](src/PROJECT_RULES.md)** for architectural guidelines:
-- Routing only in `src/App.tsx`
-- Supabase access only via `src/lib/api/*` and `src/hooks/*`
-- No direct DB calls in page components
-
----
-
 ## How can I edit this code?
 
 There are several ways of editing your application.
@@ -68,16 +59,6 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## Authentication & Session Security
-
-This application uses **sessionStorage** for auth sessions instead of localStorage. This means:
-
-- **Sessions are cleared** when the user closes the browser tab or window
-- Users must log in again after closing the browser
-- This provides enhanced security for demo environments and shared computers
-
-The implementation uses a custom storage adapter (`src/integrations/supabase/authStorage.ts`) that falls back to in-memory storage if sessionStorage is unavailable (e.g., private browsing mode).
 
 ## Environment Variables
 

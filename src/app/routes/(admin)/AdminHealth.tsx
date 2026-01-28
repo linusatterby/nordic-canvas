@@ -21,10 +21,18 @@ import { Label } from "@/components/ui/label";
 import { getEnvStatus, getProductionWarnings } from "@/lib/config/env";
 import { AppShell } from "@/app/layout/AppShell";
 import { RoleGate } from "@/components/auth/RoleGate";
-import { useAdminHealth, type HealthCheck } from "@/hooks/useAdminHealth";
-import { logAdminAudit } from "@/lib/api/adminHealth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { debugWarn } from "@/lib/utils/debug";
 
 const AUDIT_LOG_KEY = "adminHealthAuditLogEnabled";
+
+interface HealthCheck {
+  name: string;
+  status: "pass" | "fail" | "warn" | "loading";
+  reason: string;
+  category: string;
+}
 
 function StatusIcon({ status }: { status: HealthCheck["status"] }) {
   switch (status) {
@@ -72,6 +80,213 @@ function HealthCheckItem({ check }: { check: HealthCheck }) {
   );
 }
 
+// Log admin audit event (fails silently)
+async function logAdminAudit(action: string, metadata: Record<string, unknown> = {}) {
+  try {
+    const { error } = await supabase.rpc("log_admin_audit", {
+      p_action: action,
+      p_metadata: metadata as unknown as Record<string, never>,
+    });
+    if (error) {
+      debugWarn("[AdminHealth] Audit log failed:", error.message);
+    }
+  } catch (err) {
+    debugWarn("[AdminHealth] Audit log error:", err);
+  }
+}
+
+// Hook to run all health checks
+function useHealthChecks(auditEnabled: boolean) {
+  return useQuery({
+    queryKey: ["admin", "healthchecks"],
+    queryFn: async (): Promise<HealthCheck[]> => {
+      const checks: HealthCheck[] = [];
+
+      // 1. Auth/Session check
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        checks.push({
+          name: "Auth Session",
+          status: session ? "pass" : "warn",
+          reason: session ? `Logged in as ${session.user.email}` : "No active session",
+          category: "auth",
+        });
+      } catch (err) {
+        checks.push({
+          name: "Auth Session",
+          status: "fail",
+          reason: err instanceof Error ? err.message : "Unknown error",
+          category: "auth",
+        });
+      }
+
+      // 2. RLS: Can select demo orgs
+      try {
+        const { data, error } = await supabase
+          .from("orgs")
+          .select("id, name")
+          .eq("is_demo", true)
+          .limit(1);
+        
+        checks.push({
+          name: "RLS: Demo Orgs Readable",
+          status: error ? "fail" : data && data.length > 0 ? "pass" : "warn",
+          reason: error ? error.message : data && data.length > 0 ? `Found ${data.length} demo org(s)` : "No demo orgs found",
+          category: "rls",
+        });
+      } catch (err) {
+        checks.push({
+          name: "RLS: Demo Orgs Readable",
+          status: "fail",
+          reason: err instanceof Error ? err.message : "Unknown error",
+          category: "rls",
+        });
+      }
+
+      // 3. RLS: Can list published listings
+      try {
+        const { data, error } = await supabase
+          .from("job_posts")
+          .select("id")
+          .eq("status", "published")
+          .limit(5);
+        
+        checks.push({
+          name: "RLS: Published Listings Readable",
+          status: error ? "fail" : "pass",
+          reason: error ? error.message : `Found ${data?.length ?? 0} published listings`,
+          category: "rls",
+        });
+      } catch (err) {
+        checks.push({
+          name: "RLS: Published Listings Readable",
+          status: "fail",
+          reason: err instanceof Error ? err.message : "Unknown error",
+          category: "rls",
+        });
+      }
+
+      // 4. RPC: get_job_posts_field_map
+      try {
+        const { data, error } = await supabase.rpc("get_job_posts_field_map");
+        checks.push({
+          name: "RPC: get_job_posts_field_map",
+          status: error ? "fail" : data ? "pass" : "warn",
+          reason: error ? error.message : "Field map loaded successfully",
+          category: "rpc",
+        });
+      } catch (err) {
+        checks.push({
+          name: "RPC: get_job_posts_field_map",
+          status: "fail",
+          reason: err instanceof Error ? err.message : "Unknown error",
+          category: "rpc",
+        });
+      }
+
+      // 5. RPC: get_unread_notification_count
+      try {
+        const { data, error } = await supabase.rpc("get_unread_notification_count");
+        checks.push({
+          name: "RPC: get_unread_notification_count",
+          status: error ? "fail" : "pass",
+          reason: error ? error.message : `Unread count: ${data ?? 0}`,
+          category: "rpc",
+        });
+      } catch (err) {
+        checks.push({
+          name: "RPC: get_unread_notification_count",
+          status: "fail",
+          reason: err instanceof Error ? err.message : "Unknown error",
+          category: "rpc",
+        });
+      }
+
+      // 6. RPC: healthcheck_events
+      try {
+        const { data, error } = await supabase.rpc("healthcheck_events", { p_minutes: 10 });
+        const eventData = data as {
+          activity_counts?: Record<string, number>;
+          notification_counts?: Record<string, number>;
+          offer_counts?: Record<string, number>;
+          duplicate_count?: number;
+        } | null;
+        
+        const duplicates = eventData?.duplicate_count ?? 0;
+        const activityTotal = Object.values(eventData?.activity_counts ?? {}).reduce((a, b) => a + b, 0);
+        const notifTotal = Object.values(eventData?.notification_counts ?? {}).reduce((a, b) => a + b, 0);
+        
+        checks.push({
+          name: "Events: Activity (10min)",
+          status: error ? "fail" : "pass",
+          reason: error ? error.message : `${activityTotal} activity events, ${notifTotal} notifications`,
+          category: "events",
+        });
+
+        checks.push({
+          name: "Events: Dedupe Check",
+          status: error ? "fail" : duplicates > 0 ? "warn" : "pass",
+          reason: error ? error.message : duplicates > 0 ? `${duplicates} duplicate dedup_keys found!` : "No duplicates",
+          category: "events",
+        });
+
+        // Show offer counts
+        const offerCounts = eventData?.offer_counts ?? {};
+        checks.push({
+          name: "Offers: Status Distribution",
+          status: "pass",
+          reason: Object.entries(offerCounts).map(([k, v]) => `${k}: ${v}`).join(", ") || "No offers",
+          category: "offers",
+        });
+      } catch (err) {
+        checks.push({
+          name: "Events: Healthcheck",
+          status: "fail",
+          reason: err instanceof Error ? err.message : "Unknown error",
+          category: "events",
+        });
+      }
+
+      // 7. Offers: Can list org offers (requires org membership)
+      try {
+        const { data, error } = await supabase
+          .from("offers")
+          .select("id, status")
+          .limit(5);
+        
+        // This will fail with RLS if user isn't in an org, which is expected
+        checks.push({
+          name: "Offers: Readable",
+          status: error ? (error.message.includes("RLS") ? "warn" : "fail") : "pass",
+          reason: error ? error.message : `Found ${data?.length ?? 0} offers (org-scoped)`,
+          category: "offers",
+        });
+      } catch (err) {
+        checks.push({
+          name: "Offers: Readable",
+          status: "fail",
+          reason: err instanceof Error ? err.message : "Unknown error",
+          category: "offers",
+        });
+      }
+
+      // Log audit event if enabled
+      if (auditEnabled) {
+        const summary = {
+          pass: checks.filter(c => c.status === "pass").length,
+          warn: checks.filter(c => c.status === "warn").length,
+          fail: checks.filter(c => c.status === "fail").length,
+        };
+        await logAdminAudit("health_check_run", { resultsSummary: summary });
+      }
+
+      return checks;
+    },
+    staleTime: 0, // Always refetch
+    refetchOnWindowFocus: false,
+  });
+}
+
 export default function AdminHealth() {
   const envStatus = getEnvStatus();
   const warnings = getProductionWarnings();
@@ -99,7 +314,7 @@ export default function AdminHealth() {
     }
   }, [auditEnabled, envStatus.IS_PROD, envStatus.DEMO_DEBUG_ENABLED]);
 
-  const { data: checks, isLoading, refetch, isFetching } = useAdminHealth(auditEnabled);
+  const { data: checks, isLoading, refetch, isFetching } = useHealthChecks(auditEnabled);
 
   const groupedChecks = React.useMemo(() => {
     if (!checks) return {};
@@ -265,20 +480,44 @@ export default function AdminHealth() {
             </CardContent>
           </Card>
 
-          {/* Info Section */}
+          {/* Recommendations */}
           <Card className="mt-6">
-            <CardContent className="pt-4">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                <div className="text-sm text-muted-foreground">
-                  <p className="font-medium text-foreground mb-1">Om Health Checks</p>
-                  <ul className="space-y-1">
-                    <li>• Auth Session: Verifierar att du är inloggad</li>
-                    <li>• RLS: Testar att Row Level Security fungerar</li>
-                    <li>• RPC: Verifierar att viktiga databasfunktioner svarar</li>
-                    <li>• Events: Kontrollerar aktivitets- och notifikationssystem</li>
-                    <li>• Offers: Verifierar erbjudandesystemet</li>
-                  </ul>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Info className="h-5 w-5" />
+                Produktionsrekommendationer
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm space-y-3">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <strong>Leaked Password Protection</strong>
+                    <p className="text-muted-foreground">
+                      Aktivera i Lovable Cloud → Auth-inställningar.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <strong>E-postbekräftelse</strong>
+                    <p className="text-muted-foreground">
+                      Överväg att inaktivera auto-confirm i produktion.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div>
+                    <strong>Demo-funktioner</strong>
+                    <p className="text-muted-foreground">
+                      Sätt <code className="bg-muted px-1 rounded">VITE_DEMO_ENABLED=false</code> i produktion.
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
