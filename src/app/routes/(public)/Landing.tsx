@@ -14,23 +14,23 @@ const features = [
   },
   {
     icon: <Star className="h-6 w-6" />,
-    title: "Legacy Score",
-    description: "Bygg ditt rykte säsong efter säsong. Arbetsgivare ser din historik och betyg.",
+    title: "Pålitlighetspoäng",
+    description: "Bygg ditt rykte uppdrag efter uppdrag. Arbetsgivare ser din historik och betyg.",
   },
   {
     icon: <Home className="h-6 w-6" />,
-    title: "Integrerat boende",
-    description: "Hitta boende direkt i appen. Verifiera värdar och hyresgäster för trygghet.",
+    title: "Boende direkt i appen",
+    description: "Hitta boende enkelt. Verifiera värdar och hyresgäster för trygghet.",
   },
   {
     icon: <Shield className="h-6 w-6" />,
-    title: "Verifierade profiler",
+    title: "Verifierad identitet",
     description: "Alla användare verifieras för en säker och pålitlig arbetsmarknad.",
   },
 ];
 
 const stats = [
-  { value: "12K+", label: "Säsongsarbetare" },
+  { value: "12K+", label: "Talanger" },
   { value: "850+", label: "Arbetsgivare" },
   { value: "95%", label: "Nöjdhet" },
 ];
@@ -45,14 +45,14 @@ export function Landing() {
           <div className="max-w-3xl mx-auto text-center">
             <Badge variant="primary" className="mb-6">
               <Zap className="h-3 w-3" />
-              Säsongen 2025 är här
+              Besöksnäringen väntar
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Din nästa säsong börjar här
+              Din nästa roll i besöksnäringen börjar här
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Seasonal Talent kopplar samman säsongsarbetare med arbetsgivare inom turism, 
-              skidorter och gästnäring. Swipea, matcha, jobba.
+              Vi kopplar samman talanger och arbetsgivare inom hotell, restaurang, 
+              turism och upplevelser. Swipea, matcha, jobba.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/auth/signup?role=talent">
@@ -86,7 +86,7 @@ export function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Byggd för säsongsekonomin
+              Byggd för besöksnäringen
             </h2>
             <p className="text-muted-foreground">
               Allt du behöver för att hitta rätt match – oavsett om du söker jobb eller personal.
