@@ -1,6 +1,7 @@
 # Supabase Direct Usage Report
 
 **Generated:** 2026-01-28  
+**Last Updated:** 2026-01-28  
 **Purpose:** Track compliance with [PROJECT_RULES.md](./PROJECT_RULES.md)
 
 ---
@@ -9,9 +10,9 @@
 
 | Status | Count |
 |--------|-------|
-| ✅ Compliant | 21 |
+| ✅ Compliant | 22 |
 | ⚠️ Review | 5 |
-| ❌ Violation | 1 |
+| ❌ Violation | 0 |
 
 ---
 
@@ -22,6 +23,7 @@ These files correctly centralize Supabase access in the API layer:
 | File | Line | Notes |
 |------|------|-------|
 | `src/lib/api/activity.ts` | 1 | ✅ OK |
+| `src/lib/api/adminHealth.ts` | 1 | ✅ OK — Refactored from AdminHealth.tsx |
 | `src/lib/api/borrow.ts` | 1 | ✅ OK |
 | `src/lib/api/chat.ts` | 1 | ✅ OK |
 | `src/lib/api/circles.ts` | 1 | ✅ OK |
@@ -62,23 +64,13 @@ These files import supabase outside the API layer but may be acceptable:
 
 ## ❌ Violations
 
-Files that violate PROJECT_RULES.md:
+**None!** 🎉
 
-| File | Line | Issue | Action Required |
-|------|------|-------|-----------------|
-| `src/app/routes/(admin)/AdminHealth.tsx` | 24 | Direct supabase import in route component | ❌ **Move to API layer** |
+All previous violations have been resolved:
 
-### Details: AdminHealth.tsx
-
-```tsx
-// Line 24 - VIOLATION
-import { supabase } from "@/integrations/supabase/client";
-```
-
-**Recommendation:**
-1. Create `src/lib/api/health.ts` with healthcheck query
-2. Create `src/hooks/useHealthcheck.ts` with React Query wrapper
-3. Update AdminHealth.tsx to use the hook
+| File | Resolution | Date |
+|------|------------|------|
+| `src/app/routes/(admin)/AdminHealth.tsx` | Refactored to use `useAdminHealth` hook | 2026-01-28 |
 
 ---
 
@@ -88,6 +80,7 @@ Direct table queries found (all in compliant locations):
 
 | File | Line | Table | Status |
 |------|------|-------|--------|
+| `src/lib/api/adminHealth.ts` | 54, 72, 85 | `orgs`, `job_posts`, `offers` | ✅ OK |
 | `src/lib/api/borrow.ts` | 158 | `borrow_offers` | ✅ OK |
 | `src/lib/api/orgs.ts` | 112 | `orgs` | ✅ OK |
 
@@ -95,7 +88,7 @@ Direct table queries found (all in compliant locations):
 
 ## Next Steps
 
-1. [ ] Fix `AdminHealth.tsx` violation — move query to API layer
+1. [x] ~~Fix `AdminHealth.tsx` violation — move query to API layer~~ ✅ Done
 2. [ ] Review `useScheduler.ts` realtime pattern
 3. [ ] Review `useDemoGuideSummary.ts` RPC call placement
 4. [ ] Consider ESLint rule to catch future violations
