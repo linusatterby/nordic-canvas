@@ -11,17 +11,14 @@
 | Files in `src/lib/api/*` | ✅ Allowed |
 | Files in `src/hooks/*` | ⚠️ Some allowed (session/realtime), review others |
 | Files in `src/contexts/*` | ✅ Allowed (AuthContext) |
-| Files in `src/app/routes/*` | ❌ Violation |
+| Files in `src/app/routes/*` | ✅ No violations |
 | Files in `src/lib/supabase/*` | ✅ Allowed |
 
 ---
 
 ## ❌ VIOLATIONS (require refactor)
 
-### `src/app/routes/(admin)/AdminHealth.tsx`
-- **Line 24:** `import { supabase } from "@/integrations/supabase/client";`
-- **Issue:** Page component directly imports Supabase client
-- **Fix:** Move health check query to `src/lib/api/admin.ts` and create a hook
+**None** – All violations have been resolved.
 
 ---
 
@@ -46,6 +43,7 @@
 
 ### `src/lib/api/*` (All compliant)
 - `src/lib/api/activity.ts`
+- `src/lib/api/adminHealth.ts` ← **NEW**
 - `src/lib/api/borrow.ts`
 - `src/lib/api/chat.ts`
 - `src/lib/api/dashboard.ts`
@@ -64,6 +62,9 @@
 - `src/lib/api/talent.ts`
 - `src/lib/api/visibility.ts`
 
+### `src/hooks/*` (Compliant)
+- `src/hooks/useAdminHealth.ts` ← **NEW**
+
 ### `src/contexts/*` (Compliant)
 - `src/contexts/AuthContext.tsx` – Auth state management
 
@@ -73,9 +74,17 @@
 
 ---
 
+## Resolved Issues
+
+| File | Status | Resolution |
+|------|--------|------------|
+| `src/app/routes/(admin)/AdminHealth.tsx` | ✅ Fixed | Moved to `src/lib/api/adminHealth.ts` + `src/hooks/useAdminHealth.ts` |
+
+---
+
 ## Action Items
 
-1. **High Priority:** Refactor `AdminHealth.tsx` to use API layer
+1. ~~**High Priority:** Refactor `AdminHealth.tsx` to use API layer~~ ✅ Done
 2. **Medium Priority:** Review `useDemoGuideSummary.ts` for API migration
 3. **Low Priority:** Document exceptions in PROJECT_RULES.md (done)
 
