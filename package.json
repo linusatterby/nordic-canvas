@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
+    "check:supabase": "node scripts/check-supabase-usage.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
