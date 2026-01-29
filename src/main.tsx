@@ -1,6 +1,10 @@
 import { createRoot } from "react-dom/client";
 import { hasSupabaseEnv } from "./lib/env";
+import { installOverflowGuard } from "./lib/dev/overflowGuard";
 import "./index.css";
+
+// Install dev-only overflow detection
+installOverflowGuard();
 
 /**
  * Bootstrap the app with environment validation
