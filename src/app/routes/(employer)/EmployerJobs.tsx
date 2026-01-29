@@ -269,10 +269,11 @@ export function EmployerJobs() {
 
   return (
     <AppShell role="employer">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center justify-between mb-6">
+      <div className="container mx-auto px-4 py-8 max-w-4xl overflow-x-hidden">
+        {/* Header - stack on mobile */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <h1 className="text-xl font-bold text-foreground">Annonser</h1>
-          <Button variant="primary" onClick={() => setShowCreateJob(true)} className="gap-2">
+          <Button variant="primary" onClick={() => setShowCreateJob(true)} className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" /> Skapa annons
           </Button>
         </div>
@@ -314,8 +315,9 @@ export function EmployerJobs() {
                   padding="md" 
                   onClick={() => navigate(`/employer/swipe-talent/${job.id}`)}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
+                  {/* Mobile: stack layout, Desktop: row layout */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       listingType === "shift_cover" ? "bg-amber-100 dark:bg-amber-900/30" : "bg-primary-muted"
                     }`}>
                       {listingType === "shift_cover" ? (
@@ -339,7 +341,8 @@ export function EmployerJobs() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Badges - wrap on mobile */}
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant={listingType === "shift_cover" ? "warn" : "default"}>
                         {listingType === "shift_cover" ? "Pass" : "Jobb"}
                       </Badge>
@@ -350,11 +353,13 @@ export function EmployerJobs() {
                          status === "closed" ? "Avslutad" : status}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Actions - stack on mobile */}
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                       {getStatusActionButton(status, job.id)}
-                      <Button variant="secondary" size="sm" className="gap-1">
+                      <Button variant="secondary" size="sm" className="gap-1 whitespace-nowrap">
                         <Users className="h-4 w-4" />
-                        Se kandidater
+                        <span className="hidden xs:inline">Se kandidater</span>
+                        <span className="xs:hidden">Visa</span>
                       </Button>
                     </div>
                   </div>
