@@ -71,7 +71,7 @@ export function RoleSelectorModal({ isOpen, onClose }: RoleSelectorModalProps) {
                 <User className="h-6 w-6" />
               </div>
               <span className="font-medium text-foreground">Talent</span>
-              <span className="text-xs text-muted-foreground">Hitta säsongsjobb</span>
+              <span className="text-xs text-muted-foreground">Hitta jobb i besöksnäringen</span>
             </button>
 
             <button
@@ -92,7 +92,7 @@ export function RoleSelectorModal({ isOpen, onClose }: RoleSelectorModalProps) {
                 <Briefcase className="h-6 w-6" />
               </div>
               <span className="font-medium text-foreground">Employer</span>
-              <span className="text-xs text-muted-foreground">Hitta säsongspersonal</span>
+              <span className="text-xs text-muted-foreground">Hitta personal för din verksamhet</span>
             </button>
           </div>
 

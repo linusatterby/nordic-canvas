@@ -11,23 +11,23 @@ interface NavItem {
 }
 
 const talentNavItems: NavItem[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Hem", href: "/talent/dashboard" },
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/talent/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
   { icon: <Home className="h-5 w-5" />, label: "Boende", href: "/talent/housing" },
-  { icon: <Users className="h-5 w-5" />, label: "Match", href: "/talent/matches" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/talent/inbox" },
+  { icon: <Users className="h-5 w-5" />, label: "Matcher", href: "/talent/matches" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/talent/inbox" },
 ];
 
 const employerNavItems: NavItem[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Hem", href: "/employer/dashboard" },
-  { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/employer/jobs" },
-  { icon: <Users className="h-5 w-5" />, label: "Talang", href: "/employer/swipe-talent" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/employer/inbox" },
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/employer/dashboard" },
+  { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
+  { icon: <Users className="h-5 w-5" />, label: "Talanger", href: "/employer/swipe-talent" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/employer/inbox" },
 ];
 
 const hostNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Boenden", href: "/host/housing" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/host/inbox" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/host/inbox" },
 ];
 
 interface MobileNavProps {

@@ -12,8 +12,8 @@ export function EmployerDashboard() {
     <AppShell role="employer">
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Välkommen tillbaka! 👋</h1>
-          <p className="text-muted-foreground mt-1">Här är din säsongsöversikt.</p>
+          <h1 className="text-2xl font-bold text-foreground">Välkommen tillbaka</h1>
+          <p className="text-muted-foreground mt-1">Här är din bemanningsöversikt.</p>
         </div>
 
         {/* Fill Rate Meter */}
@@ -21,14 +21,14 @@ export function EmployerDashboard() {
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-verified" />
-              Bemanningsgrad
+              Bemanning
             </CardTitle>
             <Badge variant="verified" size="lg">78%</Badge>
           </CardHeader>
           <CardContent className="mt-4">
             <Progress value={78} size="lg" variant="verified" />
             <p className="text-sm text-muted-foreground mt-3">
-              22 av 28 positioner tillsatta för vintersäsongen
+              22 av 28 pass täckta för vintern
             </p>
           </CardContent>
         </Card>
@@ -39,21 +39,21 @@ export function EmployerDashboard() {
             <Card variant="interactive" padding="md" className="h-full">
               <Users className="h-8 w-8 text-primary mb-3" />
               <h3 className="font-semibold">Hitta talanger</h3>
-              <p className="text-sm text-muted-foreground">12 nya kandidater</p>
+              <p className="text-sm text-muted-foreground">12 nya profiler</p>
             </Card>
           </Link>
           <Link to="/employer/jobs">
             <Card variant="interactive" padding="md" className="h-full">
               <Briefcase className="h-8 w-8 text-primary mb-3" />
-              <h3 className="font-semibold">Mina jobb</h3>
-              <p className="text-sm text-muted-foreground">6 aktiva annonser</p>
+              <h3 className="font-semibold">Annonser</h3>
+              <p className="text-sm text-muted-foreground">6 aktiva</p>
             </Card>
           </Link>
           <Link to="/employer/borrow">
             <Card variant="interactive" padding="md" className="h-full">
               <ArrowLeftRight className="h-8 w-8 text-delight mb-3" />
               <h3 className="font-semibold">Låna personal</h3>
-              <p className="text-sm text-muted-foreground">Snabb hjälp vid toppar</p>
+              <p className="text-sm text-muted-foreground">Täck upp snabbt</p>
             </Card>
           </Link>
         </div>
@@ -61,9 +61,9 @@ export function EmployerDashboard() {
         <Card variant="default" padding="lg">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-foreground">Behöver du extra händer?</h3>
+              <h3 className="font-semibold text-foreground">Behöver du täcka upp snabbt?</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Låna verifierad personal från andra arbetsgivare i nätverket.
+                Låna verifierade medarbetare från andra arbetsgivare i nätverket.
               </p>
             </div>
             <Link to="/employer/borrow">

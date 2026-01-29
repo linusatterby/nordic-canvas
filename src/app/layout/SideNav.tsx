@@ -25,20 +25,20 @@ interface NavItem {
 }
 
 const talentNavItems: NavItem[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard", href: "/talent/dashboard" },
-  { icon: <Briefcase className="h-5 w-5" />, label: "Hitta jobb", href: "/talent/swipe-jobs" },
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/talent/dashboard" },
+  { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
   { icon: <Home className="h-5 w-5" />, label: "Boende", href: "/talent/housing" },
-  { icon: <Users className="h-5 w-5" />, label: "Matchningar", href: "/talent/matches" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/talent/inbox" },
+  { icon: <Users className="h-5 w-5" />, label: "Matcher", href: "/talent/matches" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/talent/inbox" },
   { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/talent/activity" },
   { icon: <User className="h-5 w-5" />, label: "Min profil", href: "/talent/profile" },
 ];
 
 const employerNavItems: NavItem[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Dashboard", href: "/employer/dashboard" },
-  { icon: <Briefcase className="h-5 w-5" />, label: "Mina jobb", href: "/employer/jobs" },
+  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/employer/dashboard" },
+  { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
   { icon: <Users className="h-5 w-5" />, label: "Hitta talanger", href: "/employer/swipe-talent" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/employer/inbox" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/employer/inbox" },
   { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/employer/activity" },
   { icon: <Calendar className="h-5 w-5" />, label: "Schemaläggare", href: "/employer/scheduler" },
   { icon: <ArrowLeftRight className="h-5 w-5" />, label: "Låna personal", href: "/employer/borrow" },
@@ -46,7 +46,7 @@ const employerNavItems: NavItem[] = [
 
 const hostNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Mina boenden", href: "/host/housing" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Inbox", href: "/host/inbox" },
+  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/host/inbox" },
 ];
 
 interface SideNavProps {
