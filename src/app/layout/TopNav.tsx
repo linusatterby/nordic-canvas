@@ -47,7 +47,7 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-card border-b border-border flex items-center px-4 gap-4">
+    <header className="sticky top-0 z-30 h-16 glass border-b border-border/50 flex items-center px-4 gap-4">
       {/* Menu Toggle (Mobile) */}
       <Button
         variant="ghost"
@@ -67,7 +67,7 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
             <input
               type="search"
               placeholder="Sök kandidater, jobb..."
-              className="w-full h-10 pl-10 pr-4 rounded-lg bg-secondary border-0 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-10 pl-10 pr-4 rounded-[14px] bg-secondary/80 border border-border/40 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all duration-fast"
               autoFocus
               onBlur={() => setSearchOpen(false)}
             />
@@ -107,7 +107,7 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-secondary transition-colors"
+            className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-secondary/80 transition-all duration-fast"
           >
             <Avatar
               alt={displayName}
@@ -125,7 +125,7 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
 
           {/* Dropdown Menu */}
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-card rounded-xl border border-border shadow-lg py-2 animate-scale-in">
+            <div className="absolute right-0 top-full mt-2 w-56 glass-panel rounded-[18px] border border-border/50 shadow-lift py-2 animate-scale-in">
               <div className="px-4 py-2 border-b border-border">
                 <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
                 <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
