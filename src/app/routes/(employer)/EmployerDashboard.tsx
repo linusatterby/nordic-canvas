@@ -16,44 +16,44 @@ export function EmployerDashboard() {
           <p className="text-muted-foreground mt-1">Här är din bemanningsöversikt.</p>
         </div>
 
-        {/* Fill Rate Meter */}
-        <Card variant="elevated" padding="lg" className="mb-6">
-          <CardHeader className="flex-row items-center justify-between">
+        {/* Fill Rate Meter - compact on mobile */}
+        <Card variant="elevated" className="mb-6 p-4 sm:p-6">
+          <CardHeader className="flex-row items-center justify-between p-0">
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-verified" />
               Bemanning
             </CardTitle>
             <Badge variant="verified" size="lg">78%</Badge>
           </CardHeader>
-          <CardContent className="mt-4">
+          <CardContent className="mt-3 sm:mt-4 p-0">
             <Progress value={78} size="lg" variant="verified" />
-            <p className="text-sm text-muted-foreground mt-3">
+            <p className="text-sm text-muted-foreground mt-2 sm:mt-3">
               22 av 28 pass täckta för vintern
             </p>
           </CardContent>
         </Card>
 
-        {/* Quick Actions Grid */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-6">
+        {/* Quick Actions Grid - 2 cols mobile, 3 cols md+ */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
           <Link to="/employer/swipe-talent">
-            <Card variant="interactive" padding="md" className="h-full">
-              <Users className="h-8 w-8 text-primary mb-3" />
-              <h3 className="font-semibold">Hitta talanger</h3>
-              <p className="text-sm text-muted-foreground">12 nya profiler</p>
+            <Card variant="interactive" className="h-full p-3 sm:p-4">
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2 sm:mb-3" />
+              <h3 className="font-semibold text-sm sm:text-base">Hitta talanger</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">12 nya profiler</p>
             </Card>
           </Link>
           <Link to="/employer/jobs">
-            <Card variant="interactive" padding="md" className="h-full">
-              <Briefcase className="h-8 w-8 text-primary mb-3" />
-              <h3 className="font-semibold">Annonser</h3>
-              <p className="text-sm text-muted-foreground">6 aktiva</p>
+            <Card variant="interactive" className="h-full p-3 sm:p-4">
+              <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2 sm:mb-3" />
+              <h3 className="font-semibold text-sm sm:text-base">Annonser</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">6 aktiva</p>
             </Card>
           </Link>
-          <Link to="/employer/borrow">
-            <Card variant="interactive" padding="md" className="h-full">
-              <ArrowLeftRight className="h-8 w-8 text-delight mb-3" />
-              <h3 className="font-semibold">Låna personal</h3>
-              <p className="text-sm text-muted-foreground">Täck upp snabbt</p>
+          <Link to="/employer/borrow" className="col-span-2 md:col-span-1">
+            <Card variant="interactive" className="h-full p-3 sm:p-4">
+              <ArrowLeftRight className="h-6 w-6 sm:h-8 sm:w-8 text-delight mb-2 sm:mb-3" />
+              <h3 className="font-semibold text-sm sm:text-base">Låna personal</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Täck upp snabbt</p>
             </Card>
           </Link>
         </div>
