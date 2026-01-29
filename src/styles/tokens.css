@@ -2,7 +2,7 @@
 
 :root {
   /* Core Colors */
-  --c-ink: 216 45% 8%;
+  --c-ink: 220 30% 12%;
   --c-frost: 220 30% 98%;
   --c-slate: 220 25% 94%;
   --c-slate-dark: 220 20% 88%;
@@ -27,10 +27,10 @@
   /* Surfaces */
   --c-surface: 0 0% 100%;
   --c-surface-elevated: 0 0% 100%;
-  --c-surface-overlay: 216 45% 8% / 0.8;
+  --c-surface-overlay: 220 30% 12% / 0.6;
   
   /* Text */
-  --c-text-primary: 216 45% 8%;
+  --c-text-primary: 220 30% 12%;
   --c-text-secondary: 215 16% 47%;
   --c-text-muted: 215 16% 62%;
   --c-text-inverse: 220 30% 98%;
@@ -38,15 +38,17 @@
   /* Border */
   --c-border: 220 20% 90%;
   --c-border-focus: 220 100% 59%;
+  --c-border-subtle: 220 20% 92%;
   
-  /* Border Radius */
-  --r-xs: 6px;
-  --r-sm: 8px;
-  --r-md: 10px;
-  --r-card: 14px;
-  --r-lg: 18px;
+  /* Border Radius - Updated for modern feel */
+  --r-xs: 8px;
+  --r-sm: 10px;
+  --r-md: 12px;
+  --r-card: 18px;
+  --r-lg: 20px;
   --r-modal: 24px;
   --r-pill: 999px;
+  --r-input: 14px;
   
   /* Spacing Scale */
   --sp-1: 4px;
@@ -58,14 +60,15 @@
   --sp-12: 48px;
   --sp-16: 64px;
   
-  /* Shadows */
-  --sh-soft: 0 1px 3px hsl(216 45% 8% / 0.04), 0 1px 2px hsl(216 45% 8% / 0.06);
-  --sh-card: 0 2px 8px hsl(216 45% 8% / 0.06), 0 1px 2px hsl(216 45% 8% / 0.04);
-  --sh-lift: 0 8px 24px hsl(216 45% 8% / 0.1), 0 4px 8px hsl(216 45% 8% / 0.06);
-  --sh-modal: 0 24px 48px hsl(216 45% 8% / 0.16), 0 8px 16px hsl(216 45% 8% / 0.08);
+  /* Shadows - Softer, more modern */
+  --sh-soft: 0 1px 2px hsl(220 30% 12% / 0.03), 0 2px 4px hsl(220 30% 12% / 0.04);
+  --sh-card: 0 2px 8px hsl(220 30% 12% / 0.05), 0 4px 16px hsl(220 30% 12% / 0.04);
+  --sh-lift: 0 8px 24px hsl(220 30% 12% / 0.08), 0 4px 12px hsl(220 30% 12% / 0.05);
+  --sh-modal: 0 24px 48px hsl(220 30% 12% / 0.12), 0 12px 24px hsl(220 30% 12% / 0.08);
+  --sh-hover: 0 6px 20px hsl(220 30% 12% / 0.1), 0 3px 8px hsl(220 30% 12% / 0.06);
   
   /* Motion */
-  --t-fast: 140ms;
+  --t-fast: 150ms;
   --t-base: 200ms;
   --t-slow: 320ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -99,27 +102,43 @@
   --z-modal: 500;
   --z-toast: 700;
   --z-tooltip: 900;
+
+  /* App Background */
+  --bg-app: linear-gradient(135deg, hsl(220 40% 97%) 0%, hsl(220 30% 98%) 50%, hsl(225 35% 96%) 100%);
+  --bg-panel: hsl(0 0% 100% / 0.85);
+  --bg-glass: hsl(0 0% 100% / 0.7);
+  
+  /* Sidebar - Refined dark */
+  --c-sidebar: 222 47% 11%;
+  --c-sidebar-hover: 222 40% 16%;
+  --c-sidebar-active: 220 100% 59%;
 }
 
 /* Dark mode tokens */
 .dark {
   --c-ink: 220 30% 98%;
-  --c-frost: 216 45% 8%;
-  --c-slate: 216 35% 14%;
-  --c-slate-dark: 216 35% 18%;
+  --c-frost: 222 47% 8%;
+  --c-slate: 222 35% 14%;
+  --c-slate-dark: 222 35% 18%;
   
-  --c-surface: 216 40% 10%;
-  --c-surface-elevated: 216 35% 14%;
+  --c-surface: 222 40% 10%;
+  --c-surface-elevated: 222 35% 14%;
   
   --c-text-primary: 220 30% 98%;
   --c-text-secondary: 215 16% 70%;
   --c-text-muted: 215 16% 55%;
-  --c-text-inverse: 216 45% 8%;
+  --c-text-inverse: 222 47% 11%;
   
-  --c-border: 216 30% 20%;
+  --c-border: 222 30% 20%;
+  --c-border-subtle: 222 30% 18%;
   
   --sh-soft: 0 1px 3px hsl(0 0% 0% / 0.2);
   --sh-card: 0 2px 8px hsl(0 0% 0% / 0.25);
   --sh-lift: 0 8px 24px hsl(0 0% 0% / 0.35);
   --sh-modal: 0 24px 48px hsl(0 0% 0% / 0.5);
+  --sh-hover: 0 6px 20px hsl(0 0% 0% / 0.3);
+
+  --bg-app: linear-gradient(135deg, hsl(222 47% 8%) 0%, hsl(222 47% 10%) 100%);
+  --bg-panel: hsl(222 40% 10% / 0.9);
+  --bg-glass: hsl(222 40% 12% / 0.8);
 }

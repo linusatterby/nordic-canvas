@@ -97,12 +97,14 @@ export default {
         xl: "var(--r-lg)",
         "2xl": "var(--r-modal)",
         pill: "var(--r-pill)",
+        input: "var(--r-input)",
       },
       boxShadow: {
         soft: "var(--sh-soft)",
         card: "var(--sh-card)",
         lift: "var(--sh-lift)",
         modal: "var(--sh-modal)",
+        hover: "var(--sh-hover)",
       },
       spacing: {
         "sp-1": "var(--sp-1)",

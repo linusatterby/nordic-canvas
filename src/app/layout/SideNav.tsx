@@ -66,8 +66,9 @@ export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen bg-ink text-frost transition-all duration-slow ease-out",
+        "fixed left-0 top-0 z-40 h-screen transition-all duration-slow ease-out",
         "flex flex-col",
+        "bg-[hsl(222,47%,11%)] text-frost",
         isOpen ? "w-64" : "w-16"
       )}
     >
@@ -101,11 +102,11 @@ export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 transition-all duration-fast",
                 "text-sm font-medium",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-frost/70 hover:text-frost hover:bg-white/10"
+                  ? "bg-primary text-primary-foreground rounded-pill shadow-soft"
+                  : "text-frost/70 hover:text-frost hover:bg-white/8 rounded-xl"
               )}
             >
               {item.icon}
@@ -116,12 +117,12 @@ export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-2 border-t border-white/10 space-y-1">
+      <div className="p-2 border-t border-white/8 space-y-1">
         <Link
           to="/settings"
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-            "text-sm font-medium text-frost/70 hover:text-frost hover:bg-white/10"
+            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-fast",
+            "text-sm font-medium text-frost/70 hover:text-frost hover:bg-white/8"
           )}
         >
           <Settings className="h-5 w-5" />
@@ -129,8 +130,8 @@ export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
         </Link>
         <button
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-            "text-sm font-medium text-frost/70 hover:text-frost hover:bg-white/10"
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-fast",
+            "text-sm font-medium text-frost/70 hover:text-frost hover:bg-white/8"
           )}
         >
           <LogOut className="h-5 w-5" />
