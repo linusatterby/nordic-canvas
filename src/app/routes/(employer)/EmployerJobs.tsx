@@ -313,53 +313,64 @@ export function EmployerJobs() {
                   key={job.id} 
                   variant="interactive" 
                   padding="md" 
+                  className="relative"
                   onClick={() => navigate(`/employer/swipe-talent/${job.id}`)}
                 >
-                  {/* Mobile: stack layout, Desktop: row layout */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      listingType === "shift_cover" ? "bg-amber-100 dark:bg-amber-900/30" : "bg-primary-muted"
-                    }`}>
-                      {listingType === "shift_cover" ? (
-                        <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                      ) : (
-                        <Briefcase className="h-6 w-6 text-primary" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{job.title}</h3>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {job.location}
-                          </span>
+                  {/* Mobile: full stack layout, Desktop: row layout */}
+                  <div className="flex flex-col gap-3">
+                    {/* Top row: icon + content + badges */}
+                    <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                      <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        listingType === "shift_cover" ? "bg-amber-100 dark:bg-amber-900/30" : "bg-primary-muted"
+                      }`}>
+                        {listingType === "shift_cover" ? (
+                          <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400" />
+                        ) : (
+                          <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                         )}
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {job.start_date} - {job.end_date}
-                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{job.title}</h3>
+                        <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
+                          {job.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {job.location}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {job.start_date} - {job.end_date}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Badges - tight spacing, always visible */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <Badge variant={listingType === "shift_cover" ? "warn" : "default"} size="sm">
+                          {listingType === "shift_cover" ? "Pass" : "Jobb"}
+                        </Badge>
+                        <Badge variant={STATUS_BADGE_VARIANTS[status] || "default"} size="sm">
+                          {status === "draft" ? "Utkast" : 
+                           status === "published" ? "Aktiv" :
+                           status === "matching" ? "Matchar" : 
+                           status === "closed" ? "Avslutad" : status}
+                        </Badge>
                       </div>
                     </div>
-                    {/* Badges - wrap on mobile */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant={listingType === "shift_cover" ? "warn" : "default"}>
-                        {listingType === "shift_cover" ? "Pass" : "Jobb"}
-                      </Badge>
-                      <Badge variant={STATUS_BADGE_VARIANTS[status] || "default"}>
-                        {status === "draft" ? "Utkast" : 
-                         status === "published" ? "Aktiv" :
-                         status === "matching" ? "Matchande" : 
-                         status === "closed" ? "Avslutad" : status}
-                      </Badge>
-                    </div>
-                    {/* Actions - stack on mobile */}
-                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    {/* Actions row - separate on mobile, inline on sm+ */}
+                    <div className="flex items-center gap-2 sm:hidden border-t border-border/50 pt-3 -mx-1 px-1">
                       {getStatusActionButton(status, job.id)}
-                      <Button variant="secondary" size="sm" className="gap-1 whitespace-nowrap">
+                      <Button variant="secondary" size="sm" className="gap-1 flex-1">
                         <Users className="h-4 w-4" />
-                        <span className="hidden xs:inline">Se kandidater</span>
-                        <span className="xs:hidden">Visa</span>
+                        Se kandidater
+                      </Button>
+                    </div>
+                    {/* Desktop actions - inline */}
+                    <div className="hidden sm:flex items-center gap-2 absolute right-4 top-1/2 -translate-y-1/2">
+                      {getStatusActionButton(status, job.id)}
+                      <Button variant="secondary" size="sm" className="gap-1">
+                        <Users className="h-4 w-4" />
+                        Se kandidater
                       </Button>
                     </div>
                   </div>
