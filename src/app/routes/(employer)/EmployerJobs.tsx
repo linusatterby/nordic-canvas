@@ -24,7 +24,7 @@ const STATUS_TABS: { value: ListingStatus | "all"; label: string }[] = [
   { value: "all", label: "Alla" },
   { value: "draft", label: "Utkast" },
   { value: "published", label: "Publicerade" },
-  { value: "matching", label: "Matchande" },
+  { value: "matching", label: "Matchar" },
   { value: "closed", label: "Avslutade" },
 ];
 
@@ -180,7 +180,7 @@ export function EmployerJobs() {
             disabled={updateStatusMutation.isPending}
           >
             <XCircle className="h-3 w-3" />
-            Stäng
+            Pausa
           </Button>
         );
       case "closed":
@@ -271,9 +271,9 @@ export function EmployerJobs() {
     <AppShell role="employer">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-foreground">Mina uppdrag</h1>
+          <h1 className="text-xl font-bold text-foreground">Annonser</h1>
           <Button variant="primary" onClick={() => setShowCreateJob(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Skapa uppdrag
+            <Plus className="h-4 w-4" /> Skapa annons
           </Button>
         </div>
 
@@ -354,7 +354,7 @@ export function EmployerJobs() {
                       {getStatusActionButton(status, job.id)}
                       <Button variant="secondary" size="sm" className="gap-1">
                         <Users className="h-4 w-4" />
-                        Kandidater
+                        Se kandidater
                       </Button>
                     </div>
                   </div>
@@ -365,9 +365,9 @@ export function EmployerJobs() {
         ) : (
           <EmptyState 
             type="no-jobs" 
-            title="Inga uppdrag ännu" 
-            message="Skapa ditt första jobb eller pass för att börja hitta talanger." 
-            action={{ label: "Skapa uppdrag", onClick: () => setShowCreateJob(true) }} 
+            title="Inga annonser ännu" 
+            message="Skapa din första annons för att börja hitta talanger." 
+            action={{ label: "Skapa annons", onClick: () => setShowCreateJob(true) }} 
           />
         )}
 

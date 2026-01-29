@@ -32,9 +32,9 @@ export function TalentDashboard() {
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Hej Erik! 👋</h1>
+          <h1 className="text-2xl font-bold text-foreground">Hej Erik!</h1>
           <p className="text-muted-foreground mt-1">
-            Du är redo för säsongen. Fortsätt bygga ditt rykte.
+            Du är redo för nästa uppdrag. Fortsätt bygga ditt rykte.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export function TalentDashboard() {
                 Season Passport
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Din säsongsresa i ett sammandrag
+                Din resa i besöksnäringen
               </p>
             </div>
             {summaryLoading ? (
@@ -82,7 +82,7 @@ export function TalentDashboard() {
                   </div>
                 )}
                 <div className="text-sm text-muted-foreground mt-1">
-                  Avslutade säsonger
+                  Avslutade uppdrag
                 </div>
               </div>
 
