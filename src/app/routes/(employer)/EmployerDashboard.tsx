@@ -59,15 +59,15 @@ export function EmployerDashboard() {
         </div>
 
         <Card variant="default" padding="lg">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-semibold text-foreground">Behöver du täcka upp snabbt?</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Låna verifierade medarbetare från andra arbetsgivare i nätverket.
               </p>
             </div>
-            <Link to="/employer/borrow">
-              <Button variant="delight" size="md" className="gap-2">
+            <Link to="/employer/borrow" className="flex-shrink-0">
+              <Button variant="delight" size="md" className="gap-2 w-full sm:w-auto">
                 Låna personal
                 <ChevronRight className="h-4 w-4" />
               </Button>

@@ -38,7 +38,7 @@ export function AppShell({ children, role }: AppShellProps) {
   }, [isDemoMode, loading, profileLoading, role, profile]);
 
   return (
-    <div className="min-h-screen bg-frost">
+    <div className="min-h-screen bg-frost overflow-x-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <SideNav

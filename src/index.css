@@ -105,12 +105,22 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply text-foreground;
     background: var(--bg-app);
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  /* App root overflow safety */
+  #root {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
   
   /* Subtle noise texture overlay */
