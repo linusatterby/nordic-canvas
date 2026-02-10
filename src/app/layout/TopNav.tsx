@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Search, Bell, Menu, X, LogOut, Settings, UserCircle } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Search, Bell, Menu, X, LogOut, Settings, UserCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -22,23 +22,34 @@ interface TopNavProps {
   isSidebarOpen?: boolean;
 }
 
+const roleLabels: Record<string, string> = {
+  employer: "Arbetsgivare",
+  talent: "Talang",
+  host: "Värd",
+};
+
 export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
   const [searchOpen, setSearchOpen] = React.useState(false);
+  const [signingOut, setSigningOut] = React.useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile, user } = useAuth();
   const { data: unreadCount, isLoading: unreadLoading } = useUnreadCount();
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Användare";
   const initials = displayName.slice(0, 2).toUpperCase();
   const inboxPath = profile?.type === "employer" ? "/employer/inbox" : "/talent/inbox";
+  const roleBadge = profile?.type ? roleLabels[profile.type] : null;
 
   const handleSignOut = async () => {
+    setSigningOut(true);
     const { error } = await signOut();
     if (error) {
       toast.error("Kunde inte logga ut");
+      setSigningOut(false);
     } else {
       toast.success("Utloggad");
-      navigate("/");
+      navigate("/auth");
     }
   };
 
@@ -123,16 +134,27 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
             <DropdownMenuLabel className="px-4 py-3 border-b border-border/50">
               <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              {roleBadge && (
+                <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-primary/10 text-primary">
+                  {roleBadge}
+                </span>
+              )}
             </DropdownMenuLabel>
 
             <div className="py-1">
-              <DropdownMenuItem asChild className="gap-3 px-4 py-2.5 cursor-pointer rounded-none">
+              <DropdownMenuItem asChild className={cn(
+                "gap-3 px-4 py-2.5 cursor-pointer rounded-none",
+                location.pathname === "/settings/profile" && "bg-accent text-accent-foreground"
+              )}>
                 <Link to="/settings/profile">
                   <UserCircle className="h-4 w-4 text-muted-foreground" />
                   Profil
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="gap-3 px-4 py-2.5 cursor-pointer rounded-none">
+              <DropdownMenuItem asChild className={cn(
+                "gap-3 px-4 py-2.5 cursor-pointer rounded-none",
+                location.pathname === "/settings/account" && "bg-accent text-accent-foreground"
+              )}>
                 <Link to="/settings/account">
                   <Settings className="h-4 w-4 text-muted-foreground" />
                   Inställningar
@@ -144,10 +166,11 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
 
             <DropdownMenuItem
               onClick={handleSignOut}
+              disabled={signingOut}
               className="gap-3 px-4 py-2.5 cursor-pointer rounded-none text-destructive focus:text-destructive focus:bg-destructive/10"
             >
-              <LogOut className="h-4 w-4" />
-              Logga ut
+              {signingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+              {signingOut ? "Loggar ut…" : "Logga ut"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
