@@ -85,6 +85,7 @@ export function EmployerBorrow() {
   const { data: orgId, isLoading: orgLoading } = useDefaultOrgId();
   const { data: orgs } = useMyOrgs();
   const { data: requests, isLoading: requestsLoading } = useOrgBorrowRequests(orgId);
+  // allCirclePartnersFlat kept only for CircleManagementModal's available-partner filter
   const { data: allCirclePartners } = useAllCirclePartnersFlat(orgId);
   const { data: circleRequests } = useCircleRequests(orgId);
   const { data: myCircles } = useMyCircles(orgId);
@@ -124,7 +125,8 @@ export function EmployerBorrow() {
     today.toISOString(),
     tomorrow.toISOString(),
     orgId ?? undefined,
-    !!orgId
+    !!orgId,
+    selectedCircleId ?? undefined
   );
 
   const [activeTab, setActiveTab] = React.useState<"requests" | "circles">("requests");
@@ -469,45 +471,85 @@ export function EmployerBorrow() {
           {/* Circles Tab */}
           <TabsContent value="circles">
             <div className="space-y-6">
-              {/* Active Circle Partners */}
+              {/* Circle selector + members (same source as modal) */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-foreground">Dina cirkelpartners</h3>
-                  <Button variant="outline" size="sm" onClick={() => setShowInvite(true)}>
-                    <Send className="h-4 w-4 mr-1" />
-                    Bjud in
-                  </Button>
-                </div>
-                
-                {allCirclePartners && allCirclePartners.length > 0 ? (
-                  <div className="grid gap-2">
-                    {allCirclePartners.map((partner) => (
-                      <Card key={partner.orgId} variant="ghost" padding="sm">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
-                            <Handshake className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <span className="font-medium text-foreground">{partner.orgName}</span>
-                            {partner.orgLocation ? (
-                              <p className="text-xs text-muted-foreground">{partner.orgLocation}</p>
-                            ) : partner.circles.length > 0 ? (
-                              <p className="text-xs text-muted-foreground">
-                                {partner.circles.map((c) => c.circleName).join(", ")}
-                              </p>
-                            ) : (
-                              <p className="text-xs text-muted-foreground">Aktiv partner</p>
-                            )}
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowCircleManagement(true)}
+                      className="h-7 text-xs"
+                    >
+                      <Settings className="h-3 w-3 mr-1" />
+                      Hantera
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setShowInvite(true)}>
+                      <Send className="h-4 w-4 mr-1" />
+                      Bjud in
+                    </Button>
                   </div>
+                </div>
+
+                {/* Circle selector */}
+                {myCircles && myCircles.length > 0 ? (
+                  <>
+                    <Select
+                      value={selectedCircleId ?? ""}
+                      onValueChange={(value) => setSelectedCircleId(value)}
+                    >
+                      <SelectTrigger className="bg-background mb-3">
+                        <SelectValue placeholder="Välj cirkel..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        {myCircles.map((circle) => (
+                          <SelectItem key={circle.id} value={circle.id}>
+                            {circle.name} ({circle.memberCount} {circle.memberCount === 1 ? "medlem" : "medlemmar"})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {selectedCircleMembers && selectedCircleMembers.length > 0 ? (
+                      <div className="grid gap-2">
+                        {selectedCircleMembers.map((member) => (
+                          <Card key={member.id} variant="ghost" padding="sm">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Handshake className="h-4 w-4 text-primary" />
+                              </div>
+                              <div>
+                                <span className="font-medium text-foreground">{member.name}</span>
+                                {member.location && (
+                                  <p className="text-xs text-muted-foreground">{member.location}</p>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card variant="ghost" padding="md" className="text-center">
+                        <p className="text-sm text-muted-foreground">
+                          Inga medlemmar i denna cirkel ännu. Använd "Hantera" för att lägga till.
+                        </p>
+                      </Card>
+                    )}
+                  </>
                 ) : (
                   <Card variant="ghost" padding="md" className="text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Inga partners ännu. Bjud in andra organisationer!
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Inga cirklar ännu. Skapa en cirkel och lägg till partners.
                     </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowCircleManagement(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Skapa cirkel
+                    </Button>
                   </Card>
                 )}
               </div>
