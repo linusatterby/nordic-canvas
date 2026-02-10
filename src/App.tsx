@@ -13,6 +13,9 @@ import Landing from "@/app/routes/(public)/Landing";
 import ForTalanger from "@/app/routes/(public)/ForTalanger";
 import ForArbetsgivare from "@/app/routes/(public)/ForArbetsgivare";
 import Auth from "@/app/routes/(public)/Auth";
+import Privacy from "@/app/routes/(public)/Privacy";
+import Terms from "@/app/routes/(public)/Terms";
+import ForgotPassword from "@/app/routes/(public)/ForgotPassword";
 import AdminHealth from "@/app/routes/(admin)/AdminHealth";
 
 // Talent routes
@@ -38,6 +41,11 @@ import EmployerBorrow from "@/app/routes/(employer)/EmployerBorrow";
 // Host routes
 import HostHousing from "@/app/routes/(host)/HostHousing";
 import HostInbox from "@/app/routes/(host)/HostInbox";
+
+// Settings routes
+import Settings from "@/app/routes/(settings)/Settings";
+import SettingsProfile from "@/app/routes/(settings)/SettingsProfile";
+import SettingsAccount from "@/app/routes/(settings)/SettingsAccount";
 
 import NotFound from "./pages/NotFound";
 
@@ -67,6 +75,9 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/login" element={<Auth />} />
               <Route path="/auth/signup" element={<Auth />} />
+              <Route path="/auth/forgot" element={<ForgotPassword />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               
               {/* Admin */}
               <Route path="/admin/health" element={<AdminHealth />} />
@@ -94,6 +105,11 @@ const App = () => (
               {/* Host */}
               <Route path="/host/housing" element={<ProtectedRoute><RoleGate allow={["host"]}><HostHousing /></RoleGate></ProtectedRoute>} />
               <Route path="/host/inbox" element={<ProtectedRoute><RoleGate allow={["host"]}><HostInbox /></RoleGate></ProtectedRoute>} />
+
+              {/* Settings */}
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/settings/profile" element={<ProtectedRoute><SettingsProfile /></ProtectedRoute>} />
+              <Route path="/settings/account" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

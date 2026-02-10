@@ -1,0 +1,25 @@
+import { PublicShell } from "@/app/layout/PublicShell";
+
+export function Terms() {
+  return (
+    <PublicShell>
+      <div className="container mx-auto px-4 py-16 max-w-2xl">
+        <h1 className="text-3xl font-bold text-foreground mb-6">Användarvillkor</h1>
+        <div className="prose prose-sm text-muted-foreground space-y-4">
+          <p>
+            Här publiceras villkoren för användning av Seasonal Talent-plattformen.
+            Innehållet uppdateras inom kort.
+          </p>
+          <p>
+            Har du frågor om våra villkor? Kontakta oss på{" "}
+            <a href="mailto:info@seasonaltalent.se" className="text-primary hover:underline">
+              info@seasonaltalent.se
+            </a>
+          </p>
+        </div>
+      </div>
+    </PublicShell>
+  );
+}
+
+export default Terms;
