@@ -182,10 +182,27 @@ export function TalentSwipeJobs() {
   if (isLoading || isHardLoading) {
     return (
       <AppShell role="talent">
-        <div className="container mx-auto px-4 py-8 max-w-lg">
-          <Skeleton className="h-8 w-48 mx-auto mb-6" />
-          <Skeleton className="h-32 w-full rounded-xl mb-4" />
-          <Skeleton className="h-96 w-full rounded-xl" />
+        <div className="container mx-auto px-4 py-6 max-w-lg">
+          <div className="text-center mb-4 space-y-2">
+            <Skeleton className="h-6 w-32 mx-auto" />
+            <Skeleton className="h-4 w-52 mx-auto" />
+          </div>
+          <Skeleton className="h-10 w-full rounded-xl mb-4" />
+          <div className="rounded-[18px] border border-border/60 bg-card shadow-card overflow-hidden">
+            <Skeleton className="h-48 w-full rounded-none" />
+            <div className="p-5 space-y-3">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+            </div>
+            <div className="flex gap-4 p-5 pt-0 justify-center">
+              <Skeleton variant="circle" className="h-14 w-14" />
+              <Skeleton variant="circle" className="h-14 w-14" />
+            </div>
+          </div>
         </div>
       </AppShell>
     );
