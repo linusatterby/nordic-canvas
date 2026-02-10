@@ -193,6 +193,7 @@ export function Auth() {
                   <input
                     type="text"
                     id="name"
+                    autoComplete="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ditt namn"
@@ -211,10 +212,11 @@ export function Auth() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="din@email.se"
+                   id="email"
+                   autoComplete="email"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   placeholder="din@email.se"
                   className="w-full h-11 pl-10 pr-4 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   disabled={loading}
                 />
@@ -229,10 +231,11 @@ export function Auth() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                   id="password"
+                   autoComplete={mode === "login" ? "current-password" : "new-password"}
+                   value={password}
+                   onChange={(e) => setPassword(e.target.value)}
+                   placeholder="••••••••"
                   className="w-full h-11 pl-10 pr-4 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   disabled={loading}
                 />

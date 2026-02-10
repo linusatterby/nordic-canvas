@@ -35,7 +35,7 @@ export function EmployerDashboard() {
 
         {/* Quick Actions Grid - 2 cols mobile, 3 cols md+ */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
-          <Link to="/employer/swipe-talent">
+          <Link to="/employer/jobs">
             <Card variant="interactive" className="h-full p-3 sm:p-4">
               <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2 sm:mb-3" />
               <h3 className="font-semibold text-sm sm:text-base">Hitta talanger</h3>
