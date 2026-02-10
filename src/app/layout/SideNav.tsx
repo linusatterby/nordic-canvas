@@ -24,30 +24,79 @@ interface NavItem {
   href: string;
 }
 
-const talentNavItems: NavItem[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/talent/dashboard" },
-  { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
-  { icon: <Home className="h-5 w-5" />, label: "Boende", href: "/talent/housing" },
-  { icon: <Users className="h-5 w-5" />, label: "Matcher", href: "/talent/matches" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/talent/inbox" },
-  { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/talent/activity" },
-  { icon: <User className="h-5 w-5" />, label: "Min profil", href: "/talent/profile" },
+interface NavSection {
+  heading?: string;
+  items: NavItem[];
+}
+
+const talentSections: NavSection[] = [
+  {
+    heading: "Översikt",
+    items: [
+      { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/talent/dashboard" },
+    ],
+  },
+  {
+    heading: "Jobb",
+    items: [
+      { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
+      { icon: <Home className="h-5 w-5" />, label: "Boende", href: "/talent/housing" },
+      { icon: <Users className="h-5 w-5" />, label: "Matcher", href: "/talent/matches" },
+    ],
+  },
+  {
+    heading: "Kommunikation",
+    items: [
+      { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/talent/inbox" },
+      { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/talent/activity" },
+    ],
+  },
+  {
+    items: [
+      { icon: <User className="h-5 w-5" />, label: "Min profil", href: "/talent/profile" },
+    ],
+  },
 ];
 
-const employerNavItems: NavItem[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/employer/dashboard" },
-  { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
-  { icon: <Users className="h-5 w-5" />, label: "Hitta talanger", href: "/employer/jobs" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/employer/inbox" },
-  { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/employer/activity" },
-  { icon: <Calendar className="h-5 w-5" />, label: "Schemaläggare", href: "/employer/scheduler" },
-  { icon: <ArrowLeftRight className="h-5 w-5" />, label: "Låna personal", href: "/employer/borrow" },
+const employerSections: NavSection[] = [
+  {
+    heading: "Översikt",
+    items: [
+      { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/employer/dashboard" },
+    ],
+  },
+  {
+    heading: "Rekrytering",
+    items: [
+      { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
+      { icon: <Users className="h-5 w-5" />, label: "Hitta talanger", href: "/employer/jobs" },
+      { icon: <Calendar className="h-5 w-5" />, label: "Schema", href: "/employer/scheduler" },
+      { icon: <ArrowLeftRight className="h-5 w-5" />, label: "Låna personal", href: "/employer/borrow" },
+    ],
+  },
+  {
+    heading: "Kommunikation",
+    items: [
+      { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/employer/inbox" },
+      { icon: <Activity className="h-5 w-5" />, label: "Händelser", href: "/employer/activity" },
+    ],
+  },
 ];
 
-const hostNavItems: NavItem[] = [
-  { icon: <LayoutDashboard className="h-5 w-5" />, label: "Mina boenden", href: "/host/housing" },
-  { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/host/inbox" },
+const hostSections: NavSection[] = [
+  {
+    items: [
+      { icon: <LayoutDashboard className="h-5 w-5" />, label: "Mina boenden", href: "/host/housing" },
+      { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/host/inbox" },
+    ],
+  },
 ];
+
+function getSections(role: Role): NavSection[] {
+  if (role === "talent") return talentSections;
+  if (role === "host") return hostSections;
+  return employerSections;
+}
 
 interface SideNavProps {
   role: Role;
@@ -57,11 +106,7 @@ interface SideNavProps {
 
 export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
   const location = useLocation();
-  const navItems = role === "talent" 
-    ? talentNavItems 
-    : role === "host" 
-      ? hostNavItems 
-      : employerNavItems;
+  const sections = getSections(role);
 
   return (
     <aside
@@ -94,35 +139,56 @@ export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              to={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 transition-all duration-fast",
-                "text-sm font-medium",
-                isActive
-                  ? "bg-primary text-primary-foreground rounded-pill shadow-soft"
-                  : "text-frost/70 hover:text-frost hover:bg-white/8 rounded-xl"
-              )}
-            >
-              {item.icon}
-              {isOpen && <span>{item.label}</span>}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 py-3 px-2 overflow-y-auto">
+        {sections.map((section, sIdx) => (
+          <div key={sIdx} className={cn(sIdx > 0 && "mt-4")}>
+            {section.heading && isOpen && (
+              <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-frost/40 select-none">
+                {section.heading}
+              </p>
+            )}
+            {!isOpen && sIdx > 0 && (
+              <div className="mx-3 mb-2 border-t border-white/8" />
+            )}
+            <div className="space-y-0.5">
+              {section.items.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.href + item.label}
+                    to={item.href}
+                    className={cn(
+                      "relative flex items-center gap-3 px-3 min-h-[44px] transition-all duration-200",
+                      "text-sm font-medium rounded-xl",
+                      isActive
+                        ? "bg-white/12 text-frost shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] border border-white/10"
+                        : "text-frost/70 hover:text-frost hover:bg-white/6 border border-transparent"
+                    )}
+                  >
+                    {/* Left accent bar */}
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary" />
+                    )}
+                    {item.icon}
+                    {isOpen && <span className="truncate">{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Footer */}
-      <div className="p-2 border-t border-white/8 space-y-1">
+      <div className="p-2 border-t border-white/8 space-y-0.5">
         <Link
           to="/settings"
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-fast",
-            "text-sm font-medium text-frost/70 hover:text-frost hover:bg-white/8"
+            "flex items-center gap-3 px-3 min-h-[44px] rounded-xl transition-all duration-200",
+            "text-sm font-medium",
+            location.pathname.startsWith("/settings")
+              ? "bg-white/12 text-frost border border-white/10"
+              : "text-frost/70 hover:text-frost hover:bg-white/6 border border-transparent"
           )}
         >
           <Settings className="h-5 w-5" />
@@ -130,8 +196,8 @@ export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
         </Link>
         <button
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-fast",
-            "text-sm font-medium text-frost/70 hover:text-frost hover:bg-white/8"
+            "w-full flex items-center gap-3 px-3 min-h-[44px] rounded-xl transition-all duration-200",
+            "text-sm font-medium text-frost/70 hover:text-frost hover:bg-white/6 border border-transparent"
           )}
         >
           <LogOut className="h-5 w-5" />
