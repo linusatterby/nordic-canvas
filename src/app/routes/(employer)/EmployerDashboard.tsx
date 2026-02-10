@@ -4,10 +4,53 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Users, Briefcase, ArrowLeftRight, ChevronRight, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 
+function DashboardSkeleton() {
+  return (
+    <AppShell role="employer">
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="mb-8 space-y-2">
+          <Skeleton className="h-7 w-56" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+
+        {/* Fill rate skeleton */}
+        <div className="rounded-[18px] border border-border/60 bg-card p-6 shadow-card mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-7 w-16 rounded-full" />
+          </div>
+          <Skeleton className="h-4 w-full rounded-full" />
+          <Skeleton className="h-3 w-48 mt-3" />
+        </div>
+
+        {/* Quick action cards skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className={`rounded-[18px] border border-border/60 bg-card p-4 shadow-card ${i === 3 ? "col-span-2 md:col-span-1" : ""}`}>
+              <Skeleton variant="default" className="h-8 w-8 rounded-xl mb-3" />
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </div>
+
+        {/* CTA skeleton */}
+        <div className="rounded-[18px] border border-border/60 bg-card p-6 shadow-card">
+          <Skeleton className="h-5 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+      </div>
+    </AppShell>
+  );
+}
+
 export function EmployerDashboard() {
+  // In a real scenario this would come from a loading hook
+  // For now the dashboard uses static data, so we render directly
   return (
     <AppShell role="employer">
       <div className="container mx-auto px-4 py-8 max-w-5xl">

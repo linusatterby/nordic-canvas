@@ -229,8 +229,28 @@ export function EmployerJobs() {
     return (
       <AppShell role="employer">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <Skeleton className="h-8 w-48 mb-6" />
-          <Skeleton className="h-32 w-full rounded-xl" />
+          <div className="flex items-center justify-between mb-6">
+            <Skeleton className="h-7 w-36" />
+            <Skeleton className="h-10 w-36 rounded-xl" />
+          </div>
+          <Skeleton className="h-10 w-full rounded-xl mb-4" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-[18px] border border-border/60 bg-card p-5 shadow-card">
+                <div className="flex items-center gap-4">
+                  <Skeleton variant="default" className="h-12 w-12 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-14 rounded-full" />
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AppShell>
     );
@@ -300,7 +320,21 @@ export function EmployerJobs() {
 
         {jobsLoading ? (
           <div className="space-y-4">
-            {[1, 2].map((i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-[18px] border border-border/60 bg-card p-5 shadow-card">
+                <div className="flex items-center gap-4">
+                  <Skeleton variant="default" className="h-12 w-12 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/5" />
+                    <Skeleton className="h-3 w-2/5" />
+                  </div>
+                  <div className="hidden sm:flex gap-2">
+                    <Skeleton className="h-8 w-20 rounded-xl" />
+                    <Skeleton className="h-8 w-28 rounded-xl" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredJobs && filteredJobs.length > 0 ? (
           <div className="space-y-4">
@@ -381,8 +415,8 @@ export function EmployerJobs() {
         ) : (
           <EmptyState 
             type="no-jobs" 
-            title="Inga annonser ännu" 
-            message="Skapa din första annons för att börja hitta talanger." 
+            title="Inga annonser att visa" 
+            message="Skapa din första annons och nå kvalificerade talanger direkt via nätverket." 
             action={{ label: "Skapa annons", onClick: () => setShowCreateJob(true) }} 
           />
         )}
