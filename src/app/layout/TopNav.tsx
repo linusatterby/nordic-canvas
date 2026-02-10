@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Bell, User, Menu, X, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Search, Bell, Menu, X, LogOut, Settings, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -8,6 +8,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/supabase/auth";
 import { toast } from "sonner";
 import { useUnreadCount } from "@/hooks/useNotifications";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 
 interface TopNavProps {
   onMenuToggle?: () => void;
@@ -16,25 +24,13 @@ interface TopNavProps {
 
 export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
   const [searchOpen, setSearchOpen] = React.useState(false);
-  const [menuOpen, setMenuOpen] = React.useState(false);
-  const menuRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const { data: unreadCount, isLoading: unreadLoading } = useUnreadCount();
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Användare";
+  const initials = displayName.slice(0, 2).toUpperCase();
   const inboxPath = profile?.type === "employer" ? "/employer/inbox" : "/talent/inbox";
-
-  // Close menu when clicking outside
-  React.useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -104,64 +100,57 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
         </Button>
 
         {/* Profile Menu */}
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-secondary/80 transition-all duration-fast"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-secondary/80 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+              <Avatar
+                alt={displayName}
+                fallback={initials}
+                size="sm"
+              />
+              <span className="hidden sm:block text-sm font-medium text-foreground max-w-[120px] truncate">
+                {displayName}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="end"
+            sideOffset={8}
+            collisionPadding={12}
+            className="w-56 rounded-[18px] backdrop-blur-xl bg-popover/95 border border-border/50 shadow-lg p-0 overflow-hidden"
           >
-            <Avatar
-              alt={displayName}
-              fallback={displayName.slice(0, 2).toUpperCase()}
-              size="sm"
-            />
-            <span className="hidden sm:block text-sm font-medium text-foreground max-w-[120px] truncate">
-              {displayName}
-            </span>
-            <ChevronDown className={cn(
-              "h-4 w-4 text-muted-foreground transition-transform hidden sm:block",
-              menuOpen && "rotate-180"
-            )} />
-          </button>
+            <DropdownMenuLabel className="px-4 py-3 border-b border-border/50">
+              <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+            </DropdownMenuLabel>
 
-          {/* Dropdown Menu */}
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 glass-panel rounded-[18px] border border-border/50 shadow-lift py-2 animate-scale-in">
-              <div className="px-4 py-2 border-b border-border">
-                <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-              </div>
-
-              <div className="py-1">
-                <Link
-                  to="/settings/profile"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  <User className="h-4 w-4 text-muted-foreground" />
+            <div className="py-1">
+              <DropdownMenuItem asChild className="gap-3 px-4 py-2.5 cursor-pointer rounded-none">
+                <Link to="/settings/profile">
+                  <UserCircle className="h-4 w-4 text-muted-foreground" />
                   Profil
                 </Link>
-                <Link
-                  to="/settings/account"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="gap-3 px-4 py-2.5 cursor-pointer rounded-none">
+                <Link to="/settings/account">
                   <Settings className="h-4 w-4 text-muted-foreground" />
                   Inställningar
                 </Link>
-              </div>
-
-              <div className="border-t border-border pt-1">
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logga ut
-                </button>
-              </div>
+              </DropdownMenuItem>
             </div>
-          )}
-        </div>
+
+            <DropdownMenuSeparator className="my-0" />
+
+            <DropdownMenuItem
+              onClick={handleSignOut}
+              className="gap-3 px-4 py-2.5 cursor-pointer rounded-none text-destructive focus:text-destructive focus:bg-destructive/10"
+            >
+              <LogOut className="h-4 w-4" />
+              Logga ut
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
