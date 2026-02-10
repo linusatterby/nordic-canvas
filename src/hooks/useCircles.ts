@@ -353,13 +353,14 @@ export function useAvailableTalentCounts(
   startTs: string,
   endTs: string,
   requesterOrgId: string | undefined,
-  enabled: boolean = true
+  enabled: boolean = true,
+  circleId?: string
 ) {
   return useQuery({
-    queryKey: ["talentCounts", location, startTs, endTs, requesterOrgId],
+    queryKey: ["talentCounts", location, startTs, endTs, requesterOrgId, circleId],
     queryFn: async () => {
       if (!requesterOrgId) return { internal: 0, circle: 0, local: 0 };
-      const result = await getAvailableTalentCounts(location, startTs, endTs, requesterOrgId);
+      const result = await getAvailableTalentCounts(location, startTs, endTs, requesterOrgId, circleId);
       if (result.error) throw result.error;
       return { internal: result.internal, circle: result.circle, local: result.local };
     },
