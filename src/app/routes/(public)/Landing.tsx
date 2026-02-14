@@ -8,23 +8,23 @@ import { Badge } from "@/components/ui/Badge";
 const features = [
   {
     icon: <Users className="h-5 w-5" />,
-    title: "Smart matchning",
-    description: "Vår algoritm matchar talanger med jobb baserat på erfarenhet, tillgänglighet och preferenser.",
+    title: "Matchning som funkar",
+    description: "Se relevanta jobb och kandidater baserat på roll, tillgänglighet och preferenser.",
   },
   {
     icon: <Star className="h-5 w-5" />,
-    title: "Pålitlighetspoäng",
-    description: "Bygg ditt rykte uppdrag efter uppdrag. Arbetsgivare ser din historik och betyg.",
+    title: "Pålitlighet",
+    description: "Bygg ett rykte över tid. Se historik, omdömen och genomförda uppdrag.",
   },
   {
     icon: <Home className="h-5 w-5" />,
-    title: "Boende direkt i appen",
-    description: "Hitta boende enkelt. Verifiera värdar och hyresgäster för trygghet.",
+    title: "Boende, enklare",
+    description: "Hitta boende och värdar i samma flöde — med tydligare trygghet för båda sidor.",
   },
   {
     icon: <Shield className="h-5 w-5" />,
-    title: "Verifierad identitet",
-    description: "Alla användare verifieras för en säker och pålitlig arbetsmarknad.",
+    title: "Tryggare från start",
+    description: "Verifierade profiler gör det enklare att anställa, låna och jobba med förtroende.",
   },
 ];
 
@@ -35,9 +35,9 @@ const valueBlocks = [
 ];
 
 const heroBullets = [
-  "Verifierad identitet",
-  "Snabb matchning",
-  "Boende i appen",
+  "Verifierad profil",
+  "Snabb match",
+  "Boende & värdar",
 ];
 
 const roleChips = [
@@ -58,14 +58,14 @@ export function Landing() {
           <div className="max-w-3xl mx-auto text-center">
             <Badge variant="primary" className="mb-6">
               <Zap className="h-3 w-3" />
-              Besöksnäringen väntar
+              Besöksnäringen är igång
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Din nästa roll i besöksnäringen börjar här
+              Din nästa roll i besöksnäringen — börjar här
             </h1>
             <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Vi kopplar samman talanger och arbetsgivare inom hotell, restaurang,
-              turism och upplevelser. Matcha. Chatta. Kom igång.
+              Vi kopplar ihop talanger och arbetsgivare inom hotell, restaurang,
+              turism och upplevelser. Matcha rätt. Fyll passen. Kom igång.
             </p>
 
             {/* Floating hero panel */}
@@ -73,13 +73,13 @@ export function Landing() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
                 <Link to="/auth/signup?role=talent">
                   <Button variant="primary" size="lg" className="gap-2 w-full sm:w-auto">
-                    Hitta jobb
+                    Se jobb
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link to="/auth/signup?role=employer">
                   <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-                    Hitta talanger
+                    Hitta personal
                   </Button>
                 </Link>
               </div>
@@ -136,10 +136,10 @@ export function Landing() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Byggd för besöksnäringen
+              Byggd för pass, säsong och tempo
             </h2>
             <p className="text-muted-foreground">
-              Allt du behöver för att hitta rätt match – oavsett om du söker jobb eller personal.
+              Allt du behöver för att hitta rätt — oavsett om du söker jobb eller behöver personal.
             </p>
           </div>
 
@@ -173,14 +173,14 @@ export function Landing() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-warm-accent/10" />
             <div className="relative">
               <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-white">
-                Redo för säsongen?
+                Redo att komma igång?
               </h2>
               <p className="text-white/80 mb-8 max-w-lg mx-auto">
-                Skapa ditt konto på under 2 minuter. Ingen kostnad för talanger.
+                Skapa konto på under 2 minuter. Gratis för talanger.
               </p>
               <Link to="/auth/signup">
                 <Button variant="primary" size="lg" className="gap-2 shadow-lg shadow-primary/25 ring-1 ring-white/10">
-                  Kom igång gratis
+                  Skapa konto
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
