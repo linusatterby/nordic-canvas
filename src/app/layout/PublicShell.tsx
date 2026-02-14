@@ -118,7 +118,7 @@ export function PublicShell({ children }: PublicShellProps) {
       <footer className="border-t border-border bg-card py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <p>© 2025 Seasonal Talent. Alla rättigheter förbehållna.</p>
+            <p>© 2025. Alla rättigheter förbehållna.</p>
             <div className="flex items-center gap-4">
               <Link to="/privacy" className="hover:text-foreground transition-colors">
                 Integritet

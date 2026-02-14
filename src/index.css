@@ -60,6 +60,13 @@
     --ink: var(--c-ink);
     --frost: var(--c-frost);
     --slate: var(--c-slate);
+
+    /* Warm tokens */
+    --warm-1: var(--c-warm-1);
+    --warm-2: var(--c-warm-2);
+    --accent-warm: var(--c-accent-warm);
+    --accent-warm-muted: var(--c-accent-warm-muted);
+    --muted-warm: var(--c-muted-warm);
     
     /* Border subtle */
     --border-subtle: var(--c-border-subtle);
@@ -158,8 +165,9 @@
   /* Glass morphism */
   .glass {
     background: var(--bg-glass);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid hsl(35 30% 90% / 0.4);
   }
   
   .glass-panel {
