@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, Briefcase, Home, Star, Shield, Zap, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Users, Home, Star, Shield, Zap, CheckCircle2, Clock, ShieldCheck, MapPin } from "lucide-react";
 import { PublicShell } from "@/app/layout/PublicShell";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -28,16 +28,21 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: "12K+", label: "Talanger" },
-  { value: "850+", label: "Arbetsgivare" },
-  { value: "95%", label: "Nöjdhet" },
+const valueBlocks = [
+  { icon: <Clock className="h-4 w-4" />, title: "Snabb match", desc: "Svar på minuter, inte dagar" },
+  { icon: <ShieldCheck className="h-4 w-4" />, title: "Verifierad identitet", desc: "Tryggt för både talang och arbetsgivare" },
+  { icon: <MapPin className="h-4 w-4" />, title: "Besöksnäringsfokus", desc: "Hotell, restaurang, turism och upplevelser" },
 ];
 
 const heroBullets = [
   "Verifierad identitet",
   "Snabb matchning",
   "Boende i appen",
+];
+
+const roleChips = [
+  "Bartender", "Servering", "Kock", "Reception",
+  "Housekeeping", "Guide", "Disk/Runner", "Liftvärd",
 ];
 
 export function Landing() {
@@ -87,15 +92,38 @@ export function Landing() {
                 ))}
               </div>
             </div>
+
+            {/* Role chips */}
+            <div className="max-w-2xl mx-auto mt-10">
+              <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-3">Populära roller</p>
+              <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none justify-center flex-wrap sm:flex-nowrap sm:justify-center"
+                   style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+                {roleChips.map((role) => (
+                  <span
+                    key={role}
+                    className="snap-start shrink-0 px-4 py-1.5 rounded-full text-sm font-medium
+                               glass border border-border/40
+                               text-foreground/80
+                               hover:bg-warm-accent-muted hover:text-warm-accent hover:border-warm-accent/30
+                               transition-all duration-fast cursor-default select-none"
+                  >
+                    {role}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Stats glass strip */}
-          <div className="glass rounded-[18px] shadow-card max-w-lg mx-auto mt-12">
-            <div className="flex items-center divide-x divide-border/40">
-              {stats.map((stat) => (
-                <div key={stat.label} className="flex-1 text-center py-5 px-4">
-                  <div className="text-3xl lg:text-4xl font-bold text-primary">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide font-medium">{stat.label}</div>
+          {/* Value blocks glass strip */}
+          <div className="glass rounded-[18px] shadow-card max-w-2xl mx-auto mt-14">
+            <div className="flex flex-col sm:flex-row items-stretch divide-y sm:divide-y-0 sm:divide-x divide-border/40">
+              {valueBlocks.map((block) => (
+                <div key={block.title} className="flex-1 flex flex-col items-center text-center py-5 px-5 gap-1.5">
+                  <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary mb-1">
+                    {block.icon}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">{block.title}</span>
+                  <span className="text-xs text-muted-foreground leading-snug">{block.desc}</span>
                 </div>
               ))}
             </div>
@@ -140,16 +168,18 @@ export function Landing() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="rounded-[24px] bg-ink text-frost text-center max-w-3xl mx-auto p-10 lg:p-14 shadow-lift relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-warm-accent/8" />
+            {/* Dark overlay for contrast */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-warm-accent/10" />
             <div className="relative">
-              <h2 className="text-2xl lg:text-3xl font-bold mb-4">
+              <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-white">
                 Redo för säsongen?
               </h2>
-              <p className="text-frost/70 mb-8 max-w-lg mx-auto">
+              <p className="text-white/80 mb-8 max-w-lg mx-auto">
                 Skapa ditt konto på under 2 minuter. Ingen kostnad för talanger.
               </p>
               <Link to="/auth/signup">
-                <Button variant="primary" size="lg" className="gap-2">
+                <Button variant="primary" size="lg" className="gap-2 shadow-lg shadow-primary/25 ring-1 ring-white/10">
                   Kom igång gratis
                   <ArrowRight className="h-4 w-4" />
                 </Button>
