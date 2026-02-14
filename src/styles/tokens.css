@@ -103,10 +103,17 @@
   --z-toast: 700;
   --z-tooltip: 900;
 
+  /* Warm Accents */
+  --c-warm-1: 36 45% 96%;
+  --c-warm-2: 32 35% 92%;
+  --c-accent-warm: 32 80% 52%;
+  --c-accent-warm-muted: 34 60% 93%;
+  --c-muted-warm: 30 20% 60%;
+
   /* App Background */
-  --bg-app: linear-gradient(135deg, hsl(220 40% 97%) 0%, hsl(220 30% 98%) 50%, hsl(225 35% 96%) 100%);
-  --bg-panel: hsl(0 0% 100% / 0.85);
-  --bg-glass: hsl(0 0% 100% / 0.7);
+  --bg-app: linear-gradient(135deg, hsl(35 30% 97%) 0%, hsl(30 20% 98%) 40%, hsl(220 25% 97%) 100%);
+  --bg-panel: hsl(35 20% 100% / 0.88);
+  --bg-glass: hsl(35 15% 100% / 0.72);
   
   /* Sidebar - Refined dark */
   --c-sidebar: 222 47% 11%;
@@ -137,6 +144,12 @@
   --sh-lift: 0 8px 24px hsl(0 0% 0% / 0.35);
   --sh-modal: 0 24px 48px hsl(0 0% 0% / 0.5);
   --sh-hover: 0 6px 20px hsl(0 0% 0% / 0.3);
+
+  --c-warm-1: 30 20% 14%;
+  --c-warm-2: 30 15% 18%;
+  --c-accent-warm: 32 70% 55%;
+  --c-accent-warm-muted: 32 40% 20%;
+  --c-muted-warm: 30 15% 50%;
 
   --bg-app: linear-gradient(135deg, hsl(222 47% 8%) 0%, hsl(222 47% 10%) 100%);
   --bg-panel: hsl(222 40% 10% / 0.9);

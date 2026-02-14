@@ -74,6 +74,13 @@ export default {
         },
         ink: "hsl(var(--ink))",
         frost: "hsl(var(--frost))",
+        warm: {
+          1: "hsl(var(--warm-1))",
+          2: "hsl(var(--warm-2))",
+          accent: "hsl(var(--accent-warm))",
+          "accent-muted": "hsl(var(--accent-warm-muted))",
+          muted: "hsl(var(--muted-warm))",
+        },
         slate: {
           DEFAULT: "hsl(var(--slate))",
           dark: "hsl(var(--c-slate-dark))",
