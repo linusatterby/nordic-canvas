@@ -14,6 +14,7 @@
  */
 import * as React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getOrCreateDemoSessionId,
@@ -40,6 +41,7 @@ const DemoSessionContext = React.createContext<DemoSessionContextValue | undefin
 export function DemoSessionProvider({ children }: { children: React.ReactNode }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [sessionId, setSessionId] = React.useState<string | null>(() => getDemoSessionId());
   const [demoRole, setDemoRole] = React.useState<DemoRole>("employer");
@@ -85,10 +87,12 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
   const endDemo = React.useCallback(() => {
     clearDemoSession();
     setSessionId(null);
+    // Purge all cached queries so no stale demo data leaks
+    queryClient.clear();
     // Sign out the anonymous user
     supabase.auth.signOut().catch(() => {});
     navigate("/");
-  }, [navigate]);
+  }, [navigate, queryClient]);
 
   const demoSupabase = React.useMemo(() => {
     if (!sessionId) return null;
