@@ -98,11 +98,10 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     setSessionId(id);
     setDemoRole(urlRole);
 
-    const client = getDemoSupabase(id);
     supabase.auth.signInAnonymously()
       .then(() => supabase.auth.getUser())
       .then(({ data }) => {
-        client.from("demo_sessions").upsert({
+        supabase.from("demo_sessions").upsert({
           id,
           role: urlRole,
           anon_user_id: data.user?.id ?? null,
@@ -141,11 +140,10 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     setDemoRole("employer");
     logger.info("demo_session_created", { context: "DemoSession", meta: { source: "env_auto", sessionId: id } });
 
-    const client = getDemoSupabase(id);
     supabase.auth.signInAnonymously()
       .then(() => supabase.auth.getUser())
       .then(({ data }) => {
-        client.from("demo_sessions").upsert({
+        supabase.from("demo_sessions").upsert({
           id,
           role: "employer",
           anon_user_id: data.user?.id ?? null,
@@ -160,13 +158,11 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     setSessionId(id);
     setDemoRole(role);
 
-    // Register the session in the DB (fire-and-forget)
-    const client = getDemoSupabase(id);
     try {
-      // Sign in anonymously so we have an auth context
+      // Sign in anonymously so we have an auth context BEFORE upserting
       await supabase.auth.signInAnonymously();
 
-      await client.from("demo_sessions").upsert({
+      await supabase.from("demo_sessions").upsert({
         id,
         role,
         anon_user_id: (await supabase.auth.getUser()).data.user?.id ?? null,
@@ -209,11 +205,10 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     setSessionId(id);
     setDemoRole(demoRole); // keep current role
 
-    const client = getDemoSupabase(id);
     try {
       await supabase.auth.signInAnonymously();
       const { data } = await supabase.auth.getUser();
-      await client.from("demo_sessions").upsert({
+      await supabase.from("demo_sessions").upsert({
         id,
         role: demoRole,
         anon_user_id: data.user?.id ?? null,
