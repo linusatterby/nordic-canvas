@@ -4,7 +4,7 @@ import {
   fetchMyJobPreferences,
   upsertJobPreferences,
   type JobPreferencesUpdate,
-} from "@/lib/api/jobPreferences";
+} from "@/lib/api/talent/jobPreferences";
 
 export function useJobPreferences() {
   return useQuery({

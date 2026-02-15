@@ -5,7 +5,7 @@ import {
   addCredential,
   deleteCredential,
   type CredentialInsert,
-} from "@/lib/api/credentials";
+} from "@/lib/api/talent/credentials";
 
 export function useCredentials() {
   return useQuery({

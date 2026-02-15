@@ -1783,6 +1783,27 @@ export type Database = {
         }
         Relationships: []
       }
+      talent_shift_availability: {
+        Row: {
+          id: string
+          timeblock: string
+          user_id: string
+          weekday: number
+        }
+        Insert: {
+          id?: string
+          timeblock: string
+          user_id: string
+          weekday: number
+        }
+        Update: {
+          id?: string
+          timeblock?: string
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
       talent_visibility: {
         Row: {
           available_for_extra_hours: boolean
