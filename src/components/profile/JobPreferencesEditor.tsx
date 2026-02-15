@@ -165,7 +165,10 @@ export function JobPreferencesEditor({ className }: Props) {
               onChange={(e) => setPermanent(e.target.checked)}
               className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
             />
-            <span className="text-sm font-medium text-foreground">Permanent anställning</span>
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Tillsvidare / långtid</span>
+            </div>
           </label>
           {permanent && (
             <div className="ml-7 space-y-1">
