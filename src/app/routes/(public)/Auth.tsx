@@ -10,6 +10,7 @@ import { signInWithPassword, signUpWithPassword } from "@/lib/supabase/auth";
 import { ensureMyProfile } from "@/lib/api/profile";
 import { useAuth } from "@/contexts/AuthContext";
 import { RoleSelectorModal } from "@/components/auth/RoleSelectorModal";
+import { getSafeReturnUrl } from "@/lib/auth/returnUrl";
 import { toast } from "sonner";
 
 type AuthMode = "login" | "signup";
@@ -36,6 +37,9 @@ export function Auth() {
   const [loading, setLoading] = React.useState(false);
   const [showRoleSelector, setShowRoleSelector] = React.useState(false);
 
+  // Get returnUrl from query params (set by ProtectedRoute redirect)
+  const returnUrl = searchParams.get("returnUrl");
+
   // Safe landing routes for each role
   const SAFE_LANDINGS = {
     talent: "/talent/swipe-jobs",
@@ -47,10 +51,9 @@ export function Auth() {
     if (user && profile) {
       if (profile.type === "both") {
         setShowRoleSelector(true);
-      } else if (profile.type === "talent") {
-        navigate(SAFE_LANDINGS.talent, { replace: true });
-      } else if (profile.type === "employer") {
-        navigate(SAFE_LANDINGS.employer, { replace: true });
+      } else {
+        const destination = getSafeReturnUrl(returnUrl, profile.type);
+        navigate(destination, { replace: true });
       }
     }
   }, [user, profile, navigate]);
@@ -121,12 +124,9 @@ export function Auth() {
         await refreshProfile();
         toast.success("Konto skapat!");
 
-        // Navigate to safe landing based on role
-        if (role === "talent") {
-          navigate(SAFE_LANDINGS.talent, { replace: true });
-        } else {
-          navigate(SAFE_LANDINGS.employer, { replace: true });
-        }
+        // Navigate to returnUrl or safe landing based on role
+        const destination = getSafeReturnUrl(returnUrl, role);
+        navigate(destination, { replace: true });
       }
     } catch (err) {
       toast.error("Något gick fel. Försök igen.");
