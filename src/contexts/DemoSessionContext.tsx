@@ -114,10 +114,17 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
   }, []);
 
   // Auto-start demo when IS_DEMO_ENV is true (no ?demo=1 needed)
+  // SAFETY: This block is gated on IS_DEMO_ENV — it never runs in prod.
   const envAutoStartRef = React.useRef(false);
   React.useEffect(() => {
     if (envAutoStartRef.current) return;
-    if (!IS_DEMO_ENV) return;
+    if (!IS_DEMO_ENV) {
+      // Runtime assertion: log error if this somehow runs in prod
+      if (import.meta.env.PROD) {
+        console.error("[DemoSession] INVARIANT: ENV auto-start must never run in prod");
+      }
+      return;
+    }
     // Don't auto-start if a session already exists (URL-param or reload)
     if (getDemoSessionId()) {
       setSessionId(getDemoSessionId());
