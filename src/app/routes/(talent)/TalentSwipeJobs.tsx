@@ -25,8 +25,8 @@ import { shouldShowDemoDebug } from "@/lib/utils/debug";
 import { cn } from "@/lib/utils/classnames";
 import type { ListingFilters, ListingType, ListingWithOrg } from "@/lib/api/jobs";
 
-/** Anti-double-submit lockout duration (ms) */
-const SWIPE_LOCKOUT_MS = 400;
+/** Max fallback lockout (ms) – unlocks earlier when next card renders */
+const SWIPE_MAX_LOCKOUT_MS = 700;
 
 /** Duration for the "Nytt" chip visibility (ms) */
 const NEW_CHIP_DURATION_MS = 600;
@@ -51,6 +51,14 @@ export function TalentSwipeJobs() {
   const [cardKey, setCardKey] = React.useState(0);
   const lockTimerRef = React.useRef<ReturnType<typeof setTimeout>>();
   const chipTimerRef = React.useRef<ReturnType<typeof setTimeout>>();
+  /** Track the job id we're swiping away so we can unlock when it changes */
+  const swipedJobIdRef = React.useRef<string | null>(null);
+
+  // Reduced motion preference
+  const prefersReducedMotion = React.useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
 
   // Convert UI filter values to API filter format
   const apiFilters: ListingFilters = React.useMemo(() => ({
@@ -139,16 +147,32 @@ export function TalentSwipeJobs() {
     };
   }, []);
 
+  // Unlock when next card actually renders (currentListing.id changes)
+  React.useEffect(() => {
+    if (
+      swipedJobIdRef.current &&
+      currentListing &&
+      currentListing.id !== swipedJobIdRef.current
+    ) {
+      // Next card is rendered – unlock immediately
+      swipedJobIdRef.current = null;
+      if (lockTimerRef.current) clearTimeout(lockTimerRef.current);
+      setIsLocked(false);
+    }
+  }, [currentListing?.id]);
+
   const handleSwipe = async (direction: "yes" | "no") => {
     if (!currentListing || !user || isLocked) return;
 
-    // Lock immediately
+    // Lock immediately & track which job we're swiping away
     setIsLocked(true);
+    swipedJobIdRef.current = currentListing.id;
     setPendingDirection(direction);
     setExitDirection(direction);
 
-    // Wait for exit animation
-    await new Promise(r => setTimeout(r, 200));
+    // Wait for exit animation (skip if reduced motion)
+    const exitDuration = prefersReducedMotion ? 50 : 200;
+    await new Promise(r => setTimeout(r, exitDuration));
 
     // Optimistically remove from stack
     removeTop();
@@ -160,8 +184,11 @@ export function TalentSwipeJobs() {
     setShowNewChip(true);
     chipTimerRef.current = setTimeout(() => setShowNewChip(false), NEW_CHIP_DURATION_MS);
 
-    // Unlock after lockout
-    lockTimerRef.current = setTimeout(() => setIsLocked(false), SWIPE_LOCKOUT_MS);
+    // Max-timeout fallback – unlock if render-based unlock hasn't fired
+    lockTimerRef.current = setTimeout(() => {
+      swipedJobIdRef.current = null;
+      setIsLocked(false);
+    }, SWIPE_MAX_LOCKOUT_MS);
 
     try {
       await swipeMutation.mutateAsync({ jobId: currentListing.id, direction });
@@ -442,8 +469,8 @@ export function TalentSwipeJobs() {
 
             {/* Card stack */}
             <div className="relative">
-              {/* Background cards (stack peek) */}
-              {stackPeek.map((peek, i) => (
+              {/* Background cards (stack peek) – hidden for reduced motion */}
+              {!prefersReducedMotion && stackPeek.map((peek, i) => (
                 <div
                   key={peek.id}
                   className="absolute inset-0 rounded-[18px] bg-card border border-border/40 pointer-events-none"
@@ -461,9 +488,11 @@ export function TalentSwipeJobs() {
                 key={cardKey}
                 className={cn(
                   "transition-all duration-200 ease-out",
-                  exitDirection === "no" && "swipe-exit-left",
-                  exitDirection === "yes" && "swipe-exit-right",
-                  !exitDirection && "swipe-enter"
+                  !prefersReducedMotion && exitDirection === "no" && "swipe-exit-left",
+                  !prefersReducedMotion && exitDirection === "yes" && "swipe-exit-right",
+                  !prefersReducedMotion && !exitDirection && "swipe-enter",
+                  prefersReducedMotion && exitDirection && "opacity-0",
+                  prefersReducedMotion && !exitDirection && "animate-fade-in"
                 )}
               >
                 <JobCard
