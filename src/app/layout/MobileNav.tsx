@@ -14,7 +14,7 @@ const talentNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/talent/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
   { icon: <Home className="h-5 w-5" />, label: "Boende", href: "/talent/housing" },
-  { icon: <Users className="h-5 w-5" />, label: "Matchningar", href: "/talent/matches" },
+  { icon: <Users className="h-5 w-5" />, label: "Match & förslag", href: "/talent/matches" },
   { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/talent/inbox" },
 ];
 
