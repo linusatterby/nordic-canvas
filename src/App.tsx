@@ -36,6 +36,10 @@ function renderRoute(route: RouteDef) {
     } else {
       node = <ProtectedRoute>{node}</ProtectedRoute>;
     }
+  } else if (route.guard === "admin") {
+    // Admin routes require authentication; the component itself
+    // handles additional env/role gating (e.g. test/demo only).
+    node = <ProtectedRoute>{node}</ProtectedRoute>;
   }
 
   // Wrap lazy components in Suspense

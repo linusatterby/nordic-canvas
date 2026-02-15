@@ -25,6 +25,9 @@ jobs:
       - name: Audit queryKeys
         run: node scripts/audit-querykeys.mjs
 
+      - name: Audit secrets (no service_role in src/)
+        run: node scripts/audit-secrets.mjs
+
       - name: Tests
         run: npx vitest run
 
