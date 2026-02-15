@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoMode } from "@/hooks/useDemo";
 import { isDemoEffectivelyEnabled } from "@/lib/config/env";
+import { queryKeys } from "@/lib/queryKeys";
 
 // Union message type
 export interface EffectiveMessage {
@@ -71,7 +72,7 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
 
   // Get real thread
   const realThreadQuery = useQuery({
-    queryKey: ["thread", matchId],
+    queryKey: queryKeys.chat.thread(matchId),
     queryFn: async () => {
       if (!matchId) return null;
       const { thread, error } = await getThreadByMatch(matchId);
@@ -84,7 +85,7 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
 
   // Get demo thread
   const demoThreadQuery = useQuery({
-    queryKey: ["demoThread", "byMatch", matchId],
+    queryKey: queryKeys.chat.demoThread(matchId),
     queryFn: async () => {
       if (!matchId) return null;
       const { thread, error } = await getDemoThreadByMatch(matchId);
@@ -101,7 +102,7 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
 
   // Get real messages
   const realMessagesQuery = useQuery({
-    queryKey: ["messages", threadId],
+    queryKey: queryKeys.chat.messages(threadId),
     queryFn: async () => {
       if (!threadId) return [];
       const { messages, error } = await listMessages(threadId);
@@ -115,7 +116,7 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
 
   // Get demo messages (with polling)
   const demoMessagesQuery = useQuery({
-    queryKey: ["demoMessages", threadId],
+    queryKey: queryKeys.chat.demoMessages(threadId),
     queryFn: async () => {
       if (!threadId) return [];
       const { messages, error } = await listDemoMessages(threadId);
@@ -147,7 +148,7 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
       }
       
       queryClient.setQueryData<MessageWithSender[]>(
-        ["messages", threadId],
+        queryKeys.chat.messages(threadId),
         (old) => {
           if (!old) return [{ ...newMessage, is_own: newMessage.sender_user_id === user.id }];
           if (old.some((m) => m.id === newMessage.id)) return old;
@@ -159,7 +160,7 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
     const timeoutId = setTimeout(() => {
       if (!realtimeActive && !pollIntervalRef.current) {
         pollIntervalRef.current = setInterval(() => {
-          queryClient.invalidateQueries({ queryKey: ["messages", threadId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.chat.messages(threadId) });
         }, 10000);
       }
     }, 5000);
@@ -193,12 +194,11 @@ export function useChat(matchId: string | undefined, isMatchDemo: boolean = fals
       if (!result.message || !threadId) return;
       
       if (result.isDemo) {
-        // Just invalidate demo messages to refetch
-        queryClient.invalidateQueries({ queryKey: ["demoMessages", threadId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.chat.demoMessages(threadId) });
       } else {
         const newMessage = result.message as Message;
         queryClient.setQueryData<MessageWithSender[]>(
-          ["messages", threadId],
+          queryKeys.chat.messages(threadId),
           (old) => {
             if (!old) return [{ ...newMessage, is_own: true }];
             if (old.some((m) => m.id === newMessage.id)) return old;
@@ -230,7 +230,7 @@ export function useHousingChat(threadId: string | undefined) {
 
   // Get messages
   const messagesQuery = useQuery({
-    queryKey: ["messages", threadId],
+    queryKey: queryKeys.chat.messages(threadId),
     queryFn: async () => {
       if (!threadId) return [];
       const { messages, error } = await listMessages(threadId);
@@ -248,7 +248,7 @@ export function useHousingChat(threadId: string | undefined) {
 
     const unsubscribe = subscribeToMessages(threadId, (newMessage: Message) => {
       queryClient.setQueryData<MessageWithSender[]>(
-        ["messages", threadId],
+        queryKeys.chat.messages(threadId),
         (old) => {
           if (!old) return [{ ...newMessage, is_own: newMessage.sender_user_id === user.id }];
           if (old.some((m) => m.id === newMessage.id)) return old;
@@ -278,7 +278,7 @@ export function useHousingChat(threadId: string | undefined) {
     onSuccess: (newMessage) => {
       if (!newMessage || !threadId) return;
       queryClient.setQueryData<MessageWithSender[]>(
-        ["messages", threadId],
+        queryKeys.chat.messages(threadId),
         (old) => {
           if (!old) return [{ ...newMessage, is_own: true }];
           if (old.some((m) => m.id === newMessage.id)) return old;

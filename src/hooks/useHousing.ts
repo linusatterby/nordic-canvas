@@ -14,6 +14,7 @@ import {
   type CreateHousingPayload,
 } from "@/lib/api/housing";
 import { useDemoMode } from "@/hooks/useDemo";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook for fetching housing listings with filters
@@ -22,13 +23,13 @@ export function useHousingListings(filters?: HousingFilters) {
   const { isDemoMode } = useDemoMode();
 
   return useQuery({
-    queryKey: ["housing", "listings", filters, isDemoMode],
+    queryKey: queryKeys.housing.listings(filters, isDemoMode),
     queryFn: async () => {
       const { listings, error } = await listHousingListings(filters, isDemoMode);
       if (error) throw error;
       return listings;
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 60 * 2,
   });
 }
 
@@ -37,9 +38,9 @@ export function useHousingListings(filters?: HousingFilters) {
  */
 export function useVerifiedTenant() {
   return useQuery({
-    queryKey: ["verified-tenant"],
+    queryKey: queryKeys.housing.verifiedTenant(),
     queryFn: checkVerifiedTenant,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -59,7 +60,7 @@ export function useCreateHousingInquiry() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["housing", "threads"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
@@ -69,13 +70,13 @@ export function useCreateHousingInquiry() {
  */
 export function useHostHousingThreads() {
   return useQuery({
-    queryKey: ["housing", "threads", "host"],
+    queryKey: queryKeys.housing.threads("host"),
     queryFn: async () => {
       const { threads, error } = await listHostHousingThreads();
       if (error) throw error;
       return threads;
     },
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 30,
   });
 }
 
@@ -84,13 +85,13 @@ export function useHostHousingThreads() {
  */
 export function useTalentHousingThreads() {
   return useQuery({
-    queryKey: ["housing", "threads", "talent"],
+    queryKey: queryKeys.housing.threads("talent"),
     queryFn: async () => {
       const { threads, error } = await listTalentHousingThreads();
       if (error) throw error;
       return threads;
     },
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 30,
   });
 }
 
@@ -99,13 +100,13 @@ export function useTalentHousingThreads() {
  */
 export function useMyHostHousing() {
   return useQuery({
-    queryKey: ["housing", "my-listings"],
+    queryKey: queryKeys.housing.myListings(),
     queryFn: async () => {
       const { listings, error } = await listMyHostHousing();
       if (error) throw error;
       return listings;
     },
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60,
   });
 }
 
@@ -122,7 +123,7 @@ export function useCreateHousingListing() {
       return listing;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["housing", "my-listings"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.housing.myListings() });
     },
   });
 }
@@ -139,7 +140,7 @@ export function useUpdateHousingListingStatus() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["housing", "my-listings"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.housing.myListings() });
       queryClient.invalidateQueries({ queryKey: ["housing", "listings"] });
     },
   });

@@ -7,6 +7,7 @@ import {
   type ListingStatus,
 } from "@/lib/api/jobs";
 import { useDemoMode } from "@/hooks/useDemo";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Stable hash for filter object to use as query key
@@ -18,21 +19,20 @@ function hashFilters(filters: ListingFilters | undefined): string {
 
 /**
  * Unified hook for fetching listings with filters
- * Supports all listing types (job, shift_cover, housing) and status pipeline
  */
 export function useListings(filters?: ListingFilters & { enabled?: boolean }) {
   const { isDemoMode } = useDemoMode();
   const { enabled = true, ...filterParams } = filters ?? {};
   
   return useQuery({
-    queryKey: ["listings", hashFilters(filterParams), isDemoMode],
+    queryKey: queryKeys.listings.list(hashFilters(filterParams), isDemoMode),
     queryFn: async () => {
       const { listings, error } = await listListings(filterParams, isDemoMode);
       if (error) throw error;
       return listings;
     },
     enabled,
-    staleTime: 1000 * 120, // 2 minutes
+    staleTime: 1000 * 120,
     refetchOnWindowFocus: false,
   });
 }
@@ -51,9 +51,8 @@ export function useUpdateListingStatus() {
       return { listingId, status };
     },
     onSuccess: () => {
-      // Invalidate all listing queries
-      queryClient.invalidateQueries({ queryKey: ["listings"] });
-      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.listings.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
     },
   });
 }

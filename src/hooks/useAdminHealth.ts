@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { runHealthChecks, logAdminAudit, type HealthCheck } from "@/lib/api/adminHealth";
+import { queryKeys } from "@/lib/queryKeys";
 
 export type { HealthCheck } from "@/lib/api/adminHealth";
 export { logAdminAudit } from "@/lib/api/adminHealth";
@@ -9,7 +10,7 @@ export { logAdminAudit } from "@/lib/api/adminHealth";
  */
 export function useAdminHealth(auditEnabled: boolean) {
   return useQuery({
-    queryKey: ["admin", "healthchecks"],
+    queryKey: queryKeys.admin.healthchecks(),
     queryFn: async (): Promise<HealthCheck[]> => {
       const checks = await runHealthChecks();
 

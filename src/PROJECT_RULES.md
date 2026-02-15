@@ -65,7 +65,15 @@ const { data: users } = useUsers();
 
 ---
 
-## 4. How to Add New Data
+## 4. React Query Keys
+
+- **All query keys** must come from `src/lib/queryKeys.ts`. No inline string arrays.
+- **API functions** should be imported from `src/lib/api` (index) or `src/lib/api/<domain>.ts`.
+- Keys use factory functions: `queryKeys.<domain>.list(...)`, `queryKeys.<domain>.detail(id)`.
+
+---
+
+## 5. How to Add New Data
 
 Follow this pattern for any new data requirement:
 

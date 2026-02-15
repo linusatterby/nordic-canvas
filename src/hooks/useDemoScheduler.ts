@@ -5,6 +5,7 @@ import {
   type DemoBookingWithTalent,
   type DemoReleaseOfferDTO,
 } from "@/lib/api/demoScheduler";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook to fetch demo shift bookings for an org
@@ -15,7 +16,7 @@ export function useDemoBookings(
   enabled: boolean = true
 ) {
   return useQuery({
-    queryKey: ["demoBookings", orgId, range.start, range.end],
+    queryKey: queryKeys.demo.bookings(orgId, range.start, range.end),
     queryFn: async () => {
       if (!orgId) return [];
       const { bookings, error } = await listDemoBookings(orgId, range);
@@ -23,7 +24,7 @@ export function useDemoBookings(
       return bookings;
     },
     enabled: enabled && !!orgId,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60,
   });
 }
 
@@ -36,7 +37,7 @@ export function useDemoReleaseOffers(
   enabled: boolean = true
 ) {
   return useQuery({
-    queryKey: ["demoReleaseOffers", orgId, range.start, range.end],
+    queryKey: queryKeys.demo.releaseOffers(orgId, range.start, range.end),
     queryFn: async () => {
       if (!orgId) return [];
       const { offers, error } = await listDemoReleaseOffers(orgId, range);
@@ -44,7 +45,7 @@ export function useDemoReleaseOffers(
       return offers;
     },
     enabled: enabled && !!orgId,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60,
   });
 }
 

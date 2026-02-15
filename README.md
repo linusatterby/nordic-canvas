@@ -70,7 +70,8 @@ Key rules:
 - Route definitions live in `src/app/routes/routeConfig.tsx` — `App.tsx` only renders the config
 - Public routes **require** `meta` (pageTitle, canonicalPath); app routes **must not** have meta
 - No direct Supabase calls in components — use hooks from `src/hooks/*`
-- Data access goes through `src/lib/api/*`
+- Data access goes through `src/lib/api/*` (re-exported via `src/lib/api/index.ts`)
+- React Query keys must come from `src/lib/queryKeys.ts` — no inline key arrays
 
 ### CI
 

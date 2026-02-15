@@ -11,6 +11,7 @@ import {
 import { useDemoMode } from "@/hooks/useDemo";
 import { useDemoBookings, useDemoReleaseOffers, type DemoBookingWithTalent, type DemoReleaseOfferDTO } from "@/hooks/useDemoScheduler";
 import { isDemoEffectivelyEnabled } from "@/lib/config/env";
+import { queryKeys } from "@/lib/queryKeys";
 
 // Effective booking type (union of real and demo)
 export interface EffectiveBooking {
@@ -48,51 +49,31 @@ interface SchedulerData {
 
 function toEffectiveBooking(b: ShiftBookingWithTalent): EffectiveBooking {
   return {
-    id: b.id,
-    org_id: b.org_id,
-    talent_user_id: b.talent_user_id,
-    start_ts: b.start_ts,
-    end_ts: b.end_ts,
-    is_released: b.is_released,
-    created_at: b.created_at,
-    talent_name: b.talent_name,
-    is_demo: false,
+    id: b.id, org_id: b.org_id, talent_user_id: b.talent_user_id,
+    start_ts: b.start_ts, end_ts: b.end_ts, is_released: b.is_released,
+    created_at: b.created_at, talent_name: b.talent_name, is_demo: false,
   };
 }
 
 function demoToEffectiveBooking(b: DemoBookingWithTalent): EffectiveBooking {
   return {
-    id: b.id,
-    org_id: b.org_id,
-    talent_user_id: b.talent_user_id,
-    demo_card_id: b.demo_card_id,
-    start_ts: b.start_ts,
-    end_ts: b.end_ts,
-    is_released: b.is_released,
-    created_at: b.created_at,
-    talent_name: b.talent_name,
-    is_demo: true,
+    id: b.id, org_id: b.org_id, talent_user_id: b.talent_user_id,
+    demo_card_id: b.demo_card_id, start_ts: b.start_ts, end_ts: b.end_ts,
+    is_released: b.is_released, created_at: b.created_at, talent_name: b.talent_name, is_demo: true,
   };
 }
 
 function demoToEffectiveReleaseOffer(o: DemoReleaseOfferDTO): EffectiveReleaseOffer {
   return {
-    id: o.id,
-    from_org_id: o.from_org_id,
-    demo_booking_id: o.demo_booking_id,
-    taken_by_org_id: o.taken_by_org_id,
-    status: o.status,
-    created_at: o.created_at,
-    booking_start_ts: o.booking_start_ts,
-    booking_end_ts: o.booking_end_ts,
-    talent_name: o.talent_name,
-    is_demo: true,
+    id: o.id, from_org_id: o.from_org_id, demo_booking_id: o.demo_booking_id,
+    taken_by_org_id: o.taken_by_org_id, status: o.status, created_at: o.created_at,
+    booking_start_ts: o.booking_start_ts, booking_end_ts: o.booking_end_ts,
+    talent_name: o.talent_name, is_demo: true,
   };
 }
 
 /**
  * Hook to fetch scheduler data for an org with realtime updates
- * In demo mode: returns demo bookings if no real bookings exist
  */
 export function useScheduler(
   orgId: string | undefined,
@@ -103,9 +84,8 @@ export function useScheduler(
   const { isDemoMode } = useDemoMode();
   const demoEnabled = isDemoEffectivelyEnabled(isDemoMode);
   
-  // Fetch real bookings
   const realQuery = useQuery({
-    queryKey: ["scheduler", "bookings", orgId, range.start, range.end],
+    queryKey: queryKeys.scheduler.bookings(orgId, range.start, range.end),
     queryFn: async () => {
       if (!orgId) return { bookings: [], busyBlocks: [] };
 
@@ -117,17 +97,13 @@ export function useScheduler(
       if (bookingsResult.error) throw bookingsResult.error;
       if (busyResult.error) throw busyResult.error;
 
-      return {
-        bookings: bookingsResult.bookings,
-        busyBlocks: busyResult.blocks,
-      };
+      return { bookings: bookingsResult.bookings, busyBlocks: busyResult.blocks };
     },
     enabled: !!orgId,
     staleTime: 1000 * 60,
     refetchOnMount: true,
   });
 
-  // Fetch demo bookings (only when demo is effectively enabled)
   const demoBookingsQuery = useDemoBookings(orgId, range, demoEnabled);
   const demoReleaseOffersQuery = useDemoReleaseOffers(orgId, range, demoEnabled);
 
@@ -139,16 +115,9 @@ export function useScheduler(
       .channel(`shift_bookings:${orgId}`)
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "shift_bookings",
-          filter: `org_id=eq.${orgId}`,
-        },
+        { event: "*", schema: "public", table: "shift_bookings", filter: `org_id=eq.${orgId}` },
         () => {
-          queryClient.invalidateQueries({
-            queryKey: ["scheduler", "bookings", orgId],
-          });
+          queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.bookings(orgId) });
         }
       )
       .subscribe();
@@ -158,19 +127,14 @@ export function useScheduler(
     };
   }, [orgId, queryClient]);
 
-  // Compute effective data
   const realBookings = realQuery.data?.bookings ?? [];
   const demoBookings = demoBookingsQuery.data ?? [];
   const demoReleaseOffers = demoReleaseOffersQuery.data ?? [];
 
-  // Use real bookings if available, otherwise use demo bookings when demo is enabled
   const effectiveBookings: EffectiveBooking[] = realBookings.length > 0
     ? realBookings.map(toEffectiveBooking)
-    : demoEnabled
-      ? demoBookings.map(demoToEffectiveBooking)
-      : [];
+    : demoEnabled ? demoBookings.map(demoToEffectiveBooking) : [];
 
-  // For release offers, merge real (if any) with demo when demo is enabled
   const effectiveReleaseOffers: EffectiveReleaseOffer[] = demoEnabled
     ? demoReleaseOffers.map(demoToEffectiveReleaseOffer)
     : [];
@@ -189,8 +153,7 @@ export function useScheduler(
       realBookingsCount: realBookings.length,
       demoBookingsCount: demoBookings.length,
       demoReleaseOffersCount: demoReleaseOffers.length,
-      isDemoMode,
-      demoEnabled,
+      isDemoMode, demoEnabled,
       usingDemo: realBookings.length === 0 && demoBookings.length > 0,
     },
   };
@@ -214,9 +177,7 @@ export function useCreateBooking() {
       return booking;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ 
-        queryKey: ["scheduler", "bookings", variables.orgId] 
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.bookings(variables.orgId) });
     },
   });
 }

@@ -2,8 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listMyActivity, type ActivityFilters } from "@/lib/api/activity";
 import { useMyOrgs } from "@/hooks/useOrgs";
 import { useAuth } from "@/contexts/AuthContext";
-
-const ACTIVITY_KEY = "activity";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook for fetching activity feed
@@ -18,7 +17,7 @@ export function useActivity(filters: Omit<ActivityFilters, "orgId"> = {}) {
   const role = filters.role ?? (isEmployer ? "employer" : "talent");
 
   return useQuery({
-    queryKey: [ACTIVITY_KEY, role, activeOrgId, filters],
+    queryKey: queryKeys.activity.list(role, activeOrgId, filters),
     queryFn: async () => {
       const { activities, error } = await listMyActivity({
         ...filters,
