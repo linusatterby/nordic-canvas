@@ -703,6 +703,7 @@ export async function listListings(filters?: ListingFilters, isDemoMode?: boolea
 
   // Demo fallback: if in demo mode and no listings, get demo listings
   if (isDemoMode && listings.length === 0 && !filters?.orgId) {
+    console.info("[listListings] demo_jobs_fallback_used: primary query returned 0 results, fetching demo jobs");
     const { data: demoData, error: demoError } = await supabase
       .from("job_posts")
       .select(`*, orgs ( name )`)
@@ -710,7 +711,12 @@ export async function listListings(filters?: ListingFilters, isDemoMode?: boolea
       .eq("status", "published")
       .limit(6);
     
+    if (demoError) {
+      console.warn("[listListings] demo_jobs_fallback_used: fallback query also failed", demoError.message);
+    }
+
     if (!demoError && demoData && demoData.length > 0) {
+      console.info("[listListings] demo_jobs_fallback_used: returning", demoData.length, "fallback demo jobs");
       return {
         listings: demoData.map((listing) => ({
           ...enrichListingWithDisplayFields(listing, cols),
