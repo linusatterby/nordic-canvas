@@ -97,7 +97,7 @@ export async function listMyHostHousing(): Promise<{
 
   const { data, error } = await supabase
     .from("job_posts")
-    .select(`*, orgs ( name )`)
+    .select(`*, orgs!job_posts_org_id_fkey ( name )`)
     .eq("listing_type", "housing")
     .eq("host_user_id", user.id)
     .order("created_at", { ascending: false });
@@ -162,7 +162,7 @@ export async function createHostHousingListing(payload: CreateHousingPayload): P
       end_date: payload.available_to || "2099-12-31",
       status: "draft",
     })
-    .select(`*, orgs ( name )`)
+    .select(`*, orgs!job_posts_org_id_fkey ( name )`)
     .single();
 
   if (error) {
