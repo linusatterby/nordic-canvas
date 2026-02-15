@@ -40,8 +40,8 @@ export function PublicShell({ children, pageTitle, pageDescription, canonicalPat
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">ST</span>
+            <div className="h-8 w-8 rounded-full bg-teal border border-border flex items-center justify-center">
+              <span className="text-[hsl(36_38%_96%)] font-semibold text-sm leading-none">ST</span>
             </div>
             <span className="font-semibold text-lg text-foreground hidden sm:block">
               Seasonal Talent
