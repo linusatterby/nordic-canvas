@@ -109,10 +109,33 @@ npx vitest run            # Unit tests
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Yes | - | Your Supabase anon/public key |
 | `VITE_SUPABASE_PROJECT_ID` | Yes | - | Your Supabase project ID |
 | `VITE_APP_ENV` | No | `demo` | `demo` = noindex/nofollow, `prod` = indexable |
-| `VITE_SITE_URL` | No* | - | Absolute base URL for canonical/OG (e.g. `https://seasonaltalent.se`). *Required in prod.* |
+| `VITE_BACKEND_ENV` | No | `test` | `test` = dev/staging backend, `live` = production backend |
+| `VITE_SITE_URL` | Live only | - | Absolute base URL (e.g. `https://seasonaltalent.se`). **Required when `BACKEND_ENV=live`.** |
 | `VITE_DEMO_DEBUG` | No | `false` | Enable debug panels and technical info in demo mode |
 | `VITE_DEMO_ENABLED` | No | `true` | Master switch for demo functionality |
 | `VITE_ALLOW_DEMO_SEED` | No | `false` | Allow demo scenario seeding |
+
+### Environments
+
+The app uses two independent axes: **APP_ENV** (demo/prod) controls UI behavior (SEO, feature flags) and **BACKEND_ENV** (test/live) controls which backend is targeted.
+
+| Combination | Use case |
+|---|---|
+| `APP_ENV=demo` + `BACKEND_ENV=test` | Local development (default) |
+| `APP_ENV=prod` + `BACKEND_ENV=test` | Staging / QA |
+| `APP_ENV=prod` + `BACKEND_ENV=live` | Production |
+| `APP_ENV=demo` + `BACKEND_ENV=live` | **❌ Forbidden** — blocked at startup |
+
+```sh
+# Local dev (test/demo) — default
+npm run dev
+
+# Staging (prod UI, test backend)
+VITE_APP_ENV=prod VITE_BACKEND_ENV=test npm run dev
+
+# Production build
+VITE_APP_ENV=prod VITE_BACKEND_ENV=live VITE_SITE_URL=https://seasonaltalent.se npm run build
+```
 
 ### Development Setup
 
@@ -130,6 +153,7 @@ For production builds, use these recommended settings:
 
 ```sh
 VITE_APP_ENV=prod
+VITE_BACKEND_ENV=live
 VITE_SITE_URL=https://seasonaltalent.se
 VITE_DEMO_DEBUG=false
 VITE_DEMO_ENABLED=false
