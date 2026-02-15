@@ -186,7 +186,7 @@ export async function listPublishedJobs(): Promise<{
     .from("job_posts")
     .select(`
       *,
-      orgs ( name )
+      orgs!job_posts_org_id_fkey ( name )
     `)
     .eq("status", "published")
     .order("created_at", { ascending: false });
@@ -240,7 +240,7 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
     .from("job_posts")
     .select(`
       *,
-      orgs ( name )
+      orgs!job_posts_org_id_fkey ( name )
     `)
     .eq("status", "published");
 
@@ -296,7 +296,7 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
       .from("job_posts")
       .select(`
         *,
-        orgs ( name )
+        orgs!job_posts_org_id_fkey ( name )
       `)
       .eq("status", "published")
       .eq("is_demo", true)
@@ -322,7 +322,7 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
         .from("job_posts")
         .select(`
           *,
-          orgs ( name )
+          orgs!job_posts_org_id_fkey ( name )
         `)
         .eq("status", "published")
         .eq("is_demo", true)
@@ -359,7 +359,7 @@ export async function getJob(jobId: string): Promise<JobFetchResult> {
     .from("job_posts")
     .select(`
       *,
-      orgs ( name )
+      orgs!job_posts_org_id_fkey ( name )
     `)
     .eq("id", jobId)
     .maybeSingle();
@@ -611,7 +611,7 @@ export async function listListings(filters?: ListingFilters, isDemoMode?: boolea
     .from("job_posts")
     .select(`
       *,
-      orgs ( name )
+      orgs!job_posts_org_id_fkey ( name )
     `);
 
   // Filter by org (for employer queries)
@@ -718,7 +718,7 @@ export async function listListings(filters?: ListingFilters, isDemoMode?: boolea
     });
     const { data: demoData, error: demoError } = await supabase
       .from("job_posts")
-      .select(`*, orgs ( name )`)
+      .select(`*, orgs!job_posts_org_id_fkey ( name )`)
       .eq("is_demo", true)
       .eq("status", "published")
       .limit(6);

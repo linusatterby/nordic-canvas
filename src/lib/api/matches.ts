@@ -39,7 +39,7 @@ export async function listMyMatches(): Promise<{
     .select(`
       *,
       job_posts ( title, location, start_date, end_date ),
-      orgs ( name )
+      orgs!matches_org_id_fkey ( name )
     `)
     .eq("talent_user_id", user.id)
     .order("created_at", { ascending: false });
@@ -235,7 +235,7 @@ export async function getMatch(matchId: string): Promise<{
     .select(`
       *,
       job_posts ( title, location, start_date, end_date ),
-      orgs ( name )
+      orgs!matches_org_id_fkey ( name )
     `)
     .eq("id", matchId)
     .single();
