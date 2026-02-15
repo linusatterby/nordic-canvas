@@ -4,18 +4,11 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useCredentials, useAddCredential, useDeleteCredential } from "@/hooks/useCredentials";
+import { useCredentialCatalog } from "@/hooks/useCredentialCatalog";
 import { AddCredentialModal } from "./AddCredentialModal";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-const CREDENTIAL_LABELS: Record<string, string> = {
-  skoterkort: "Skoterkort",
-  hlr: "HLR",
-  korkort_b: "Körkort B",
-  korkort_c: "Körkort C",
-  hygienpass: "Hygienpass",
-  servering: "Serveringstillstånd",
-  other: "Övrigt",
-};
+// Labels resolved from catalog at render time
 
 function credentialStatus(expiresAt: string | null): "valid" | "expiring" | "expired" {
   if (!expiresAt) return "valid";
@@ -35,8 +28,16 @@ const statusConfig = {
 
 export function CredentialsList() {
   const { data: credentials, isLoading } = useCredentials();
+  const { data: catalog } = useCredentialCatalog();
   const deleteMutation = useDeleteCredential();
   const [showModal, setShowModal] = React.useState(false);
+
+  // Build lookup from catalog
+  const catalogLabels = React.useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const c of catalog ?? []) map[c.code] = c.label;
+    return map;
+  }, [catalog]);
 
   if (isLoading) {
     return (
@@ -82,7 +83,7 @@ export function CredentialsList() {
                   }`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">
-                      {cred.credential_type === "other" ? cred.label : CREDENTIAL_LABELS[cred.credential_type] ?? cred.credential_type}
+                      {cred.credential_type === "other" ? cred.label : catalogLabels[cred.credential_type] ?? cred.credential_type}
                     </p>
                     {cred.issuer && (
                       <p className="text-xs text-muted-foreground">{cred.issuer}</p>
