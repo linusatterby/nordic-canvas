@@ -39,7 +39,7 @@ export function useCreateOrg() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: { name: string; location?: string }) => {
+    mutationFn: async (params: { name: string; location?: string; demoSessionId?: string | null }) => {
       const { org, error } = await createOrg(params);
       if (error) throw error;
       return org;

@@ -14,6 +14,7 @@ import { ReleaseOffersCard } from "@/components/scheduler/ReleaseOffersCard";
 import { Plus, Calendar, Download } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { useDefaultOrgId, useCreateOrg } from "@/hooks/useOrgs";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { useScheduler, useCreateBooking } from "@/hooks/useScheduler";
 import { useMatches } from "@/hooks/useMatches";
 import { useToasts } from "@/components/delight/Toasts";
@@ -36,6 +37,7 @@ export function EmployerScheduler() {
   useDemoCoachToast("scheduler");
   const navigate = useNavigate();
   const { addToast } = useToasts();
+  const { demoSessionId } = useDemoSession();
   const { data: orgId, isLoading: orgLoading } = useDefaultOrgId();
   const { data: matches } = useMatches("employer", orgId);
   const createBookingMutation = useCreateBooking();
@@ -106,7 +108,7 @@ export function EmployerScheduler() {
   const handleCreateOrg = async () => {
     if (!orgName.trim()) return;
     try {
-      await createOrgMutation.mutateAsync({ name: orgName, location: orgLocation || undefined });
+      await createOrgMutation.mutateAsync({ name: orgName, location: orgLocation || undefined, demoSessionId });
       setShowCreateOrg(false);
       addToast({ type: "success", title: "Klart!", message: "Organisation skapad." });
     } catch {

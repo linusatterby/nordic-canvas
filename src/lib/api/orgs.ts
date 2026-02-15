@@ -74,6 +74,7 @@ export async function getDefaultOrgId(): Promise<{
 export async function createOrg(params: {
   name: string;
   location?: string;
+  demoSessionId?: string | null;
 }): Promise<{
   org: Org | null;
   error: Error | null;
@@ -84,12 +85,16 @@ export async function createOrg(params: {
     return { org: null, error: new Error("Not authenticated") };
   }
 
+  const isDemo = !!params.demoSessionId;
+
   // Create org
   const { data: org, error: orgError } = await supabase
     .from("orgs")
     .insert({
       name: params.name,
       location: params.location ?? null,
+      is_demo: isDemo,
+      demo_session_id: params.demoSessionId ?? null,
     })
     .select()
     .single();
@@ -105,6 +110,7 @@ export async function createOrg(params: {
       org_id: org.id,
       user_id: user.id,
       role: "admin",
+      demo_session_id: params.demoSessionId ?? null,
     });
 
   if (memberError) {
