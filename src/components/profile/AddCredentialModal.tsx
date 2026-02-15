@@ -9,16 +9,10 @@ import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useAddCredential } from "@/hooks/useCredentials";
+import { useCredentialCatalog } from "@/hooks/useCredentialCatalog";
+import { Skeleton } from "@/components/ui/Skeleton";
 
-const CREDENTIAL_TYPES = [
-  { value: "skoterkort", label: "Skoterkort" },
-  { value: "hlr", label: "HLR" },
-  { value: "korkort_b", label: "Körkort B" },
-  { value: "korkort_c", label: "Körkort C" },
-  { value: "hygienpass", label: "Hygienpass" },
-  { value: "servering", label: "Serveringstillstånd" },
-  { value: "other", label: "Övrigt" },
-];
+const OTHER_VALUE = "__other__";
 
 interface Props {
   onClose: () => void;
@@ -26,25 +20,36 @@ interface Props {
 
 export function AddCredentialModal({ onClose }: Props) {
   const addMutation = useAddCredential();
-  const [type, setType] = React.useState("skoterkort");
+  const { data: catalog, isLoading: catalogLoading } = useCredentialCatalog();
+
+  const [type, setType] = React.useState("");
   const [label, setLabel] = React.useState("");
   const [issuer, setIssuer] = React.useState("");
   const [expiresAt, setExpiresAt] = React.useState("");
   const [error, setError] = React.useState("");
 
+  // Set default type once catalog loads
+  React.useEffect(() => {
+    if (catalog && catalog.length > 0 && !type) {
+      setType(catalog[0].code);
+    }
+  }, [catalog, type]);
+
+  const isOther = type === OTHER_VALUE;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (type === "other" && !label.trim()) {
+    if (isOther && !label.trim()) {
       setError("Ange namn för certifikatet.");
       return;
     }
 
     try {
       await addMutation.mutateAsync({
-        credential_type: type,
-        label: type === "other" ? label.trim() : null,
+        credential_type: isOther ? "other" : type,
+        label: isOther ? label.trim() : null,
         issuer: issuer.trim() || null,
         expires_at: expiresAt || null,
       });
@@ -64,19 +69,24 @@ export function AddCredentialModal({ onClose }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="cred-type">Typ</Label>
-            <select
-              id="cred-type"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {CREDENTIAL_TYPES.map((ct) => (
-                <option key={ct.value} value={ct.value}>{ct.label}</option>
-              ))}
-            </select>
+            {catalogLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <select
+                id="cred-type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {(catalog ?? []).map((ct) => (
+                  <option key={ct.code} value={ct.code}>{ct.label}</option>
+                ))}
+                <option value={OTHER_VALUE}>Annat…</option>
+              </select>
+            )}
           </div>
 
-          {type === "other" && (
+          {isOther && (
             <div className="space-y-2">
               <Label htmlFor="cred-label">Namn</Label>
               <Input
@@ -114,7 +124,7 @@ export function AddCredentialModal({ onClose }: Props) {
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>
               Avbryt
             </Button>
-            <Button type="submit" variant="primary" size="sm" disabled={addMutation.isPending}>
+            <Button type="submit" variant="primary" size="sm" disabled={addMutation.isPending || catalogLoading}>
               {addMutation.isPending ? "Sparar…" : "Spara"}
             </Button>
           </div>

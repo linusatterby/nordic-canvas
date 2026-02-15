@@ -182,6 +182,11 @@ export const queryKeys = {
     mine: () => ["credentials", "mine"] as const,
   },
 
+  // --- Credential Catalog ---
+  credentialCatalog: {
+    all: ["credentialCatalog"] as const,
+  },
+
   // --- Job Preferences ---
   jobPreferences: {
     all: ["jobPreferences"] as const,

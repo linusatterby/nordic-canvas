@@ -444,6 +444,72 @@ export type Database = {
           },
         ]
       }
+      credential_catalog: {
+        Row: {
+          active: boolean
+          category: string
+          code: string
+          is_common: boolean
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          code: string
+          is_common?: boolean
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          code?: string
+          is_common?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      credential_job_category_map: {
+        Row: {
+          credential_code: string
+          id: string
+          job_category_code: string
+          kind: string
+          weight: number
+        }
+        Insert: {
+          credential_code: string
+          id?: string
+          job_category_code: string
+          kind: string
+          weight: number
+        }
+        Update: {
+          credential_code?: string
+          id?: string
+          job_category_code?: string
+          kind?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credential_job_category_map_credential_code_fkey"
+            columns: ["credential_code"]
+            isOneToOne: false
+            referencedRelation: "credential_catalog"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "credential_job_category_map_job_category_code_fkey"
+            columns: ["job_category_code"]
+            isOneToOne: false
+            referencedRelation: "job_category_catalog"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       demo_accounts: {
         Row: {
           created_at: string
@@ -913,6 +979,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      job_category_catalog: {
+        Row: {
+          code: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
       }
       job_posts: {
         Row: {
