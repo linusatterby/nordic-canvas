@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp, RefreshCw, Bug, Briefcase, Clock } from "lucide-react";
+import { ChevronDown, ChevronUp, RefreshCw, Bug, Briefcase, Clock, Loader2 } from "lucide-react";
 import { DemoAvailabilityBypassNotice } from "@/components/demo/DemoAvailabilityBypassNotice";
 import { AppShell } from "@/app/layout/AppShell";
 import { JobCard } from "@/components/cards/JobCard";
@@ -22,7 +22,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDemoCoachToast } from "@/hooks/useDemoCoachToast";
 import { useDemoMode } from "@/hooks/useDemo";
 import { shouldShowDemoDebug } from "@/lib/utils/debug";
+import { cn } from "@/lib/utils/classnames";
 import type { ListingFilters, ListingType, ListingWithOrg } from "@/lib/api/jobs";
+
+/** Anti-double-submit lockout duration (ms) */
+const SWIPE_LOCKOUT_MS = 400;
+
+/** Duration for the "Nytt" chip visibility (ms) */
+const NEW_CHIP_DURATION_MS = 600;
+
+type SwipeDirection = "yes" | "no" | null;
 
 export function TalentSwipeJobs() {
   useDemoCoachToast("swipe-jobs");
@@ -33,6 +42,15 @@ export function TalentSwipeJobs() {
   const [showFilters, setShowFilters] = React.useState(true);
   const [showDebug, setShowDebug] = React.useState(false);
   const { addToast } = useToasts();
+
+  // Animation & guard state
+  const [exitDirection, setExitDirection] = React.useState<SwipeDirection>(null);
+  const [isLocked, setIsLocked] = React.useState(false);
+  const [pendingDirection, setPendingDirection] = React.useState<SwipeDirection>(null);
+  const [showNewChip, setShowNewChip] = React.useState(false);
+  const [cardKey, setCardKey] = React.useState(0);
+  const lockTimerRef = React.useRef<ReturnType<typeof setTimeout>>();
+  const chipTimerRef = React.useRef<ReturnType<typeof setTimeout>>();
 
   // Convert UI filter values to API filter format
   const apiFilters: ListingFilters = React.useMemo(() => ({
@@ -63,7 +81,6 @@ export function TalentSwipeJobs() {
   const rawListings = React.useMemo((): ListingWithOrg[] => {
     if (listings && listings.length > 0) return listings;
     if (shouldUseHardFetch && hardDemoJobs && hardDemoJobs.length > 0) {
-      // Convert hard demo jobs to ListingWithOrg format
       return hardDemoJobs.map(job => ({
         ...job,
         org_name: "Demo-företag",
@@ -111,18 +128,45 @@ export function TalentSwipeJobs() {
 
   // Current listing is always the first in the stack
   const currentListing = effectiveListings[0];
+  // Next 1-2 listings for background stack
+  const stackPeek = effectiveListings.slice(1, 3);
+
+  // Cleanup timers
+  React.useEffect(() => {
+    return () => {
+      if (lockTimerRef.current) clearTimeout(lockTimerRef.current);
+      if (chipTimerRef.current) clearTimeout(chipTimerRef.current);
+    };
+  }, []);
 
   const handleSwipe = async (direction: "yes" | "no") => {
-    if (!currentListing || !user) return;
+    if (!currentListing || !user || isLocked) return;
 
-    // Optimistically remove from stack immediately
+    // Lock immediately
+    setIsLocked(true);
+    setPendingDirection(direction);
+    setExitDirection(direction);
+
+    // Wait for exit animation
+    await new Promise(r => setTimeout(r, 200));
+
+    // Optimistically remove from stack
     removeTop();
+    setExitDirection(null);
+    setPendingDirection(null);
+    setCardKey(k => k + 1);
+
+    // Show "Nytt" chip
+    setShowNewChip(true);
+    chipTimerRef.current = setTimeout(() => setShowNewChip(false), NEW_CHIP_DURATION_MS);
+
+    // Unlock after lockout
+    lockTimerRef.current = setTimeout(() => setIsLocked(false), SWIPE_LOCKOUT_MS);
 
     try {
       await swipeMutation.mutateAsync({ jobId: currentListing.id, direction });
 
       if (direction === "yes") {
-        // Check for mutual match
         const { match } = await getMatchByJobAndTalent(currentListing.id, user.id);
         if (match) {
           setShowConfetti(true);
@@ -144,8 +188,8 @@ export function TalentSwipeJobs() {
         }
       }
     } catch (err) {
-      // On error, reset the stack to restore the card
       resetStack();
+      setIsLocked(false);
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara." });
     }
   };
@@ -218,7 +262,6 @@ export function TalentSwipeJobs() {
 
   const isEmpty = !currentListing;
 
-  // Get listing type for badge
   const getListingTypeBadge = (listingType?: string) => {
     if (listingType === "shift_cover") {
       return (
@@ -386,25 +429,61 @@ export function TalentSwipeJobs() {
             )}
           </div>
         ) : (
-          <div className="animate-fade-in">
-            {/* Listing type badge */}
-            <div className="flex justify-center mb-3">
+          <div>
+            {/* Listing type badge + "Nytt" chip */}
+            <div className="flex justify-center items-center gap-2 mb-3">
               {getListingTypeBadge((currentListing as { listing_type?: string }).listing_type)}
+              {showNewChip && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 animate-fade-in">
+                  Nästa
+                </span>
+              )}
             </div>
-            
-            <JobCard
-              id={currentListing.id}
-              title={currentListing.title}
-              company={currentListing.org_name}
-              location={currentListing.location ?? "Okänd plats"}
-              period={formatPeriod(currentListing.start_date, currentListing.end_date)}
-              housingStatus={mapHousingStatus(currentListing.housing_offered, currentListing.housing_text)}
-              housingText={currentListing.housing_text}
-              matchScore={currentListing.match_score}
-              matchReasons={currentListing.match_reasons}
-              onSwipeYes={() => handleSwipe("yes")}
-              onSwipeNo={() => handleSwipe("no")}
-            />
+
+            {/* Card stack */}
+            <div className="relative">
+              {/* Background cards (stack peek) */}
+              {stackPeek.map((peek, i) => (
+                <div
+                  key={peek.id}
+                  className="absolute inset-0 rounded-[18px] bg-card border border-border/40 pointer-events-none"
+                  style={{
+                    transform: `translateY(${(i + 1) * 6}px) scale(${1 - (i + 1) * 0.03})`,
+                    opacity: 0.4 - i * 0.15,
+                    zIndex: -1 - i,
+                  }}
+                  aria-hidden
+                />
+              ))}
+
+              {/* Active card with exit/enter animation */}
+              <div
+                key={cardKey}
+                className={cn(
+                  "transition-all duration-200 ease-out",
+                  exitDirection === "no" && "swipe-exit-left",
+                  exitDirection === "yes" && "swipe-exit-right",
+                  !exitDirection && "swipe-enter"
+                )}
+              >
+                <JobCard
+                  id={currentListing.id}
+                  title={currentListing.title}
+                  company={currentListing.org_name}
+                  location={currentListing.location ?? "Okänd plats"}
+                  period={formatPeriod(currentListing.start_date, currentListing.end_date)}
+                  housingStatus={mapHousingStatus(currentListing.housing_offered, currentListing.housing_text)}
+                  housingText={currentListing.housing_text}
+                  matchScore={currentListing.match_score}
+                  matchReasons={currentListing.match_reasons}
+                  onSwipeYes={() => handleSwipe("yes")}
+                  onSwipeNo={() => handleSwipe("no")}
+                  disabled={isLocked}
+                  pendingDirection={pendingDirection}
+                />
+              </div>
+            </div>
+
             <p className="text-center text-xs text-muted-foreground mt-4">
               {effectiveListings && effectiveListings.length > 0 && (
                 <span className="block mb-1">
