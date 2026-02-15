@@ -4,6 +4,7 @@
  */
 
 const STORAGE_KEY = "demo_session_id";
+const ROLE_KEY = "demo_session_role";
 
 function uuid(): string {
   return crypto.randomUUID();
@@ -21,7 +22,6 @@ export function getOrCreateDemoSessionId(): string {
     }
     return id;
   } catch {
-    // SSR or restricted env – fall back to in-memory
     return uuid();
   }
 }
@@ -38,11 +38,34 @@ export function getDemoSessionId(): string | null {
 }
 
 /**
+ * Persist the demo role so it survives page reloads within the same tab.
+ */
+export function setDemoRole(role: string): void {
+  try {
+    sessionStorage.setItem(ROLE_KEY, role);
+  } catch {
+    // noop
+  }
+}
+
+/**
+ * Retrieve the persisted demo role, defaulting to "employer".
+ */
+export function getDemoRole(): string {
+  try {
+    return sessionStorage.getItem(ROLE_KEY) || "employer";
+  } catch {
+    return "employer";
+  }
+}
+
+/**
  * Clear the demo session, ending demo mode for this tab.
  */
 export function clearDemoSession(): void {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(ROLE_KEY);
   } catch {
     // noop
   }

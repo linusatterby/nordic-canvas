@@ -19,6 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   getOrCreateDemoSessionId,
   getDemoSessionId,
+  getDemoRole as getPersistedDemoRole,
+  setDemoRole as persistDemoRole,
   clearDemoSession,
 } from "@/lib/demo/demoSession";
 import { getDemoSupabase } from "@/lib/supabase/demoClient";
@@ -44,14 +46,40 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
   const queryClient = useQueryClient();
 
   const [sessionId, setSessionId] = React.useState<string | null>(() => getDemoSessionId());
-  const [demoRole, setDemoRole] = React.useState<DemoRole>("employer");
+  // Restore persisted role so it survives page reloads within the same tab
+  const [demoRole, setDemoRoleState] = React.useState<DemoRole>(
+    () => (getPersistedDemoRole() as DemoRole) || "employer"
+  );
 
-  // Auto-start demo from URL param ?demo=1
+  const setDemoRole = React.useCallback((role: DemoRole) => {
+    setDemoRoleState(role);
+    persistDemoRole(role);
+  }, []);
+
+  // Auto-start demo from URL param ?demo=1 (also navigates)
   React.useEffect(() => {
     if (searchParams.get("demo") === "1" && !sessionId) {
-      startDemoInternal(
-        (searchParams.get("role") as DemoRole) || "employer"
-      );
+      const role = (searchParams.get("role") as DemoRole) || "employer";
+      // Inline the start logic to avoid referencing a callback defined later
+      const id = getOrCreateDemoSessionId();
+      setSessionId(id);
+      setDemoRole(role);
+
+      const client = getDemoSupabase(id);
+      supabase.auth.signInAnonymously()
+        .then(() => supabase.auth.getUser())
+        .then(({ data }) => {
+          client.from("demo_sessions").upsert({
+            id,
+            role,
+            anon_user_id: data.user?.id ?? null,
+          }).then(() => {});
+        })
+        .catch((err) => console.warn("[DemoSession] URL auto-start error:", err))
+        .finally(() => {
+          const target = role === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
+          navigate(target);
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -39,8 +39,8 @@ Deno.serve(async (req) => {
 
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
 
-  // Tables with demo_session_id to clean up (ordered to respect FK constraints)
-  const tables = [
+  // Tables with both demo_session_id AND created_at columns
+  const tablesWithCreatedAt = [
     "demo_chat_messages",
     "demo_release_offers",
     "demo_shift_bookings",
@@ -51,21 +51,25 @@ Deno.serve(async (req) => {
     "borrow_offers",
     "borrow_requests",
     "talent_job_swipes",
-    "talent_visibility",
-    "talent_profiles",
-    "messages",
-    "matches",
     "job_posts",
-    "org_members",
     "profiles",
     "orgs",
-    "notifications",
-    "activity_events",
   ];
+
+  // Tables with demo_session_id but NO created_at (use updated_at or just session filter)
+  const tablesWithoutCreatedAt = [
+    "org_members",     // no created_at, no updated_at — clean by session age
+    "talent_profiles", // no created_at — clean by session age
+    "talent_visibility", // has updated_at but no created_at — clean by session age
+  ];
+
+  // NOTE: activity_events, matches, messages, notifications do NOT have demo_session_id
+  // They are cleaned indirectly when their parent records are removed, or via is_demo flag
 
   const results: Record<string, number | string> = {};
 
-  for (const table of tables) {
+  // Clean tables with created_at
+  for (const table of tablesWithCreatedAt) {
     try {
       const { count, error } = await sb
         .from(table)
@@ -77,6 +81,32 @@ Deno.serve(async (req) => {
         results[table] = `error: ${error.message}`;
       } else {
         results[table] = count ?? 0;
+      }
+    } catch (err) {
+      results[table] = `error: ${(err as Error).message}`;
+    }
+  }
+
+  // Clean tables without created_at by joining on demo_sessions age
+  // We delete rows whose demo_session_id refers to a session older than the cutoff
+  for (const table of tablesWithoutCreatedAt) {
+    try {
+      // Get stale session IDs first
+      const { data: staleSessions } = await sb
+        .from("demo_sessions")
+        .select("id")
+        .lt("created_at", cutoff);
+
+      if (staleSessions && staleSessions.length > 0) {
+        const staleIds = staleSessions.map((s: { id: string }) => s.id);
+        const { count, error } = await sb
+          .from(table)
+          .delete({ count: "exact" })
+          .in("demo_session_id", staleIds);
+
+        results[table] = error ? `error: ${error.message}` : (count ?? 0);
+      } else {
+        results[table] = 0;
       }
     } catch (err) {
       results[table] = `error: ${(err as Error).message}`;

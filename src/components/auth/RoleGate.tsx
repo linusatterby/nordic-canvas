@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { EmptyState } from "@/components/delight/EmptyStates";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -14,7 +15,13 @@ interface RoleGateProps {
 
 export function RoleGate({ allow, children }: RoleGateProps) {
   const { profile, profileLoading } = useAuth();
+  const { isDemoSession, demoRole } = useDemoSession();
   const navigate = useNavigate();
+
+  // In demo mode, use demoRole instead of profile.type
+  if (isDemoSession && demoRole && allow.includes(demoRole)) {
+    return <>{children}</>;
+  }
 
   if (profileLoading) {
     return (
