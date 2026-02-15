@@ -158,11 +158,11 @@ export function TalentSwipeJobs() {
       await resetSwipesMutation.mutateAsync();
       addToast({
         type: "success",
-        title: "Återställt",
-        message: "Dina demo-swipes har återställts. Du kan nu swipea jobben igen.",
+        title: "Swipes återställda",
+        message: "Du kan nu swipea jobben igen.",
       });
     } catch (err) {
-      addToast({ type: "error", title: "Fel", message: "Kunde inte återställa demo-swipes." });
+      addToast({ type: "error", title: "Kunde inte återställa swipes", message: "Försök igen om en stund." });
     }
   };
 
