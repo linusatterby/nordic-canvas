@@ -122,7 +122,7 @@ export async function listTalentOffers(): Promise<{
     .from("offers")
     .select(`
       *,
-      orgs:org_id (name)
+      orgs!offers_org_id_fkey (name)
     `)
     .eq("talent_user_id", userData.user.id)
     .neq("status", "draft") // Talents only see sent offers
@@ -174,7 +174,7 @@ export async function getOffer(offerId: string): Promise<{
     .from("offers")
     .select(`
       *,
-      orgs:org_id (name)
+      orgs!offers_org_id_fkey (name)
     `)
     .eq("id", offerId)
     .maybeSingle();
