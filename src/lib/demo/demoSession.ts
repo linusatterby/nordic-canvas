@@ -5,20 +5,44 @@
 
 const STORAGE_KEY = "demo_session_id";
 const ROLE_KEY = "demo_session_role";
+const CREATED_KEY = "demo_session_created";
+
+/** Max demo session age in ms (4 hours). After this, session is considered stale. */
+const MAX_SESSION_AGE_MS = 4 * 60 * 60 * 1000;
 
 function uuid(): string {
   return crypto.randomUUID();
 }
 
 /**
+ * Check if the current demo session is stale (older than MAX_SESSION_AGE_MS).
+ * Returns true if stale or no timestamp found. 
+ */
+export function isDemoSessionStale(): boolean {
+  try {
+    const created = sessionStorage.getItem(CREATED_KEY);
+    if (!created) return false; // no session = not stale
+    return Date.now() - Number(created) > MAX_SESSION_AGE_MS;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Return the current demo session id, creating one if absent.
+ * Clears stale sessions first.
  */
 export function getOrCreateDemoSessionId(): string {
   try {
+    // Clear stale sessions
+    if (isDemoSessionStale()) {
+      clearDemoSession();
+    }
     let id = sessionStorage.getItem(STORAGE_KEY);
     if (!id) {
       id = uuid();
       sessionStorage.setItem(STORAGE_KEY, id);
+      sessionStorage.setItem(CREATED_KEY, String(Date.now()));
     }
     return id;
   } catch {
@@ -66,6 +90,7 @@ export function clearDemoSession(): void {
   try {
     sessionStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem(ROLE_KEY);
+    sessionStorage.removeItem(CREATED_KEY);
   } catch {
     // noop
   }
