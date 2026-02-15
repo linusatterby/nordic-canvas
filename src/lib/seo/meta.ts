@@ -64,8 +64,13 @@ export function buildMeta(opts: BuildMetaOptions = {}): MetaConfig {
     : siteDefaults.defaultTitle;
 
   const description = opts.description || siteDefaults.defaultDescription;
-  const canonical = opts.canonicalPath
-    ? `${baseUrl}${opts.canonicalPath}`
+
+  // Ensure canonicalPath has leading slash
+  const path = opts.canonicalPath
+    ? (opts.canonicalPath.startsWith("/") ? opts.canonicalPath : `/${opts.canonicalPath}`)
+    : "";
+  const canonical = path
+    ? `${baseUrl}${path}`
     : baseUrl || "/";
 
   const ogImage = opts.ogImage || `${baseUrl}${DEFAULT_OG_IMAGE}`;
