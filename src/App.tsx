@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastProvider } from "@/components/delight/Toasts";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { DemoSessionProvider } from "@/contexts/DemoSessionContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleGate } from "@/components/auth/RoleGate";
 
@@ -64,6 +65,7 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
+          <DemoSessionProvider>
           <ToastProvider>
             <Toaster />
             <Sonner />
@@ -114,6 +116,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ToastProvider>
+          </DemoSessionProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
