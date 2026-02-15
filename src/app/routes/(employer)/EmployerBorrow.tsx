@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDefaultOrgId, useCreateOrg, useMyOrgs } from "@/hooks/useOrgs";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { useOrgBorrowRequests, useCreateBorrowRequest, useCloseBorrowRequest } from "@/hooks/useBorrow";
 import {
   useAllCirclePartnersFlat,
@@ -82,6 +83,7 @@ const scopeLabels: Record<BorrowScope, { label: string; icon: React.ReactNode; d
 export function EmployerBorrow() {
   useDemoCoachToast("borrow");
   const { addToast } = useToasts();
+  const { demoSessionId } = useDemoSession();
   const { data: orgId, isLoading: orgLoading } = useDefaultOrgId();
   const { data: orgs } = useMyOrgs();
   const { data: requests, isLoading: requestsLoading } = useOrgBorrowRequests(orgId);
@@ -168,7 +170,7 @@ export function EmployerBorrow() {
   const handleCreateOrg = async () => {
     if (!orgName.trim()) return;
     try {
-      await createOrgMutation.mutateAsync({ name: orgName, location: orgLocation || undefined });
+      await createOrgMutation.mutateAsync({ name: orgName, location: orgLocation || undefined, demoSessionId });
       setShowCreateOrg(false);
       addToast({ type: "success", title: "Klart!", message: "Organisation skapad." });
     } catch {

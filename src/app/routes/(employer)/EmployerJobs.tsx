@@ -12,6 +12,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFo
 import { EmployerListingsFilters, DEFAULT_EMPLOYER_FILTERS, type EmployerListingFilterValues } from "@/components/filters/EmployerListingsFilters";
 import { Plus, Briefcase, Users, MapPin, Calendar, Clock, FileEdit, Eye, XCircle, RotateCcw } from "lucide-react";
 import { useDefaultOrgId, useCreateOrg } from "@/hooks/useOrgs";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { useOrgJobs } from "@/hooks/useJobsFeed";
 import { useUpdateListingStatus } from "@/hooks/useListings";
 import { createJob, createListing, type ListingStatus, type ListingType } from "@/lib/api/jobs";
@@ -39,6 +40,7 @@ export function EmployerJobs() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
+  const { demoSessionId } = useDemoSession();
   const { data: orgId, isLoading: orgLoading } = useDefaultOrgId();
   
   // Status filter for tabs
@@ -70,7 +72,7 @@ export function EmployerJobs() {
   const handleCreateOrg = async () => {
     if (!orgName.trim()) return;
     try {
-      await createOrgMutation.mutateAsync({ name: orgName, location: orgLocation || undefined });
+      await createOrgMutation.mutateAsync({ name: orgName, location: orgLocation || undefined, demoSessionId });
       setShowCreateOrg(false);
       addToast({ type: "success", title: "Klart!", message: "Organisation skapad." });
     } catch {
