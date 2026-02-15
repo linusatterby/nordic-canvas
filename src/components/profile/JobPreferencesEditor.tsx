@@ -8,6 +8,7 @@ import { useToasts } from "@/components/delight/Toasts";
 import { useJobPreferences, useSaveJobPreferences } from "@/hooks/useJobPreferences";
 import { useShiftAvailability, useReplaceShiftAvailability } from "@/hooks/useShiftAvailability";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { DemoAvailabilityBypassNotice } from "@/components/demo/DemoAvailabilityBypassNotice";
 
 /** Weekday index 0=Mon … 6=Sun (matches DB constraint 0-6) */
 const WEEKDAYS = [
@@ -288,6 +289,8 @@ export function JobPreferencesEditor({ className }: Props) {
           )}
         </div>
       </div>
+
+      <DemoAvailabilityBypassNotice className="mt-3" />
 
       <div className="mt-4 flex justify-end">
         <Button

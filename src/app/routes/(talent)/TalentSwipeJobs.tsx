@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp, RefreshCw, Bug, Briefcase, Clock } from "lucide-react";
+import { DemoAvailabilityBypassNotice } from "@/components/demo/DemoAvailabilityBypassNotice";
 import { AppShell } from "@/app/layout/AppShell";
 import { JobCard } from "@/components/cards/JobCard";
 import { TalentListingsFilters, DEFAULT_TALENT_FILTERS, type TalentListingFilterValues } from "@/components/filters/TalentListingsFilters";
@@ -287,6 +288,7 @@ export function TalentSwipeJobs() {
               onChange={setFilters}
               onClear={handleClearFilters}
             />
+            <DemoAvailabilityBypassNotice className="mt-2" />
           </div>
         )}
 

@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { debugWarn } from "@/lib/utils/debug";
 import { logger } from "@/lib/logging/logger";
+import { shouldBypassAvailabilityFilters } from "@/lib/demo/availabilityBypass";
 
 // Core types from database
 export type JobPost = Database["public"]["Tables"]["job_posts"]["Row"];
@@ -231,6 +232,9 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
   // Check if user has active date filters set in UI
   const hasActiveDateFilters = !!(filters?.startDate || filters?.endDate);
 
+  // In demo mode, bypass date/availability filters entirely
+  const bypassDates = shouldBypassAvailabilityFilters(!!isDemoMode);
+
   // Build query with filters
   let query = supabase
     .from("job_posts")
@@ -250,9 +254,8 @@ export async function listUnswipedJobs(filters?: JobFilters, isDemoMode?: boolea
     query = query.eq("role_key", filters.roleKey);
   }
 
-  // Apply date filters only if user actively set them in UI
-  // In demo mode without active date filters, skip date filtering entirely
-  if (hasActiveDateFilters) {
+  // Apply date filters only if user actively set them AND not in demo bypass
+  if (hasActiveDateFilters && !bypassDates) {
     if (filters?.startDate) {
       query = query.gte("end_date", filters.startDate);
     }
@@ -659,12 +662,16 @@ export async function listListings(filters?: ListingFilters, isDemoMode?: boolea
     }
   }
 
-  // Apply date filters for shift_cover type
-  if (filters?.startDate && filters?.includeShiftCover) {
-    query = query.or(`end_date.gte.${filters.startDate},shift_end.gte.${filters.startDate}`);
-  }
-  if (filters?.endDate && filters?.includeShiftCover) {
-    query = query.or(`start_date.lte.${filters.endDate},shift_start.lte.${filters.endDate}`);
+  // Apply date filters for shift_cover type (skip in demo bypass mode)
+  const bypassDates = shouldBypassAvailabilityFilters(!!isDemoMode);
+
+  if (!bypassDates) {
+    if (filters?.startDate && filters?.includeShiftCover) {
+      query = query.or(`end_date.gte.${filters.startDate},shift_end.gte.${filters.startDate}`);
+    }
+    if (filters?.endDate && filters?.includeShiftCover) {
+      query = query.or(`start_date.lte.${filters.endDate},shift_start.lte.${filters.endDate}`);
+    }
   }
 
   // Apply housing filter
