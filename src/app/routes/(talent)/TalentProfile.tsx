@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { AvailabilityEditor } from "@/components/profile/AvailabilityEditor";
 import { JobPreferencesEditor } from "@/components/profile/JobPreferencesEditor";
 import { CredentialsList } from "@/components/profile/CredentialsList";
-import { Star, Shield, MapPin, Calendar, Edit2, Video, Award } from "lucide-react";
+import { Star, Shield, MapPin, Edit2, Video } from "lucide-react";
 
 // Stub data
 const profileData = {
@@ -23,10 +23,6 @@ const profileData = {
     { label: "Erfaren", variant: "verified" as const },
     { label: "Punktlig", variant: "primary" as const },
     { label: "Skidåkare", variant: "default" as const },
-  ],
-  availability: [
-    { period: "Dec 2025 - Apr 2026", status: "available" },
-    { period: "Jun 2025 - Aug 2025", status: "busy" },
   ],
   reviews: [
     {
@@ -133,43 +129,11 @@ export function TalentProfile() {
           {/* Schedule Tab */}
           <TabsContent value="schedule">
             <div className="space-y-4">
-              {/* Job preferences - 3 modes */}
+              {/* Job preferences - single source of truth for availability */}
               <JobPreferencesEditor />
 
               {/* Availability Editor - editable dates */}
               <AvailabilityEditor />
-
-              {/* Existing availability periods (stub data) */}
-              <Card variant="default" padding="lg">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Perioder</h3>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <Edit2 className="h-4 w-4" />
-                    Redigera
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {profileData.availability.map((period, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center gap-3 p-3 rounded-lg ${
-                        period.status === "available" ? "bg-verified-muted" : "bg-busy-muted"
-                      }`}
-                    >
-                      <Calendar className={`h-4 w-4 ${
-                        period.status === "available" ? "text-verified" : "text-busy"
-                      }`} />
-                      <span className="text-sm text-foreground flex-1">{period.period}</span>
-                      <Badge
-                        variant={period.status === "available" ? "verified" : "busy"}
-                        size="sm"
-                      >
-                        {period.status === "available" ? "Tillgänglig" : "Upptagen"}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </Card>
             </div>
           </TabsContent>
 
