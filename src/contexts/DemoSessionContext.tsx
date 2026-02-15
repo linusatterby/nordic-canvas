@@ -16,6 +16,7 @@ import * as React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { IS_DEMO_ENV } from "@/lib/config/env";
 import {
   getOrCreateDemoSessionId,
   getDemoSessionId,
@@ -109,6 +110,37 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
         const target = urlRole === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
         navigate(target, { replace: true });
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-start demo when IS_DEMO_ENV is true (no ?demo=1 needed)
+  const envAutoStartRef = React.useRef(false);
+  React.useEffect(() => {
+    if (envAutoStartRef.current) return;
+    if (!IS_DEMO_ENV) return;
+    // Don't auto-start if a session already exists (URL-param or reload)
+    if (getDemoSessionId()) {
+      setSessionId(getDemoSessionId());
+      envAutoStartRef.current = true;
+      return;
+    }
+    envAutoStartRef.current = true;
+
+    const id = getOrCreateDemoSessionId();
+    setSessionId(id);
+    setDemoRole("employer");
+
+    const client = getDemoSupabase(id);
+    supabase.auth.signInAnonymously()
+      .then(() => supabase.auth.getUser())
+      .then(({ data }) => {
+        client.from("demo_sessions").upsert({
+          id,
+          role: "employer",
+          anon_user_id: data.user?.id ?? null,
+        }).then(() => {});
+      })
+      .catch((err) => console.warn("[DemoSession] ENV auto-start error:", err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

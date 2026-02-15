@@ -1,8 +1,11 @@
 import * as React from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { IS_DEMO_ENV } from "@/lib/config/env";
 import { ensureMyProfile, getMyProfile, type Profile, type ProfileType } from "@/lib/api/profile";
 import { perfStart, perfEnd, perfMark } from "@/lib/utils/perf";
+
+export type AuthStatus = "loading" | "authenticated" | "anonymous" | "demo";
 
 interface AuthContextValue {
   user: User | null;
@@ -11,6 +14,8 @@ interface AuthContextValue {
   loading: boolean;
   profileLoading: boolean;
   isDemoMode: boolean;
+  /** Computed auth status — prefer this for guard logic */
+  status: AuthStatus;
   refreshProfile: () => Promise<void>;
 }
 
@@ -167,6 +172,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, [profile, user?.email]);
 
+  // Compute auth status for guards
+  const status: AuthStatus = React.useMemo(() => {
+    if (IS_DEMO_ENV) return "demo";
+    if (loading) return "loading";
+    if (user) return "authenticated";
+    return "anonymous";
+  }, [loading, user]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -176,6 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         profileLoading,
         isDemoMode,
+        status,
         refreshProfile,
       }}
     >
