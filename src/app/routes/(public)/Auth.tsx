@@ -9,8 +9,11 @@ import { cn } from "@/lib/utils/classnames";
 import { signInWithPassword, signUpWithPassword } from "@/lib/supabase/auth";
 import { ensureMyProfile } from "@/lib/api/profile";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { RoleSelectorModal } from "@/components/auth/RoleSelectorModal";
 import { getSafeReturnUrl } from "@/lib/auth/returnUrl";
+import { IS_DEMO_ENV } from "@/lib/config/env";
+import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 type AuthMode = "login" | "signup";
@@ -24,6 +27,7 @@ export function Auth() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
+  const { isDemoSession, resetDemoSession } = useDemoSession();
 
   const [mode, setMode] = React.useState<AuthMode>(
     searchParams.get("mode") === "signup" ? "signup" : "login"
@@ -297,6 +301,24 @@ export function Auth() {
             )}
           </div>
         </Card>
+
+        {/* Demo-only: reset session */}
+        {IS_DEMO_ENV && isDemoSession && (
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={async () => {
+                await resetDemoSession();
+                toast.success("Demo-session återställd");
+                navigate("/");
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Återställ demo-session
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Role Selector Modal for 'both' users */}

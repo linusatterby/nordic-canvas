@@ -36,6 +36,8 @@ interface DemoSessionContextValue {
   demoRole: DemoRole;
   startDemo: (role?: DemoRole) => Promise<void>;
   endDemo: () => void;
+  /** Reset demo session (new ID, clear cache). Only works when IS_DEMO_ENV=true. */
+  resetDemoSession: () => Promise<void>;
   demoSupabase: SupabaseClient<Database> | null;
 }
 
@@ -189,6 +191,35 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     navigate("/");
   }, [navigate, queryClient]);
 
+  const resetDemoSession = React.useCallback(async () => {
+    if (!IS_DEMO_ENV) {
+      console.error("[DemoSession] resetDemoSession called outside demo env — no-op");
+      return;
+    }
+    // Clear old session
+    clearDemoSession();
+    queryClient.clear();
+    await supabase.auth.signOut().catch(() => {});
+
+    // Create fresh session
+    const id = getOrCreateDemoSessionId();
+    setSessionId(id);
+    setDemoRole(demoRole); // keep current role
+
+    const client = getDemoSupabase(id);
+    try {
+      await supabase.auth.signInAnonymously();
+      const { data } = await supabase.auth.getUser();
+      await client.from("demo_sessions").upsert({
+        id,
+        role: demoRole,
+        anon_user_id: data.user?.id ?? null,
+      });
+    } catch (err) {
+      console.warn("[DemoSession] Reset error:", err);
+    }
+  }, [demoRole, queryClient]);
+
   const demoSupabase = React.useMemo(() => {
     if (!sessionId) return null;
     return getDemoSupabase(sessionId);
@@ -202,6 +233,7 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
         demoRole,
         startDemo,
         endDemo,
+        resetDemoSession,
         demoSupabase,
       }}
     >
