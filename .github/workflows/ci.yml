@@ -33,3 +33,6 @@ jobs:
 
       - name: Build
         run: npx vite build
+
+      - name: Audit bundle size
+        run: node scripts/audit-bundle.mjs
