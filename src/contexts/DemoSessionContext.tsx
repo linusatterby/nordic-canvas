@@ -56,31 +56,53 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     persistDemoRole(role);
   }, []);
 
-  // Auto-start demo from URL param ?demo=1 (also navigates)
-  React.useEffect(() => {
-    if (searchParams.get("demo") === "1" && !sessionId) {
-      const role = (searchParams.get("role") as DemoRole) || "employer";
-      // Inline the start logic to avoid referencing a callback defined later
-      const id = getOrCreateDemoSessionId();
-      setSessionId(id);
-      setDemoRole(role);
+  // One-time guard so URL auto-start never re-fires within the same mount
+  const urlHandledRef = React.useRef(false);
 
-      const client = getDemoSupabase(id);
-      supabase.auth.signInAnonymously()
-        .then(() => supabase.auth.getUser())
-        .then(({ data }) => {
-          client.from("demo_sessions").upsert({
-            id,
-            role,
-            anon_user_id: data.user?.id ?? null,
-          }).then(() => {});
-        })
-        .catch((err) => console.warn("[DemoSession] URL auto-start error:", err))
-        .finally(() => {
-          const target = role === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
-          navigate(target);
-        });
+  // Auto-start demo from URL param ?demo=1 (deterministic: resets if role mismatches)
+  React.useEffect(() => {
+    if (urlHandledRef.current) return;
+    const wantDemo = searchParams.get("demo") === "1";
+    if (!wantDemo) return;
+    urlHandledRef.current = true;
+
+    const urlRole = (searchParams.get("role") as DemoRole) || "employer";
+    const currentRole = (getPersistedDemoRole() as DemoRole) || "employer";
+    const currentId = getDemoSessionId();
+
+    // Idempotent: already running with correct role → just navigate
+    if (currentId && currentRole === urlRole) {
+      const target = urlRole === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
+      navigate(target);
+      return;
     }
+
+    // Mismatch or no session: reset everything, then start fresh
+    if (currentId) {
+      clearDemoSession();
+      queryClient.clear();
+      supabase.auth.signOut().catch(() => {});
+    }
+
+    const id = getOrCreateDemoSessionId();
+    setSessionId(id);
+    setDemoRole(urlRole);
+
+    const client = getDemoSupabase(id);
+    supabase.auth.signInAnonymously()
+      .then(() => supabase.auth.getUser())
+      .then(({ data }) => {
+        client.from("demo_sessions").upsert({
+          id,
+          role: urlRole,
+          anon_user_id: data.user?.id ?? null,
+        }).then(() => {});
+      })
+      .catch((err) => console.warn("[DemoSession] URL auto-start error:", err))
+      .finally(() => {
+        const target = urlRole === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
+        navigate(target);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
