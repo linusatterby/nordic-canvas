@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { buildLoginUrl } from "@/lib/auth/returnUrl";
+import { logger } from "@/lib/logging/logger";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 interface ProtectedRouteProps {
@@ -59,7 +60,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // ── Anonymous — redirect to login with returnUrl ────────────
   if (status === "anonymous") {
-    return <Navigate to={buildLoginUrl(location.pathname)} replace />;
+    const loginUrl = buildLoginUrl(location.pathname);
+    logger.info("navigation_guard_redirect", { context: "ProtectedRoute", meta: { from: location.pathname, to: loginUrl } });
+    return <Navigate to={loginUrl} replace />;
   }
 
   // ── Authenticated — allow ───────────────────────────────────

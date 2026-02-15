@@ -16,6 +16,7 @@ import * as React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logging/logger";
 import { IS_DEMO_ENV } from "@/lib/config/env";
 import {
   getOrCreateDemoSessionId,
@@ -138,6 +139,7 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     const id = getOrCreateDemoSessionId();
     setSessionId(id);
     setDemoRole("employer");
+    logger.info("demo_session_created", { context: "DemoSession", meta: { source: "env_auto", sessionId: id } });
 
     const client = getDemoSupabase(id);
     supabase.auth.signInAnonymously()
@@ -200,6 +202,7 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     clearDemoSession();
     queryClient.clear();
     await supabase.auth.signOut().catch(() => {});
+    logger.info("demo_session_reset", { context: "DemoSession" });
 
     // Create fresh session
     const id = getOrCreateDemoSessionId();

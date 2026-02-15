@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { IS_DEMO_ENV } from "@/lib/config/env";
 import { ensureMyProfile, getMyProfile, type Profile, type ProfileType } from "@/lib/api/profile";
 import { perfStart, perfEnd, perfMark } from "@/lib/utils/perf";
+import { logger } from "@/lib/logging/logger";
 
 export type AuthStatus = "loading" | "authenticated" | "anonymous" | "demo";
 
@@ -174,10 +175,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Compute auth status for guards
   const status: AuthStatus = React.useMemo(() => {
-    if (IS_DEMO_ENV) return "demo";
-    if (loading) return "loading";
-    if (user) return "authenticated";
-    return "anonymous";
+    const s: AuthStatus = IS_DEMO_ENV ? "demo" : loading ? "loading" : user ? "authenticated" : "anonymous";
+    logger.info("auth_status_changed", { context: "AuthContext", meta: { status: s } });
+    return s;
   }, [loading, user]);
 
   return (

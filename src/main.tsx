@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { hasSupabaseEnv } from "./lib/env";
 import { validateConfig } from "./lib/config/runtime";
+import { logger } from "./lib/logging/logger";
 import { installOverflowGuard } from "./lib/dev/overflowGuard";
 import "./index.css";
 
@@ -18,6 +19,7 @@ async function bootstrap() {
   const root = createRoot(document.getElementById("root")!);
 
   // Validate cross-env invariants — throws on fatal misconfig
+  logger.info("app_start", { context: "bootstrap" });
   try {
     validateConfig({ throwOnError: true });
   } catch (err) {

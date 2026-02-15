@@ -1,53 +1,142 @@
 /**
- * Structured logger – thin wrapper around console.
- * In prod: structured JSON-like output, ready for Sentry/Datadog hookup.
- * In demo/dev: standard console with context prefix.
+ * Structured logger with event-based API and optional ring buffer.
+ *
+ * In prod/live:  structured JSON to console (no buffer — avoid PII risk).
+ * In demo/test:  human-readable console + in-memory ring buffer for diagnostics.
  */
-import { APP_ENV } from "@/lib/config/env";
+import { APP_ENV, BACKEND_ENV } from "@/lib/config/env";
 
-type LogLevel = "info" | "warn" | "error";
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
-interface LogPayload {
-  message: string;
+export type LogLevel = "debug" | "info" | "warn" | "error";
+
+export interface LogEvent {
+  level: LogLevel;
+  event: string;
+  ts: string;
   context?: string;
-  error?: unknown;
+  message?: string;
+  error?: string;
   meta?: Record<string, unknown>;
 }
+
+// ---------------------------------------------------------------------------
+// Ring buffer (test/demo only)
+// ---------------------------------------------------------------------------
+
+const BUFFER_MAX = 200;
+const _buffer: LogEvent[] = [];
+const _isBuffered = BACKEND_ENV === "test" || APP_ENV === "demo";
+
+function pushToBuffer(entry: LogEvent) {
+  if (!_isBuffered) return;
+  _buffer.push(entry);
+  if (_buffer.length > BUFFER_MAX) {
+    _buffer.splice(0, _buffer.length - BUFFER_MAX);
+  }
+}
+
+/** Get a snapshot of the log buffer (newest last). Only populated in test/demo. */
+export function getLogBuffer(): readonly LogEvent[] {
+  return _buffer;
+}
+
+/** Clear the log buffer. */
+export function clearLogBuffer(): void {
+  _buffer.length = 0;
+}
+
+// ---------------------------------------------------------------------------
+// Formatting helpers
+// ---------------------------------------------------------------------------
 
 function formatError(err: unknown): string {
   if (err instanceof Error) return err.stack || err.message;
   return String(err);
 }
 
-function emit(level: LogLevel, payload: LogPayload) {
-  const prefix = payload.context ? `[${payload.context}]` : "[app]";
+function maskValue(value: string, visibleChars = 8): string {
+  if (value.length <= visibleChars) return "***";
+  return value.slice(0, visibleChars) + "…***";
+}
+
+/** Mask any keys/tokens in meta to avoid PII/secret leakage. */
+export function safeMeta(meta?: Record<string, unknown>): Record<string, unknown> | undefined {
+  if (!meta) return undefined;
+  const safe: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(meta)) {
+    const lower = k.toLowerCase();
+    if (lower.includes("key") || lower.includes("token") || lower.includes("secret") || lower.includes("password")) {
+      safe[k] = typeof v === "string" ? maskValue(v) : "***";
+    } else {
+      safe[k] = v;
+    }
+  }
+  return safe;
+}
+
+// ---------------------------------------------------------------------------
+// Core emit
+// ---------------------------------------------------------------------------
+
+const consoleMethod: Record<LogLevel, "log" | "info" | "warn" | "error"> = {
+  debug: "log",
+  info: "info",
+  warn: "warn",
+  error: "error",
+};
+
+function emit(level: LogLevel, event: string, opts?: {
+  context?: string;
+  message?: string;
+  error?: unknown;
+  meta?: Record<string, unknown>;
+}) {
+  const entry: LogEvent = {
+    level,
+    event,
+    ts: new Date().toISOString(),
+    context: opts?.context,
+    message: opts?.message,
+    error: opts?.error ? formatError(opts.error) : undefined,
+    meta: safeMeta(opts?.meta),
+  };
+
+  pushToBuffer(entry);
+
+  const prefix = entry.context ? `[${entry.context}]` : "[app]";
+  const method = consoleMethod[level];
 
   if (APP_ENV === "prod") {
-    // Structured output – easy to parse by log aggregators
-    const entry = {
-      level,
-      env: APP_ENV,
-      ts: new Date().toISOString(),
-      msg: payload.message,
-      ctx: payload.context,
-      ...(payload.error ? { error: formatError(payload.error) } : {}),
-      ...(payload.meta || {}),
-    };
-    console[level](JSON.stringify(entry));
+    // Structured JSON for log aggregators
+    console[method](JSON.stringify(entry));
   } else {
-    // Human-readable for demo/dev
-    const args: unknown[] = [`${prefix} ${payload.message}`];
-    if (payload.error) args.push(payload.error);
-    if (payload.meta) args.push(payload.meta);
-    console[level](...args);
+    // Human-readable
+    const label = `${prefix} ${event}`;
+    const args: unknown[] = [label];
+    if (entry.message) args.push(entry.message);
+    if (opts?.error) args.push(opts.error);
+    if (entry.meta && Object.keys(entry.meta).length > 0) args.push(entry.meta);
+    console[method](...args);
   }
 }
 
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+type LogOpts = {
+  context?: string;
+  message?: string;
+  error?: unknown;
+  meta?: Record<string, unknown>;
+};
+
 export const logger = {
-  info: (message: string, ctx?: Partial<Omit<LogPayload, "message">>) =>
-    emit("info", { message, ...ctx }),
-  warn: (message: string, ctx?: Partial<Omit<LogPayload, "message">>) =>
-    emit("warn", { message, ...ctx }),
-  error: (message: string, ctx?: Partial<Omit<LogPayload, "message">>) =>
-    emit("error", { message, ...ctx }),
+  debug: (event: string, opts?: LogOpts) => emit("debug", event, opts),
+  info: (event: string, opts?: LogOpts) => emit("info", event, opts),
+  warn: (event: string, opts?: LogOpts) => emit("warn", event, opts),
+  error: (event: string, opts?: LogOpts) => emit("error", event, opts),
 };
