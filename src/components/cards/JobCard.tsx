@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MapPin, Calendar, Home, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { MapPin, Calendar, Home, ChevronDown, ChevronUp, Sparkles, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -22,6 +22,8 @@ export interface JobCardProps {
   onSwipeYes?: (id: string) => void;
   onSwipeNo?: (id: string) => void;
   onViewDetails?: (id: string) => void;
+  disabled?: boolean;
+  pendingDirection?: "yes" | "no" | null;
   className?: string;
 }
 
@@ -53,11 +55,14 @@ export function JobCard({
   onSwipeYes,
   onSwipeNo,
   onViewDetails,
+  disabled = false,
+  pendingDirection = null,
   className,
 }: JobCardProps) {
   const [showHousingDetails, setShowHousingDetails] = React.useState(false);
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
     if (e.key === "ArrowRight" || e.key === "j") {
       onSwipeYes?.(id);
     } else if (e.key === "ArrowLeft" || e.key === "k") {
@@ -71,8 +76,12 @@ export function JobCard({
     <Card
       variant="interactive"
       padding="lg"
-      className={cn("relative focus-within:ring-2 focus-within:ring-primary", className)}
-      tabIndex={0}
+      className={cn(
+        "relative focus-within:ring-2 focus-within:ring-primary",
+        disabled && "pointer-events-none",
+        className
+      )}
+      tabIndex={disabled ? -1 : 0}
       onKeyDown={handleKeyDown}
       role="article"
       aria-label={`Jobb: ${title} på ${company}`}
@@ -155,8 +164,13 @@ export function JobCard({
           onClick={() => onSwipeNo?.(id)}
           className="flex-1"
           aria-label="Skippa jobb"
+          disabled={disabled}
         >
-          Skippa
+          {pendingDirection === "no" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Skippa"
+          )}
         </Button>
         <Button
           variant="primary"
@@ -164,8 +178,13 @@ export function JobCard({
           onClick={() => onSwipeYes?.(id)}
           className="flex-1"
           aria-label="Intresserad av jobb"
+          disabled={disabled}
         >
-          Intresserad
+          {pendingDirection === "yes" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Intresserad"
+          )}
         </Button>
       </div>
     </Card>
