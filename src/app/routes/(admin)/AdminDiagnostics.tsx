@@ -159,10 +159,56 @@ function DiagnosticsContent() {
         )}
       </Card>
 
+      {/* Seed */}
+      <SeedSection />
+
       {/* Copy */}
       <Button onClick={handleCopy} variant="outline" className="w-full">
         📋 Copy diagnostics JSON
       </Button>
     </div>
+  );
+}
+
+function SeedSection() {
+  const [seedResult, setSeedResult] = React.useState<string | null>(null);
+  const [seeding, setSeeding] = React.useState(false);
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    setSeedResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("seed-test");
+      if (error) {
+        setSeedResult(`❌ ${error.message}`);
+      } else if (data?.ok) {
+        setSeedResult(`✅ Seed klart (${data.elapsed_ms}ms)`);
+      } else {
+        setSeedResult(`❌ ${data?.error || "Okänt fel"}`);
+      }
+    } catch (err) {
+      setSeedResult(`❌ ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  return (
+    <Card className="p-4 space-y-3">
+      <h2 className="font-semibold text-foreground">Seed / Test Data</h2>
+      <p className="text-xs text-muted-foreground">
+        Kör idempotent seed av baseline demo-data. Kräver service_role (via edge function).
+        Blockerad i live.
+      </p>
+      <div className="flex items-center gap-3">
+        <Button size="sm" variant="outline" onClick={handleSeed} disabled={seeding}>
+          {seeding ? "Seedar…" : "🌱 Run Seed"}
+        </Button>
+        {seedResult && <span className="text-sm font-mono">{seedResult}</span>}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        CLI: <code className="bg-muted px-1 rounded">node scripts/seed-test.mjs</code>
+      </p>
+    </Card>
   );
 }
