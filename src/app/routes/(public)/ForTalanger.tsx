@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useDemoSession } from "@/contexts/DemoSessionContext";
+import { TALENT_DEMO_CTA } from "@/lib/constants/demoCta";
 
 export default function ForTalanger() {
   const { startDemo } = useDemoSession();
@@ -14,7 +15,7 @@ export default function ForTalanger() {
   const handleStartTalentDemo = async () => {
     setDemoLoading(true);
     try {
-      await startDemo("talent");
+      await startDemo(TALENT_DEMO_CTA.role);
     } finally {
       setDemoLoading(false);
     }
@@ -45,7 +46,7 @@ export default function ForTalanger() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button variant="primary" size="lg" className="min-w-[180px]" onClick={handleStartTalentDemo} disabled={demoLoading}>
-                  {demoLoading ? "Startar…" : "Testa demo som talang"}
+                  {demoLoading ? TALENT_DEMO_CTA.loadingLabel : TALENT_DEMO_CTA.label}
                 </Button>
               <Button 
                 variant="outline" 
@@ -185,7 +186,7 @@ export default function ForTalanger() {
                   onClick={handleStartTalentDemo}
                   disabled={demoLoading}
                 >
-                  {demoLoading ? "Startar…" : "Testa demo som talang"}
+                  {demoLoading ? TALENT_DEMO_CTA.loadingLabel : TALENT_DEMO_CTA.label}
                 </Button>
               <Link to="/auth/login">
                 <Button 

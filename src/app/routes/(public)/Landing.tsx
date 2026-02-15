@@ -5,6 +5,7 @@ import { PublicShell } from "@/app/layout/PublicShell";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useDemoSession } from "@/contexts/DemoSessionContext";
+import { TALENT_DEMO_CTA } from "@/lib/constants/demoCta";
 
 const features = [
   {
@@ -198,11 +199,11 @@ export function Landing() {
                 variant="outline"
                 size="lg"
                 className="gap-2"
-                onClick={() => handleStartDemo("talent")}
+                onClick={() => handleStartDemo(TALENT_DEMO_CTA.role)}
                 disabled={demoLoading}
               >
                 <Play className="h-4 w-4" />
-                {demoLoading ? "Startar…" : "Testa demo som talang"}
+                {demoLoading ? TALENT_DEMO_CTA.loadingLabel : TALENT_DEMO_CTA.label}
               </Button>
             </div>
           </div>

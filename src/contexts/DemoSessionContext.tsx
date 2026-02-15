@@ -158,6 +158,8 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     setSessionId(id);
     setDemoRole(role);
 
+    logger.info("demo_session_created", { context: "DemoSession", meta: { role, sessionId: id, source: "startDemo" } });
+
     try {
       // Sign in anonymously so we have an auth context BEFORE upserting
       await supabase.auth.signInAnonymously();
