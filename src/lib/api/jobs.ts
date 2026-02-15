@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { debugWarn } from "@/lib/utils/debug";
+import { logger } from "@/lib/logging/logger";
 
 // Core types from database
 export type JobPost = Database["public"]["Tables"]["job_posts"]["Row"];
@@ -703,7 +704,11 @@ export async function listListings(filters?: ListingFilters, isDemoMode?: boolea
 
   // Demo fallback: if in demo mode and no listings, get demo listings
   if (isDemoMode && listings.length === 0 && !filters?.orgId) {
-    console.info("[listListings] demo_jobs_fallback_used: primary query returned 0 results, fetching demo jobs");
+    logger.info("demo_jobs_fallback_used", {
+      context: "listListings",
+      message: "Primary query returned 0 results, fetching demo jobs",
+      meta: { reason: "empty_primary", filters: { location: filters?.location ?? null, roleKey: filters?.roleKey ?? null, housingOnly: !!filters?.housingOnly, includeShiftCover: !!filters?.includeShiftCover } },
+    });
     const { data: demoData, error: demoError } = await supabase
       .from("job_posts")
       .select(`*, orgs ( name )`)
@@ -712,11 +717,20 @@ export async function listListings(filters?: ListingFilters, isDemoMode?: boolea
       .limit(6);
     
     if (demoError) {
-      console.warn("[listListings] demo_jobs_fallback_used: fallback query also failed", demoError.message);
+      logger.warn("demo_jobs_fallback_used", {
+        context: "listListings",
+        message: "Fallback query also failed",
+        meta: { reason: "fallback_error" },
+        error: demoError,
+      });
     }
 
     if (!demoError && demoData && demoData.length > 0) {
-      console.info("[listListings] demo_jobs_fallback_used: returning", demoData.length, "fallback demo jobs");
+      logger.info("demo_jobs_fallback_used", {
+        context: "listListings",
+        message: `Returning ${demoData.length} fallback demo jobs`,
+        meta: { reason: "fallback_success", count: demoData.length },
+      });
       return {
         listings: demoData.map((listing) => ({
           ...enrichListingWithDisplayFields(listing, cols),
