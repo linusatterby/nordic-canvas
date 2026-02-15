@@ -67,14 +67,21 @@ This project follows strict architectural patterns. **Read before contributing:*
 👉 **[src/PROJECT_RULES.md](src/PROJECT_RULES.md)**
 
 Key rules:
-- All routes defined in `src/App.tsx` only
+- Route definitions live in `src/app/routes/routeConfig.tsx` — `App.tsx` only renders the config
+- Public routes **require** `meta` (pageTitle, canonicalPath); app routes **must not** have meta
 - No direct Supabase calls in components — use hooks from `src/hooks/*`
 - Data access goes through `src/lib/api/*`
+
+### CI
+
+On every push/PR to `main`, GitHub Actions runs **typecheck → tests → build**. See `.github/workflows/ci.yml`.
 
 ### Code Quality Checks
 
 ```sh
 npm run check:supabase   # Verify no direct Supabase usage violations
+npx tsc -p tsconfig.app.json --noEmit  # Typecheck
+npx vitest run            # Unit tests
 ```
 
 ## Environment Variables
