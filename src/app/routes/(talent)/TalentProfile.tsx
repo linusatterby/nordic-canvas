@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/Progress";
 import { Avatar } from "@/components/ui/Avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { AvailabilityEditor } from "@/components/profile/AvailabilityEditor";
+import { JobPreferencesEditor } from "@/components/profile/JobPreferencesEditor";
+import { CredentialsList } from "@/components/profile/CredentialsList";
 import { Star, Shield, MapPin, Calendar, Edit2, Video, Award } from "lucide-react";
 
 // Stub data
@@ -125,12 +127,15 @@ export function TalentProfile() {
           <TabsList>
             <TabsTrigger value="schedule">Schema</TabsTrigger>
             <TabsTrigger value="reviews">Omdömen</TabsTrigger>
-            <TabsTrigger value="badges">Badges</TabsTrigger>
+            <TabsTrigger value="credentials">Certifikat</TabsTrigger>
           </TabsList>
 
           {/* Schedule Tab */}
           <TabsContent value="schedule">
             <div className="space-y-4">
+              {/* Job preferences - 3 modes */}
+              <JobPreferencesEditor />
+
               {/* Availability Editor - editable dates */}
               <AvailabilityEditor />
 
@@ -191,19 +196,9 @@ export function TalentProfile() {
             </Card>
           </TabsContent>
 
-          {/* Badges Tab */}
-          <TabsContent value="badges">
-            <Card variant="default" padding="lg">
-              <h3 className="font-semibold text-foreground mb-4">Dina Badges</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {profileData.badges.map((badge, i) => (
-                  <div key={i} className="text-center p-4 bg-secondary rounded-xl">
-                    <Award className="h-8 w-8 mx-auto text-primary mb-2" />
-                    <span className="text-sm font-medium text-foreground">{badge.label}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
+          {/* Credentials Tab */}
+          <TabsContent value="credentials">
+            <CredentialsList />
           </TabsContent>
         </Tabs>
       </div>

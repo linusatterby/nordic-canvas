@@ -175,4 +175,16 @@ export const queryKeys = {
   visibility: {
     summary: () => ["visibilitySummary"] as const,
   },
+
+  // --- Credentials ---
+  credentials: {
+    all: ["credentials"] as const,
+    mine: () => ["credentials", "mine"] as const,
+  },
+
+  // --- Job Preferences ---
+  jobPreferences: {
+    all: ["jobPreferences"] as const,
+    mine: () => ["jobPreferences", "mine"] as const,
+  },
 } as const;

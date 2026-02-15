@@ -1649,6 +1649,81 @@ export type Database = {
         }
         Relationships: []
       }
+      talent_credentials: {
+        Row: {
+          created_at: string
+          credential_type: string
+          expires_at: string | null
+          id: string
+          issued_at: string | null
+          issuer: string | null
+          label: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credential_type: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issuer?: string | null
+          label?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credential_type?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issuer?: string | null
+          label?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      talent_job_preferences: {
+        Row: {
+          extra_timeblocks: string[] | null
+          extra_weekdays: string[] | null
+          permanent_earliest_start: string | null
+          seasonal_from: string | null
+          seasonal_to: string | null
+          updated_at: string
+          user_id: string
+          wants_extra_shifts: boolean
+          wants_permanent: boolean
+          wants_seasonal: boolean
+        }
+        Insert: {
+          extra_timeblocks?: string[] | null
+          extra_weekdays?: string[] | null
+          permanent_earliest_start?: string | null
+          seasonal_from?: string | null
+          seasonal_to?: string | null
+          updated_at?: string
+          user_id: string
+          wants_extra_shifts?: boolean
+          wants_permanent?: boolean
+          wants_seasonal?: boolean
+        }
+        Update: {
+          extra_timeblocks?: string[] | null
+          extra_weekdays?: string[] | null
+          permanent_earliest_start?: string | null
+          seasonal_from?: string | null
+          seasonal_to?: string | null
+          updated_at?: string
+          user_id?: string
+          wants_extra_shifts?: boolean
+          wants_permanent?: boolean
+          wants_seasonal?: boolean
+        }
+        Relationships: []
+      }
       talent_job_swipes: {
         Row: {
           created_at: string
