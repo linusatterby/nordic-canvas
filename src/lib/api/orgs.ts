@@ -25,7 +25,7 @@ export async function listMyOrgs(): Promise<{
     .from("org_members")
     .select(`
       role,
-      orgs ( * )
+      orgs!org_members_org_id_fkey ( * )
     `)
     .eq("user_id", user.id);
 
