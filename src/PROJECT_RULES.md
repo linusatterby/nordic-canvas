@@ -68,6 +68,7 @@ const { data: users } = useUsers();
 ## 4. React Query Keys
 
 - **All query keys** must come from `src/lib/queryKeys.ts`. No inline string arrays.
+- **CI enforces this**: `node scripts/audit-querykeys.mjs` fails if `queryKey: [` appears outside the canonical file.
 - **API functions** should be imported from `src/lib/api` (index) or `src/lib/api/<domain>.ts`.
 - Keys use factory functions: `queryKeys.<domain>.list(...)`, `queryKeys.<domain>.detail(id)`.
 
