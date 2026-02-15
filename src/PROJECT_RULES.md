@@ -86,7 +86,18 @@ src/hooks/useComments.ts   → useComments(), useCreateComment()
 
 ---
 
-## 6. Compliance
+## 6. SEO & Meta Foundation
+
+- **All public routes** must use `<PublicShell>` which renders `<PageMeta>`.
+- **All meta/head tags** (title, description, canonical, robots, og) must go through `PageMeta` — no other `<title>` or `<meta>` in components.
+- `VITE_APP_ENV=demo` ⇒ `noindex,nofollow` automatically. **Must not be bypassed.**
+- `VITE_SITE_URL` ⇒ absolute canonical & og:image URLs in prod. Empty = relative fallback.
+- Default OG image: `/og/default.png` (committed in `public/`).
+- JSON-LD: pass `jsonLd` prop to `PageMeta` when needed; scripts are auto-managed.
+
+---
+
+## 7. Compliance
 
 Violations are tracked in `src/REPORT_SUPABASE_DIRECT_USAGE.md` (if present).
 

@@ -29,6 +29,13 @@ export const IS_DEMO_ENV = APP_ENV === "demo";
 // Site URL for absolute canonical links (set in prod, empty in demo)
 export const SITE_URL = ((import.meta.env.VITE_SITE_URL as string) || "").replace(/\/+$/, "");
 
+// Runtime diagnostics (runs once at module load)
+if (IS_DEMO_ENV) {
+  console.info("[SEO] DEMO MODE: noindex,nofollow enabled");
+} else if (APP_ENV === "prod" && !SITE_URL) {
+  console.warn("[SEO] VITE_APP_ENV=prod but VITE_SITE_URL is empty – canonical & og:image will use relative paths");
+}
+
 // Demo feature flags
 // DEMO_ENABLED: Master switch for demo functionality (default: true)
 // Set VITE_DEMO_ENABLED=false in production to completely disable demo features
