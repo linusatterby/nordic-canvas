@@ -11,9 +11,23 @@ export const IS_DEV = import.meta.env.DEV;
 export const DEMO_DEBUG_ENABLED = import.meta.env.VITE_DEMO_DEBUG === "true";
 
 // App environment: "demo" | "prod" (default: "demo")
-// Controls indexing, analytics, etc.
-export const APP_ENV = (import.meta.env.VITE_APP_ENV as string) || "demo";
+// Unknown values fall back to "demo" with a console warning.
+const _rawAppEnv = (import.meta.env.VITE_APP_ENV as string) || "demo";
+const VALID_APP_ENVS = ["demo", "prod"] as const;
+export type AppEnv = (typeof VALID_APP_ENVS)[number];
+
+export const APP_ENV: AppEnv = VALID_APP_ENVS.includes(_rawAppEnv as AppEnv)
+  ? (_rawAppEnv as AppEnv)
+  : (() => {
+      console.warn(
+        `[env] Unknown VITE_APP_ENV="${_rawAppEnv}" – falling back to "demo". Valid values: ${VALID_APP_ENVS.join(", ")}`
+      );
+      return "demo" as AppEnv;
+    })();
 export const IS_DEMO_ENV = APP_ENV === "demo";
+
+// Site URL for absolute canonical links (set in prod, empty in demo)
+export const SITE_URL = ((import.meta.env.VITE_SITE_URL as string) || "").replace(/\/+$/, "");
 
 // Demo feature flags
 // DEMO_ENABLED: Master switch for demo functionality (default: true)
@@ -49,6 +63,7 @@ export function getEnvStatus() {
     IS_DEV,
     APP_ENV,
     IS_DEMO_ENV,
+    SITE_URL,
     DEMO_ENABLED,
     DEMO_DEBUG_ENABLED,
     ALLOW_DEMO_SEED,
