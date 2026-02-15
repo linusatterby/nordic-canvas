@@ -24,7 +24,7 @@ export default function ForTalanger() {
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-6">
               Hitta jobb i besöksnäringen{" "}
-              <span className="text-primary">som faktiskt funkar</span>
+              <span className="text-primary">som matchar dina önskemål</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
               Matcha jobb + boende + extra pass i ett flöde. Bygg ett verifierat rykte 
