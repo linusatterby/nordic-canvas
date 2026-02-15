@@ -248,20 +248,36 @@ export function TalentSwipeJobs() {
           </p>
         </div>
 
-        {/* Filter Toggle */}
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-between px-3 py-2 mb-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm"
-        >
-          <span className="text-muted-foreground">
-            Filter {hasActiveFilters && <span className="text-primary">• aktiva</span>}
-          </span>
-          {showFilters ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        {/* Filter Toggle + Demo Reset */}
+        <div className="flex items-center gap-2 mb-3">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm"
+          >
+            <span className="text-muted-foreground">
+              Filter {hasActiveFilters && <span className="text-primary">• aktiva</span>}
+            </span>
+            {showFilters ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+
+          {isDemoMode && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetDemoSwipes}
+              disabled={resetSwipesMutation.isPending}
+              title="För demo: visar alla jobb igen."
+              className="text-xs text-muted-foreground shrink-0"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${resetSwipesMutation.isPending ? 'animate-spin' : ''}`} />
+              Återställ swipes
+            </Button>
           )}
-        </button>
+        </div>
 
         {/* Filters Panel */}
         {showFilters && (
