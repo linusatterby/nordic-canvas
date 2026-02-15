@@ -12,7 +12,7 @@ export default function ForArbetsgivare() {
   };
 
   return (
-    <PublicShell>
+    <PublicShell pageTitle="För Arbetsgivare" pageDescription="Hitta pålitliga säsongsarbetare snabbt och enkelt." canonicalPath="/for-arbetsgivare">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-verified/5" />

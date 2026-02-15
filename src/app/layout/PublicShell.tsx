@@ -3,14 +3,23 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
+import { PageMeta } from "@/lib/seo/PageMeta";
+import { IS_DEMO_ENV } from "@/lib/config/env";
 
 interface PublicShellProps {
   children: React.ReactNode;
+  /** Page title for SEO (suffixed with site name) */
+  pageTitle?: string;
+  /** Page description for SEO */
+  pageDescription?: string;
+  /** Canonical path e.g. "/for-talanger" */
+  canonicalPath?: string;
 }
 
-export function PublicShell({ children }: PublicShellProps) {
+export function PublicShell({ children, pageTitle, pageDescription, canonicalPath }: PublicShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const location = useLocation();
+  const robots = IS_DEMO_ENV ? "noindex,nofollow" : undefined;
 
   const navLinks = [
     { href: "/", label: "Hem" },
@@ -20,6 +29,12 @@ export function PublicShell({ children }: PublicShellProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-frost">
+      <PageMeta
+        title={pageTitle}
+        description={pageDescription}
+        canonicalPath={canonicalPath}
+        robots={robots}
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">

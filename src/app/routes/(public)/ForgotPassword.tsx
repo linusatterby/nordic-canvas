@@ -33,7 +33,7 @@ export function ForgotPassword() {
   };
 
   return (
-    <PublicShell>
+    <PublicShell pageTitle="Glömt lösenord" canonicalPath="/auth/forgot">
       <div className="min-h-[calc(100vh-12rem)] flex items-center justify-center py-12 px-4">
         <Card variant="elevated" padding="lg" className="w-full max-w-md">
           {sent ? (

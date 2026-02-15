@@ -136,7 +136,7 @@ export function Auth() {
   };
 
   return (
-    <PublicShell>
+    <PublicShell pageTitle="Logga in" canonicalPath="/auth">
       <div className="min-h-[calc(100vh-12rem)] flex items-center justify-center py-12 px-4">
         <Card variant="elevated" padding="lg" className="w-full max-w-md">
           {/* Header */}
