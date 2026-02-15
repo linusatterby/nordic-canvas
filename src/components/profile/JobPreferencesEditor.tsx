@@ -6,23 +6,25 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToasts } from "@/components/delight/Toasts";
 import { useJobPreferences, useSaveJobPreferences } from "@/hooks/useJobPreferences";
+import { useShiftAvailability, useReplaceShiftAvailability } from "@/hooks/useShiftAvailability";
 import { Skeleton } from "@/components/ui/Skeleton";
 
+/** Weekday index 0=Mon … 6=Sun (matches DB constraint 0-6) */
 const WEEKDAYS = [
-  { key: "mon", label: "Mån" },
-  { key: "tue", label: "Tis" },
-  { key: "wed", label: "Ons" },
-  { key: "thu", label: "Tor" },
-  { key: "fri", label: "Fre" },
-  { key: "sat", label: "Lör" },
-  { key: "sun", label: "Sön" },
+  { key: 0, label: "Mån" },
+  { key: 1, label: "Tis" },
+  { key: 2, label: "Ons" },
+  { key: 3, label: "Tor" },
+  { key: 4, label: "Fre" },
+  { key: 5, label: "Lör" },
+  { key: 6, label: "Sön" },
 ];
 
+/** Matches DB CHECK constraint: 'morning' | 'day' | 'evening' */
 const TIMEBLOCKS = [
   { key: "morning", label: "Morgon" },
-  { key: "afternoon", label: "Eftermiddag" },
+  { key: "day", label: "Dag" },
   { key: "evening", label: "Kväll" },
-  { key: "night", label: "Natt" },
 ];
 
 interface Props {
@@ -30,8 +32,10 @@ interface Props {
 }
 
 export function JobPreferencesEditor({ className }: Props) {
-  const { data: saved, isLoading } = useJobPreferences();
+  const { data: saved, isLoading: prefsLoading } = useJobPreferences();
+  const { data: shiftSlots, isLoading: shiftsLoading } = useShiftAvailability();
   const saveMutation = useSaveJobPreferences();
+  const replaceShiftsMutation = useReplaceShiftAvailability();
   const { addToast } = useToasts();
 
   const [permanent, setPermanent] = React.useState(false);
@@ -40,11 +44,11 @@ export function JobPreferencesEditor({ className }: Props) {
   const [permanentStart, setPermanentStart] = React.useState("");
   const [seasonalFrom, setSeasonalFrom] = React.useState("");
   const [seasonalTo, setSeasonalTo] = React.useState("");
-  const [weekdays, setWeekdays] = React.useState<string[]>([]);
+  const [weekdays, setWeekdays] = React.useState<number[]>([]);
   const [timeblocks, setTimeblocks] = React.useState<string[]>([]);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
-  // Sync from saved data
+  // Sync from saved preferences
   React.useEffect(() => {
     if (!saved) return;
     setPermanent(saved.wants_permanent);
@@ -53,12 +57,27 @@ export function JobPreferencesEditor({ className }: Props) {
     setPermanentStart(saved.permanent_earliest_start ?? "");
     setSeasonalFrom(saved.seasonal_from ?? "");
     setSeasonalTo(saved.seasonal_to ?? "");
-    setWeekdays(saved.extra_weekdays ?? []);
-    setTimeblocks(saved.extra_timeblocks ?? []);
   }, [saved]);
 
-  const toggleChip = (arr: string[], key: string, setter: (v: string[]) => void) => {
-    setter(arr.includes(key) ? arr.filter((k) => k !== key) : [...arr, key]);
+  // Sync from shift availability slots
+  React.useEffect(() => {
+    if (!shiftSlots) return;
+    const uniqueWeekdays = [...new Set(shiftSlots.map((s) => s.weekday))].sort();
+    const uniqueTimeblocks = [...new Set(shiftSlots.map((s) => s.timeblock))];
+    setWeekdays(uniqueWeekdays);
+    setTimeblocks(uniqueTimeblocks);
+  }, [shiftSlots]);
+
+  const toggleWeekday = (key: number) => {
+    setWeekdays((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const toggleTimeblock = (key: string) => {
+    setTimeblocks((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   };
 
   const validate = (): boolean => {
@@ -82,9 +101,12 @@ export function JobPreferencesEditor({ className }: Props) {
     return Object.keys(e).length === 0;
   };
 
+  const isSaving = saveMutation.isPending || replaceShiftsMutation.isPending;
+
   const handleSave = async () => {
     if (!validate()) return;
     try {
+      // Save preferences
       await saveMutation.mutateAsync({
         wants_permanent: permanent,
         wants_seasonal: seasonal,
@@ -92,16 +114,25 @@ export function JobPreferencesEditor({ className }: Props) {
         permanent_earliest_start: permanent ? permanentStart || null : null,
         seasonal_from: seasonal ? seasonalFrom || null : null,
         seasonal_to: seasonal ? seasonalTo || null : null,
-        extra_weekdays: extraShifts ? weekdays : [],
+        extra_weekdays: extraShifts ? weekdays.map(String) : [],
         extra_timeblocks: extraShifts ? timeblocks : [],
       });
+
+      // Save shift availability to dedicated table
+      if (extraShifts && weekdays.length > 0 && timeblocks.length > 0) {
+        await replaceShiftsMutation.mutateAsync({ weekdays, timeblocks });
+      } else if (!extraShifts) {
+        // Clear shift availability if extra shifts unchecked
+        await replaceShiftsMutation.mutateAsync({ weekdays: [], timeblocks: [] });
+      }
+
       addToast({ type: "success", title: "Sparat!", message: "Dina jobbpreferenser har uppdaterats." });
     } catch {
       addToast({ type: "error", title: "Fel", message: "Kunde inte spara. Försök igen." });
     }
   };
 
-  if (isLoading) {
+  if (prefsLoading || shiftsLoading) {
     return (
       <Card variant="default" padding="lg" className={className}>
         <Skeleton className="h-6 w-40 mb-4" />
@@ -215,7 +246,7 @@ export function JobPreferencesEditor({ className }: Props) {
                     <button
                       key={wd.key}
                       type="button"
-                      onClick={() => toggleChip(weekdays, wd.key, setWeekdays)}
+                      onClick={() => toggleWeekday(wd.key)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
                         weekdays.includes(wd.key)
                           ? "bg-primary text-primary-foreground border-primary"
@@ -237,7 +268,7 @@ export function JobPreferencesEditor({ className }: Props) {
                     <button
                       key={tb.key}
                       type="button"
-                      onClick={() => toggleChip(timeblocks, tb.key, setTimeblocks)}
+                      onClick={() => toggleTimeblock(tb.key)}
                       className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
                         timeblocks.includes(tb.key)
                           ? "bg-primary text-primary-foreground border-primary"
@@ -260,9 +291,9 @@ export function JobPreferencesEditor({ className }: Props) {
           variant="primary"
           size="sm"
           onClick={handleSave}
-          disabled={saveMutation.isPending}
+          disabled={isSaving}
         >
-          {saveMutation.isPending ? "Sparar…" : "Spara preferenser"}
+          {isSaving ? "Sparar…" : "Spara preferenser"}
         </Button>
       </div>
     </Card>

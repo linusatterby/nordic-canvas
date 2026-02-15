@@ -187,4 +187,10 @@ export const queryKeys = {
     all: ["jobPreferences"] as const,
     mine: () => ["jobPreferences", "mine"] as const,
   },
+
+  // --- Talent (shift availability etc.) ---
+  talent: {
+    all: ["talent"] as const,
+    shiftAvailability: () => ["talent", "shiftAvailability"] as const,
+  },
 } as const;
