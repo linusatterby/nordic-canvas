@@ -86,8 +86,8 @@ export function Toast({ id, type, title, message, action, onDismiss }: ToastProp
     >
       <div className="shrink-0 mt-0.5" style={{ color: style.iconColor }}>{iconMap[type]}</div>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-[0.9375rem] leading-tight">{title}</p>
-        {message && <p className="text-sm mt-1 font-normal" style={{ opacity: 0.8 }}>{message}</p>}
+        <p className="font-semibold text-[0.9375rem] leading-tight" style={{ color: "inherit" }}>{title}</p>
+        {message && <p className="text-sm mt-1 font-normal" style={{ color: "inherit", opacity: 0.8 }}>{message}</p>}
         {action && (
           <Button
             variant={type === "info" ? "primary" : "ghost"}
