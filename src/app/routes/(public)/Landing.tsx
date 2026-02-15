@@ -194,15 +194,15 @@ export function Landing() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Button
+             <Button
                 variant="outline"
                 size="lg"
                 className="gap-2"
-                onClick={() => handleStartDemo("employer")}
+                onClick={() => handleStartDemo("talent")}
                 disabled={demoLoading}
               >
                 <Play className="h-4 w-4" />
-                {demoLoading ? "Startar…" : "Starta demo"}
+                {demoLoading ? "Startar…" : "Testa demo som talang"}
               </Button>
             </div>
           </div>
