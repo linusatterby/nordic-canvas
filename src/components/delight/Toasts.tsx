@@ -20,22 +20,37 @@ interface ToastProps extends ToastData {
   onDismiss: (id: string) => void;
 }
 
-const toastStyles: Record<ToastType, { bg: string; iconClass: string }> = {
+interface ToastStyle {
+  className: string;
+  bg: string;
+  color: string;
+  iconColor: string;
+}
+
+const toastStyles: Record<ToastType, ToastStyle> = {
   match: {
-    bg: "bg-[hsl(var(--c-primary))] text-[hsl(var(--c-frost))]",
-    iconClass: "text-[hsl(var(--c-frost))]",
+    className: "",
+    bg: "hsl(var(--c-primary))",
+    color: "hsl(var(--c-frost))",
+    iconColor: "hsl(var(--c-frost))",
   },
   success: {
-    bg: "bg-[hsl(var(--c-teal))]/95 text-[hsl(var(--c-frost))]",
-    iconClass: "text-[hsl(var(--c-frost))]",
+    className: "",
+    bg: "hsl(var(--c-teal) / 0.95)",
+    color: "hsl(var(--c-frost))",
+    iconColor: "hsl(var(--c-frost))",
   },
   error: {
-    bg: "bg-[hsl(var(--c-error))] text-[hsl(var(--c-frost))]",
-    iconClass: "text-[hsl(var(--c-frost))]",
+    className: "",
+    bg: "hsl(var(--c-error))",
+    color: "hsl(var(--c-frost))",
+    iconColor: "hsl(var(--c-frost))",
   },
   info: {
-    bg: "bg-[hsl(var(--c-surface))] text-[hsl(var(--c-text-primary))] border border-[hsl(var(--c-border))]",
-    iconClass: "text-[hsl(var(--c-primary))]",
+    className: "border border-[hsl(var(--c-border))]",
+    bg: "hsl(var(--c-surface))",
+    color: "hsl(var(--c-text-primary))",
+    iconColor: "hsl(var(--c-primary))",
   },
 };
 
@@ -56,18 +71,23 @@ export function Toast({ id, type, title, message, action, onDismiss }: ToastProp
     return () => clearTimeout(timer);
   }, [id, onDismiss]);
 
+  if (import.meta.env.DEV) {
+    console.debug(`[Toast] variant=${type}`, { title });
+  }
+
   return (
     <div
       className={cn(
         "flex items-start gap-3 rounded-2xl px-4 py-3 shadow-lg shadow-black/10 border border-white/10 slide-in-right",
-        style.bg
+        style.className
       )}
+      style={{ backgroundColor: style.bg, color: style.color }}
       role="alert"
     >
-      <div className={cn("shrink-0 mt-0.5", style.iconClass)}>{iconMap[type]}</div>
+      <div className="shrink-0 mt-0.5" style={{ color: style.iconColor }}>{iconMap[type]}</div>
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-[0.9375rem] leading-tight">{title}</p>
-        {message && <p className="text-sm opacity-80 mt-1 font-normal">{message}</p>}
+        {message && <p className="text-sm mt-1 font-normal" style={{ opacity: 0.8 }}>{message}</p>}
         {action && (
           <Button
             variant={type === "info" ? "primary" : "ghost"}
