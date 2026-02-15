@@ -41,7 +41,7 @@ export function PublicShell({ children, pageTitle, pageDescription, canonicalPat
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">ST</span>
+              <span className="text-white font-bold text-sm">ST</span>
             </div>
             <span className="font-semibold text-lg text-foreground hidden sm:block">
               Seasonal Talent

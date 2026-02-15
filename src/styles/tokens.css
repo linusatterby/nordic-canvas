@@ -1,22 +1,26 @@
 /* Seasonal Talent Ecosystem - Nordic Operational Excellence Design Tokens */
 
 :root {
-  /* Core Colors */
-  --c-ink: 220 30% 12%;
-  --c-frost: 220 30% 98%;
-  --c-slate: 220 25% 94%;
-  --c-slate-dark: 220 20% 88%;
+  /* Core Colors – Nordic Warm Minimal */
+  --c-ink: 20 18% 12%;          /* #1F1A17 warm charcoal */
+  --c-frost: 36 38% 96%;        /* #FBF6EE ivory */
+  --c-slate: 30 20% 92%;        /* warm light */
+  --c-slate-dark: 30 16% 86%;
   
   /* Brand Colors */
-  --c-primary: 220 100% 59%;
-  --c-primary-hover: 220 100% 52%;
-  --c-primary-muted: 220 60% 92%;
+  --c-primary: 16 56% 50%;      /* #C4653B terracotta */
+  --c-primary-hover: 16 56% 44%;
+  --c-primary-muted: 16 40% 93%;
+  
+  /* Secondary accent – deep teal */
+  --c-teal: 178 40% 31%;        /* #2F6F6D */
+  --c-teal-muted: 178 30% 92%;
   
   /* Semantic Colors */
-  --c-verified: 142 71% 45%;
-  --c-verified-bg: 142 60% 94%;
-  --c-delight: 10 100% 62%;
-  --c-delight-bg: 10 100% 96%;
+  --c-verified: 178 40% 31%;    /* teal for verified */
+  --c-verified-bg: 178 30% 94%;
+  --c-delight: 16 56% 50%;      /* terracotta echo */
+  --c-delight-bg: 16 40% 96%;
   --c-warn: 38 92% 50%;
   --c-warn-bg: 38 92% 94%;
   --c-busy: 215 16% 62%;
@@ -25,20 +29,20 @@
   --c-error-bg: 0 84% 96%;
   
   /* Surfaces */
-  --c-surface: 0 0% 100%;
-  --c-surface-elevated: 0 0% 100%;
-  --c-surface-overlay: 220 30% 12% / 0.6;
+  --c-surface: 0 0% 100%;         /* #FFFFFF */
+  --c-surface-elevated: 34 40% 98%; /* #FFF9F1 bgAlt */
+  --c-surface-overlay: 20 18% 12% / 0.6;
   
   /* Text */
-  --c-text-primary: 220 30% 12%;
-  --c-text-secondary: 215 16% 47%;
-  --c-text-muted: 215 16% 62%;
-  --c-text-inverse: 220 30% 98%;
+  --c-text-primary: 20 18% 12%;
+  --c-text-secondary: 25 12% 40%;   /* #6B5F55 */
+  --c-text-muted: 25 12% 50%;
+  --c-text-inverse: 36 38% 96%;
   
   /* Border */
-  --c-border: 220 20% 90%;
-  --c-border-focus: 220 100% 59%;
-  --c-border-subtle: 220 20% 92%;
+  --c-border: 30 22% 88%;           /* #E8DDD2 */
+  --c-border-focus: 16 56% 50%;
+  --c-border-subtle: 30 18% 91%;
   
   /* Border Radius - Updated for modern feel */
   --r-xs: 8px;
@@ -60,12 +64,12 @@
   --sp-12: 48px;
   --sp-16: 64px;
   
-  /* Shadows - Softer, more modern */
-  --sh-soft: 0 1px 2px hsl(220 30% 12% / 0.03), 0 2px 4px hsl(220 30% 12% / 0.04);
-  --sh-card: 0 2px 8px hsl(220 30% 12% / 0.05), 0 4px 16px hsl(220 30% 12% / 0.04);
-  --sh-lift: 0 8px 24px hsl(220 30% 12% / 0.08), 0 4px 12px hsl(220 30% 12% / 0.05);
-  --sh-modal: 0 24px 48px hsl(220 30% 12% / 0.12), 0 12px 24px hsl(220 30% 12% / 0.08);
-  --sh-hover: 0 6px 20px hsl(220 30% 12% / 0.1), 0 3px 8px hsl(220 30% 12% / 0.06);
+  /* Shadows - Warm tinted */
+  --sh-soft: 0 1px 2px hsl(25 20% 20% / 0.04), 0 2px 4px hsl(25 20% 20% / 0.03);
+  --sh-card: 0 2px 8px hsl(25 20% 20% / 0.06), 0 4px 16px hsl(25 20% 20% / 0.04);
+  --sh-lift: 0 8px 24px hsl(25 20% 20% / 0.08), 0 4px 12px hsl(25 20% 20% / 0.05);
+  --sh-modal: 0 24px 48px hsl(25 20% 20% / 0.12), 0 12px 24px hsl(25 20% 20% / 0.08);
+  --sh-hover: 0 6px 20px hsl(25 20% 20% / 0.1), 0 3px 8px hsl(25 20% 20% / 0.06);
   
   /* Motion */
   --t-fast: 150ms;
@@ -104,40 +108,40 @@
   --z-tooltip: 900;
 
   /* Warm Accents */
-  --c-warm-1: 36 45% 96%;
-  --c-warm-2: 32 35% 92%;
-  --c-accent-warm: 32 80% 52%;
-  --c-accent-warm-muted: 34 60% 93%;
-  --c-muted-warm: 30 20% 60%;
+  --c-warm-1: 36 38% 96%;
+  --c-warm-2: 32 28% 92%;
+  --c-accent-warm: 16 56% 50%;
+  --c-accent-warm-muted: 16 40% 94%;
+  --c-muted-warm: 25 12% 55%;
 
   /* App Background */
-  --bg-app: linear-gradient(135deg, hsl(35 30% 97%) 0%, hsl(30 20% 98%) 40%, hsl(220 25% 97%) 100%);
-  --bg-panel: hsl(35 20% 100% / 0.88);
-  --bg-glass: hsl(35 15% 100% / 0.72);
+  --bg-app: linear-gradient(160deg, hsl(36 38% 96%) 0%, hsl(33 30% 97%) 50%, hsl(30 20% 97%) 100%);
+  --bg-panel: hsl(36 30% 100% / 0.9);
+  --bg-glass: hsl(36 25% 100% / 0.75);
   
-  /* Sidebar - Refined dark */
-  --c-sidebar: 222 47% 11%;
-  --c-sidebar-hover: 222 40% 16%;
-  --c-sidebar-active: 220 100% 59%;
+  /* Sidebar - Warm dark */
+  --c-sidebar: 20 20% 11%;
+  --c-sidebar-hover: 20 16% 16%;
+  --c-sidebar-active: 16 56% 50%;
 }
 
 /* Dark mode tokens */
 .dark {
-  --c-ink: 220 30% 98%;
-  --c-frost: 222 47% 8%;
-  --c-slate: 222 35% 14%;
-  --c-slate-dark: 222 35% 18%;
+  --c-ink: 36 30% 95%;
+  --c-frost: 20 20% 8%;
+  --c-slate: 20 15% 14%;
+  --c-slate-dark: 20 15% 18%;
   
-  --c-surface: 222 40% 10%;
-  --c-surface-elevated: 222 35% 14%;
+  --c-surface: 20 18% 10%;
+  --c-surface-elevated: 20 15% 14%;
   
-  --c-text-primary: 220 30% 98%;
-  --c-text-secondary: 215 16% 70%;
-  --c-text-muted: 215 16% 55%;
-  --c-text-inverse: 222 47% 11%;
+  --c-text-primary: 36 30% 95%;
+  --c-text-secondary: 25 10% 70%;
+  --c-text-muted: 25 10% 55%;
+  --c-text-inverse: 20 20% 11%;
   
-  --c-border: 222 30% 20%;
-  --c-border-subtle: 222 30% 18%;
+  --c-border: 20 15% 20%;
+  --c-border-subtle: 20 15% 18%;
   
   --sh-soft: 0 1px 3px hsl(0 0% 0% / 0.2);
   --sh-card: 0 2px 8px hsl(0 0% 0% / 0.25);
@@ -145,13 +149,13 @@
   --sh-modal: 0 24px 48px hsl(0 0% 0% / 0.5);
   --sh-hover: 0 6px 20px hsl(0 0% 0% / 0.3);
 
-  --c-warm-1: 30 20% 14%;
-  --c-warm-2: 30 15% 18%;
-  --c-accent-warm: 32 70% 55%;
-  --c-accent-warm-muted: 32 40% 20%;
-  --c-muted-warm: 30 15% 50%;
+  --c-warm-1: 20 15% 14%;
+  --c-warm-2: 20 12% 18%;
+  --c-accent-warm: 16 50% 55%;
+  --c-accent-warm-muted: 16 35% 20%;
+  --c-muted-warm: 25 10% 50%;
 
-  --bg-app: linear-gradient(135deg, hsl(222 47% 8%) 0%, hsl(222 47% 10%) 100%);
-  --bg-panel: hsl(222 40% 10% / 0.9);
-  --bg-glass: hsl(222 40% 12% / 0.8);
+  --bg-app: linear-gradient(135deg, hsl(20 20% 8%) 0%, hsl(20 18% 10%) 100%);
+  --bg-panel: hsl(20 18% 10% / 0.9);
+  --bg-glass: hsl(20 18% 12% / 0.8);
 }

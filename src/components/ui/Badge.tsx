@@ -15,6 +15,7 @@ const badgeVariants = cva(
         busy: "bg-busy-muted text-busy",
         new: "bg-primary text-primary-foreground",
         outline: "border border-border bg-transparent text-muted-foreground",
+        warm: "bg-warm-accent-muted text-primary border border-primary/15",
       },
       size: {
         sm: "px-2 py-0 text-[10px]",

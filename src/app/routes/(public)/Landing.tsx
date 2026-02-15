@@ -63,13 +63,13 @@ export function Landing() {
     <PublicShell canonicalPath="/"  >
       {/* Hero */}
       <section className="relative overflow-hidden pt-10 pb-16 lg:pt-16 lg:pb-24">
-        {/* Warm gradient backdrop */}
-        <div className="absolute inset-0 bg-gradient-to-br from-warm-accent-muted/40 via-transparent to-primary-muted/20" />
+        {/* Warm ivory → sand gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-warm-accent-muted/30 via-transparent to-teal-muted/20" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-warm-accent/5 blur-[120px] -translate-y-1/2 translate-x-1/4" />
 
         <div className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
-            <Badge variant="primary" className="mb-4">
+            <Badge variant="warm" className="mb-4">
               <Zap className="h-3 w-3" />
               Besöksnäringen är igång
             </Badge>
@@ -82,7 +82,7 @@ export function Landing() {
             </p>
 
             {/* Floating hero panel */}
-            <div className="glass rounded-[20px] shadow-lift p-5 sm:p-7 max-w-xl mx-auto mb-6">
+            <div className="glass rounded-[20px] shadow-card border border-border p-5 sm:p-7 max-w-xl mx-auto mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
                 <Link to="/auth/signup?role=talent">
                   <Button variant="primary" size="lg" className="gap-2 w-full sm:w-auto">
@@ -91,7 +91,7 @@ export function Landing() {
                   </Button>
                 </Link>
                 <Link to="/auth/signup?role=employer">
-                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto">
                     Hitta personal
                   </Button>
                 </Link>
@@ -99,7 +99,7 @@ export function Landing() {
               <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
                 {heroBullets.map((bullet) => (
                   <span key={bullet} className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <CheckCircle2 className="h-4 w-4 text-verified" />
+                    <CheckCircle2 className="h-4 w-4 text-teal" />
                     {bullet}
                   </span>
                 ))}
@@ -115,9 +115,9 @@ export function Landing() {
                   <span
                     key={role}
                     className="snap-start shrink-0 px-4 py-1.5 rounded-full text-sm font-medium
-                               glass border border-border/40
+                               bg-card border border-border
                                text-foreground/80
-                               hover:bg-warm-accent-muted hover:text-warm-accent hover:border-warm-accent/30
+                               hover:bg-warm-accent-muted hover:text-primary hover:border-primary/30
                                transition-all duration-fast cursor-default select-none"
                   >
                     {role}
@@ -128,7 +128,7 @@ export function Landing() {
           </div>
 
           {/* Value blocks glass strip */}
-          <div className="glass rounded-[18px] shadow-card max-w-2xl mx-auto mt-10">
+          <div className="glass rounded-[18px] shadow-card border border-border max-w-2xl mx-auto mt-10">
             <div className="flex flex-col sm:flex-row items-stretch divide-y sm:divide-y-0 sm:divide-x divide-border/40">
               {valueBlocks.map((block) => (
                 <div key={block.title} className="flex-1 flex flex-col items-center text-center py-5 px-5 gap-1.5">
@@ -160,13 +160,13 @@ export function Landing() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group glass-panel rounded-[18px] border border-border/50 p-6 text-center
+                className="group rounded-[18px] border border-border bg-card p-6 text-center
                            transition-all duration-fast ease-out
-                           hover:-translate-y-1 hover:shadow-hover hover:border-warm-accent/25"
+                           hover:-translate-y-1 hover:shadow-hover hover:border-primary/20"
               >
                 <div className="inline-flex items-center justify-center h-11 w-11 rounded-xl
-                                bg-warm-accent-muted text-warm-accent ring-2 ring-warm-accent/10
-                                mb-4 transition-all duration-fast group-hover:ring-warm-accent/25">
+                                bg-primary/10 text-primary ring-2 ring-primary/10
+                                mb-4 transition-all duration-fast group-hover:ring-primary/25">
                   {feature.icon}
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
@@ -178,37 +178,32 @@ export function Landing() {
       </section>
 
       {/* CTA */}
-      <section className="py-20">
+      <section className="py-20 bg-[hsl(var(--c-surface-elevated))]">
         <div className="container mx-auto px-4">
-          <div className="rounded-[24px] bg-ink text-frost text-center max-w-3xl mx-auto p-10 lg:p-14 shadow-lift relative overflow-hidden">
-            {/* Dark overlay for contrast */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/50" />
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-warm-accent/10" />
-            <div className="relative">
-              <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-white">
-                Redo att komma igång?
-              </h2>
-              <p className="text-white/80 mb-8 max-w-lg mx-auto">
-                Skapa konto på under 2 minuter. Gratis för talanger.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link to="/auth/signup">
-                  <Button variant="primary" size="lg" className="gap-2 shadow-lg shadow-primary/25 ring-1 ring-white/10">
-                    Skapa konto
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="gap-2"
-                  onClick={() => handleStartDemo("employer")}
-                  disabled={demoLoading}
-                >
-                  <Play className="h-4 w-4" />
-                  {demoLoading ? "Startar…" : "Starta demo"}
+          <div className="rounded-[24px] bg-card border border-border text-center max-w-3xl mx-auto p-10 lg:p-14 shadow-lift">
+            <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-foreground">
+              Redo att komma igång?
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
+              Skapa konto på under 2 minuter. Gratis för talanger.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link to="/auth/signup">
+                <Button variant="primary" size="lg" className="gap-2">
+                  Skapa konto
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
-              </div>
+              </Link>
+              <Button
+                variant="outline"
+                size="lg"
+                className="gap-2"
+                onClick={() => handleStartDemo("employer")}
+                disabled={demoLoading}
+              >
+                <Play className="h-4 w-4" />
+                {demoLoading ? "Startar…" : "Starta demo"}
+              </Button>
             </div>
           </div>
         </div>

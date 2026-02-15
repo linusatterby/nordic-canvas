@@ -15,10 +15,10 @@ export default function ForTalanger() {
     <PublicShell pageTitle="För Talanger" pageDescription="Hitta säsongsjobb som matchar din profil och tillgänglighet." canonicalPath="/for-talanger">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-delight/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-warm-accent-muted/30 via-transparent to-teal-muted/20" />
         <div className="container mx-auto px-4 py-20 md:py-32 relative">
           <div className="max-w-3xl mx-auto text-center">
-            <Badge variant="default" className="mb-6">
+            <Badge variant="warm" className="mb-6">
               <Sparkles className="h-3 w-3 mr-1" />
               Jobb inom besöksnäringen
             </Badge>
@@ -37,7 +37,7 @@ export default function ForTalanger() {
                 </Button>
               </Link>
               <Button 
-                variant="secondary" 
+                variant="outline" 
                 size="lg" 
                 onClick={scrollToSection}
                 className="min-w-[160px] gap-2"
@@ -75,9 +75,9 @@ export default function ForTalanger() {
 
             {/* Step 2 */}
             <Card className="p-8 text-center relative overflow-hidden group hover:shadow-lg transition-shadow">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-verified to-verified/50" />
-              <div className="h-14 w-14 rounded-2xl bg-verified/10 flex items-center justify-center mx-auto mb-5">
-                <Home className="h-7 w-7 text-verified" />
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/70 to-primary/30" />
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                <Home className="h-7 w-7 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Boende synligt</h3>
               <p className="text-muted-foreground text-sm">
@@ -87,9 +87,9 @@ export default function ForTalanger() {
 
             {/* Step 3 */}
             <Card className="p-8 text-center relative overflow-hidden group hover:shadow-lg transition-shadow">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-delight to-delight/50" />
-              <div className="h-14 w-14 rounded-2xl bg-delight/10 flex items-center justify-center mx-auto mb-5">
-                <Clock className="h-7 w-7 text-delight" />
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary/20" />
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                <Clock className="h-7 w-7 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Fler timmar, smartare</h3>
               <p className="text-muted-foreground text-sm">
@@ -123,8 +123,8 @@ export default function ForTalanger() {
               </div>
               
               <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
-                <div className="h-8 w-8 rounded-full bg-verified/10 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="h-4 w-4 text-verified" />
+                <div className="h-8 w-8 rounded-full bg-teal-muted flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 text-teal" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Se en demo-match + chatt</p>
@@ -133,8 +133,8 @@ export default function ForTalanger() {
               </div>
               
               <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
-                <div className="h-8 w-8 rounded-full bg-delight/10 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="h-4 w-4 text-delight" />
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="h-4 w-4 text-primary" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Slå på "Extra timmar"</p>
@@ -143,8 +143,8 @@ export default function ForTalanger() {
               </div>
               
               <div className="flex items-start gap-4 p-4 rounded-xl bg-card border border-border">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="h-4 w-4 text-primary" />
+                <div className="h-8 w-8 rounded-full bg-teal-muted flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="h-4 w-4 text-teal" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Följ demo-guiden</p>
@@ -157,33 +157,35 @@ export default function ForTalanger() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-primary">
+      <section className="py-20 bg-[hsl(var(--c-surface-elevated))]">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-primary-foreground mb-4">
-            Redo att testa?
-          </h2>
-          <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-            Prova demo-läget kostnadsfritt – inga konto krävs.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/auth?role=talent">
-              <Button 
-                variant="secondary" 
-                size="lg"
-                className="min-w-[200px]"
-              >
-                Testa demo som talang
-              </Button>
-            </Link>
-            <Link to="/auth/login">
-              <Button 
-                variant="ghost" 
-                size="lg"
-                className="min-w-[140px] text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                Logga in
-              </Button>
-            </Link>
+          <div className="rounded-[24px] bg-card border border-border max-w-3xl mx-auto p-10 lg:p-14 shadow-lift">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Redo att testa?
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+              Prova demo-läget kostnadsfritt – inga konto krävs.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/auth?role=talent">
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  className="min-w-[200px]"
+                >
+                  Testa demo som talang
+                </Button>
+              </Link>
+              <Link to="/auth/login">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="min-w-[140px]"
+                >
+                  Logga in
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

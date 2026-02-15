@@ -81,6 +81,10 @@ export default {
           "accent-muted": "hsl(var(--accent-warm-muted))",
           muted: "hsl(var(--muted-warm))",
         },
+        teal: {
+          DEFAULT: "hsl(var(--c-teal))",
+          muted: "hsl(var(--c-teal-muted))",
+        },
         slate: {
           DEFAULT: "hsl(var(--slate))",
           dark: "hsl(var(--c-slate-dark))",
