@@ -244,7 +244,7 @@ export function TalentSwipeJobs() {
         <div className="text-center mb-4">
           <h1 className="text-xl font-bold text-foreground">Hitta jobb</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Swipea för att hitta din nästa säsong
+            Swipea för att hitta jobb som passar dig
           </p>
         </div>
 
@@ -291,7 +291,7 @@ export function TalentSwipeJobs() {
                   ? "Testa att ta bort ett filter eller slå av 'Endast boende'."
                   : isDemoMode
                     ? "Rensa filter eller återställ demo för att se fler jobb."
-                    : "Uppdatera din tillgänglighet i profilen för fler matchningar."
+                    : "Uppdatera 'Söker & tillgänglighet' i profilen för fler matchningar."
               }
               action={
                 hasActiveFilters
