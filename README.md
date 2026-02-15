@@ -100,6 +100,8 @@ npm run check:supabase   # Verify no direct Supabase usage violations
 | `VITE_SUPABASE_URL` | Yes | - | Your Supabase project URL |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Yes | - | Your Supabase anon/public key |
 | `VITE_SUPABASE_PROJECT_ID` | Yes | - | Your Supabase project ID |
+| `VITE_APP_ENV` | No | `demo` | `demo` = noindex/nofollow, `prod` = indexable |
+| `VITE_SITE_URL` | No* | - | Absolute base URL for canonical/OG (e.g. `https://seasonaltalent.se`). *Required in prod.* |
 | `VITE_DEMO_DEBUG` | No | `false` | Enable debug panels and technical info in demo mode |
 | `VITE_DEMO_ENABLED` | No | `true` | Master switch for demo functionality |
 | `VITE_ALLOW_DEMO_SEED` | No | `false` | Allow demo scenario seeding |
@@ -119,6 +121,8 @@ VITE_ALLOW_DEMO_SEED=true
 For production builds, use these recommended settings:
 
 ```sh
+VITE_APP_ENV=prod
+VITE_SITE_URL=https://seasonaltalent.se
 VITE_DEMO_DEBUG=false
 VITE_DEMO_ENABLED=false
 VITE_ALLOW_DEMO_SEED=false

@@ -3,15 +3,19 @@
  *
  * Usage:
  *   import { buildMeta, siteDefaults } from "@/lib/seo/meta";
- *   const meta = buildMeta({ title: "För Talanger", description: "...", canonicalPath: "/for-talanger" });
+ *   const meta = buildMeta({ title: "För Talanger", canonicalPath: "/for-talanger" });
  */
+
+import { SITE_URL } from "@/lib/config/env";
+
+/** Default OG image served from public/ */
+export const DEFAULT_OG_IMAGE = "/og/default.png";
 
 export const siteDefaults = {
   siteName: "Seasonal Talent",
   defaultTitle: "Seasonal Talent – Matcha jobb & talanger",
   defaultDescription:
     "Plattformen som matchar säsongsarbetare med arbetsgivare. Hitta rätt jobb eller rätt talang – snabbt och enkelt.",
-  baseUrl: typeof window !== "undefined" ? window.location.origin : "",
 } as const;
 
 export interface MetaConfig {
@@ -20,6 +24,7 @@ export interface MetaConfig {
   canonical: string;
   ogTitle: string;
   ogDescription: string;
+  ogImage: string;
   ogType: string;
   robots: string;
 }
@@ -33,6 +38,17 @@ interface BuildMetaOptions {
   canonicalPath?: string;
   /** Override robots directive (default: "index,follow") */
   robots?: string;
+  /** Override OG image URL */
+  ogImage?: string;
+}
+
+/**
+ * Resolve base URL for canonical/og links.
+ * Uses VITE_SITE_URL if set, otherwise falls back to window.location.origin.
+ */
+function getBaseUrl(): string {
+  if (SITE_URL) return SITE_URL;
+  return typeof window !== "undefined" ? window.location.origin : "";
 }
 
 /**
@@ -41,14 +57,18 @@ interface BuildMetaOptions {
  * and future SSR/SSG renderers.
  */
 export function buildMeta(opts: BuildMetaOptions = {}): MetaConfig {
+  const baseUrl = getBaseUrl();
+
   const title = opts.title
     ? `${opts.title} | ${siteDefaults.siteName}`
     : siteDefaults.defaultTitle;
 
   const description = opts.description || siteDefaults.defaultDescription;
   const canonical = opts.canonicalPath
-    ? `${siteDefaults.baseUrl}${opts.canonicalPath}`
-    : siteDefaults.baseUrl;
+    ? `${baseUrl}${opts.canonicalPath}`
+    : baseUrl || "/";
+
+  const ogImage = opts.ogImage || `${baseUrl}${DEFAULT_OG_IMAGE}`;
 
   return {
     title,
@@ -56,6 +76,7 @@ export function buildMeta(opts: BuildMetaOptions = {}): MetaConfig {
     canonical,
     ogTitle: title,
     ogDescription: description,
+    ogImage,
     ogType: "website",
     robots: opts.robots || "index,follow",
   };
