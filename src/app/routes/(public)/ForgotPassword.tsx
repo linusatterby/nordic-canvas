@@ -4,7 +4,7 @@ import { Mail, ArrowLeft, Loader2, CheckCircle } from "lucide-react";
 import { PublicShell } from "@/app/layout/PublicShell";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { supabase } from "@/integrations/supabase/client";
+import { resetPasswordForEmail } from "@/lib/supabase/auth";
 import { toast } from "sonner";
 
 export function ForgotPassword() {
@@ -20,9 +20,7 @@ export function ForgotPassword() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth`,
-    });
+    const { error } = await resetPasswordForEmail(email);
 
     if (error) {
       toast.error("Kunde inte skicka återställningslänk. Försök igen.");

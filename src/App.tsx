@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoSessionProvider } from "@/contexts/DemoSessionContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleGate } from "@/components/auth/RoleGate";
+import { ErrorBoundary } from "@/components/system/ErrorBoundary";
 import { routes, type AppRoute } from "@/app/routes/routeConfig";
 
 const queryClient = new QueryClient({
@@ -48,21 +49,23 @@ function renderRoute(route: AppRoute) {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <DemoSessionProvider>
-            <ToastProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>{routes.map(renderRoute)}</Routes>
-            </ToastProvider>
-          </DemoSessionProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <DemoSessionProvider>
+              <ToastProvider>
+                <Toaster />
+                <Sonner />
+                <Routes>{routes.map(renderRoute)}</Routes>
+              </ToastProvider>
+            </DemoSessionProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

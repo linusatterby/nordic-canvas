@@ -6,9 +6,8 @@ Architectural governance rules for this project. **All contributors must follow 
 
 ## 1. Routing
 
-**Source of truth:** `src/App.tsx`
-
-- All routes are defined in `src/App.tsx` using React Router.
+- **Route config:** `src/app/routes/routeConfig.tsx` is the single source of truth for paths, guards, and roles.
+- **App.tsx** only renders the config — no inline route definitions.
 - Do not define routes elsewhere.
 
 ---
@@ -27,8 +26,14 @@ Architectural governance rules for this project. **All contributors must follow 
 
 | Layer | Location | Purpose |
 |-------|----------|---------|
-| API functions | `src/lib/api/*` | Raw Supabase queries |
+| Auth helpers | `src/lib/supabase/auth.ts` | Auth operations (sign in/up/out/reset) |
+| API functions | `src/lib/api/*` | Data queries & mutations |
 | Hooks | `src/hooks/*` | React Query wrappers, state management |
+
+**Authorized exceptions** (direct client import allowed):
+- `src/contexts/AuthContext.tsx` – auth state listener
+- `src/hooks/useSession.ts` – session listener
+- `src/hooks/useScheduler.ts` – realtime channel
 
 ### ❌ Forbidden
 
