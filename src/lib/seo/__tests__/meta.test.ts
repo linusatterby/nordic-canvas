@@ -86,3 +86,25 @@ describe("buildMeta with SITE_URL", () => {
     expect(meta.ogImage).toBe(`https://seasonaltalent.se${ogImg}`);
   });
 });
+
+describe("buildMeta prod without SITE_URL", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("canonical is a valid URL or path when SITE_URL is empty", async () => {
+    vi.doMock("@/lib/config/env", () => ({ SITE_URL: "" }));
+    const { buildMeta: bm } = await import("@/lib/seo/meta");
+    const meta = bm({ canonicalPath: "/privacy" });
+    // Falls back to window.location.origin, so still contains the path
+    expect(meta.canonical).toContain("/privacy");
+    expect(meta.canonical).not.toContain("//privacy");
+  });
+
+  it("ogImage contains default path when SITE_URL is empty", async () => {
+    vi.doMock("@/lib/config/env", () => ({ SITE_URL: "" }));
+    const { buildMeta: bm, DEFAULT_OG_IMAGE: ogImg } = await import("@/lib/seo/meta");
+    const meta = bm();
+    expect(meta.ogImage).toContain(ogImg);
+  });
+});
