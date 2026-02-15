@@ -25,6 +25,7 @@ import {
   type CirclePartner,
   type CirclePartnerFlat,
 } from "@/lib/api/circles";
+import { queryKeys } from "@/lib/queryKeys";
 
 // ============================================
 // Circle Requests
@@ -32,7 +33,7 @@ import {
 
 export function useCircleRequests(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["circleRequests", orgId],
+    queryKey: queryKeys.circles.requests(orgId),
     queryFn: async () => {
       if (!orgId) return { incoming: [], outgoing: [] };
       const { incoming, outgoing, error } = await listCircleRequests(orgId);
@@ -53,7 +54,7 @@ export function useCreateCircleRequest() {
       return request;
     },
     onSuccess: (_, { fromOrgId }) => {
-      queryClient.invalidateQueries({ queryKey: ["circleRequests", fromOrgId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.requests(fromOrgId) });
     },
   });
 }
@@ -93,14 +94,9 @@ export function useDeclineCircleRequest() {
 // Trusted Circle
 // ============================================
 
-/**
- * UNIFIED hook for all circle partners across all circles.
- * This is the SINGLE SOURCE OF TRUTH for "Dina cirkelpartners".
- * Returns flat list of unique partners with their circle memberships.
- */
 export function useAllCirclePartnersFlat(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["allCirclePartnersFlat", orgId],
+    queryKey: queryKeys.circles.allPartnersFlat(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { partners, error } = await listAllCircleMembersFlat(orgId);
@@ -108,17 +104,14 @@ export function useAllCirclePartnersFlat(orgId: string | undefined) {
       return partners;
     },
     enabled: !!orgId,
-    staleTime: 1000 * 120, // 2 minutes
+    staleTime: 1000 * 120,
   });
 }
 
-/**
- * Hook to get circle partners with proper names (uses SECURITY DEFINER RPC)
- * @deprecated Use useAllCirclePartnersFlat instead for unified partner lists
- */
+/** @deprecated Use useAllCirclePartnersFlat instead */
 export function useCirclePartners(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["circlePartners", orgId],
+    queryKey: queryKeys.circles.partners(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { partners, error } = await listCirclePartners(orgId);
@@ -129,12 +122,10 @@ export function useCirclePartners(orgId: string | undefined) {
   });
 }
 
-/**
- * @deprecated Use useAllCirclePartnersFlat instead - kept for backward compatibility
- */
+/** @deprecated Use useAllCirclePartnersFlat instead */
 export function useTrustedCircle(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["trustedCircle", orgId],
+    queryKey: queryKeys.circles.trusted(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { partners, error } = await listTrustedCircle(orgId);
@@ -151,7 +142,7 @@ export function useTrustedCircle(orgId: string | undefined) {
 
 export function useMyCircles(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["myCircles", orgId],
+    queryKey: queryKeys.circles.myCircles(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { circles, error } = await listMyCircles(orgId);
@@ -164,7 +155,7 @@ export function useMyCircles(orgId: string | undefined) {
 
 export function useCircleMembers(circleId: string | undefined) {
   return useQuery({
-    queryKey: ["circleMembers", circleId],
+    queryKey: queryKeys.circles.members(circleId),
     queryFn: async () => {
       if (!circleId) return [];
       const { members, error } = await getCircleMembers(circleId);
@@ -185,7 +176,7 @@ export function useCreateCircle() {
       return circleId;
     },
     onSuccess: (_, { orgId }) => {
-      queryClient.invalidateQueries({ queryKey: ["myCircles", orgId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.myCircles(orgId) });
     },
   });
 }
@@ -200,7 +191,7 @@ export function useAddCircleMember() {
       return success;
     },
     onSuccess: (_, { circleId }) => {
-      queryClient.invalidateQueries({ queryKey: ["circleMembers", circleId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.members(circleId) });
       queryClient.invalidateQueries({ queryKey: ["myCircles"] });
     },
   });
@@ -216,7 +207,7 @@ export function useRemoveCircleMember() {
       return success;
     },
     onSuccess: (_, { circleId }) => {
-      queryClient.invalidateQueries({ queryKey: ["circleMembers", circleId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.members(circleId) });
       queryClient.invalidateQueries({ queryKey: ["myCircles"] });
     },
   });
@@ -228,13 +219,13 @@ export function useRemoveCircleMember() {
 
 export function useMyVisibility() {
   return useQuery({
-    queryKey: ["myVisibility"],
+    queryKey: queryKeys.circles.myVisibility(),
     queryFn: async () => {
       const { visibility, error } = await getMyVisibility();
       if (error) throw error;
       return visibility;
     },
-    staleTime: 1000 * 120, // 2 minutes - dashboard data
+    staleTime: 1000 * 120,
   });
 }
 
@@ -248,7 +239,7 @@ export function useUpdateVisibility() {
       return success;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["myVisibility"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.myVisibility() });
     },
   });
 }
@@ -268,14 +259,14 @@ export function useCreateReleaseOffer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["releaseOffers"] });
-      queryClient.invalidateQueries({ queryKey: ["scheduler"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.all });
     },
   });
 }
 
 export function useCircleReleaseOffers(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["releaseOffers", orgId],
+    queryKey: queryKeys.circles.releaseOffers(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { offers, error } = await listCircleReleaseOffers(orgId);
@@ -297,7 +288,7 @@ export function useTakeReleaseOffer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["releaseOffers"] });
-      queryClient.invalidateQueries({ queryKey: ["scheduler"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.all });
     },
   });
 }
@@ -313,7 +304,7 @@ export function useCancelReleaseOffer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["releaseOffers"] });
-      queryClient.invalidateQueries({ queryKey: ["scheduler"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.all });
     },
   });
 }
@@ -331,15 +322,11 @@ export function useAvailableTalentsScoped(
   enabled: boolean = true
 ) {
   return useQuery({
-    queryKey: ["availableTalents", location, startTs, endTs, scope, requesterOrgId],
+    queryKey: queryKeys.circles.availableTalents(location, startTs, endTs, scope, requesterOrgId),
     queryFn: async () => {
       if (!requesterOrgId) return [];
       const { talents, error } = await findAvailableTalentsScoped(
-        location,
-        startTs,
-        endTs,
-        scope,
-        requesterOrgId
+        location, startTs, endTs, scope, requesterOrgId
       );
       if (error) throw error;
       return talents;
@@ -357,7 +344,7 @@ export function useAvailableTalentCounts(
   circleId?: string
 ) {
   return useQuery({
-    queryKey: ["talentCounts", location, startTs, endTs, requesterOrgId, circleId],
+    queryKey: queryKeys.circles.talentCounts(location, startTs, endTs, requesterOrgId, circleId),
     queryFn: async () => {
       if (!requesterOrgId) return { internal: 0, circle: 0, local: 0 };
       const result = await getAvailableTalentCounts(location, startTs, endTs, requesterOrgId, circleId);
@@ -365,6 +352,6 @@ export function useAvailableTalentCounts(
       return { internal: result.internal, circle: result.circle, local: result.local };
     },
     enabled: enabled && !!requesterOrgId && !!location,
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 30,
   });
 }

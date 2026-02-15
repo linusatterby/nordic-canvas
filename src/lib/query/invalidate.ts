@@ -1,4 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Invalidates all queries related to role-specific data.
@@ -6,34 +7,34 @@ import { QueryClient } from "@tanstack/react-query";
  */
 export function invalidateForRoleSwitch(queryClient: QueryClient): void {
   // Jobs and talent feeds
-  queryClient.invalidateQueries({ queryKey: ["jobs"] });
-  queryClient.invalidateQueries({ queryKey: ["talentFeed"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.talentFeed.all });
   
   // Matches and chat
-  queryClient.invalidateQueries({ queryKey: ["matches"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.matches.all });
   queryClient.invalidateQueries({ queryKey: ["match"] });
-  queryClient.invalidateQueries({ queryKey: ["chat"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.chat.all });
   queryClient.invalidateQueries({ queryKey: ["threads"] });
   
   // Scheduler and bookings
-  queryClient.invalidateQueries({ queryKey: ["scheduler"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.all });
   queryClient.invalidateQueries({ queryKey: ["bookings"] });
   
   // Borrow system
-  queryClient.invalidateQueries({ queryKey: ["borrow"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.borrow.all });
   queryClient.invalidateQueries({ queryKey: ["borrowRequests"] });
   queryClient.invalidateQueries({ queryKey: ["borrowOffers"] });
   
   // Circles and orgs
-  queryClient.invalidateQueries({ queryKey: ["circles"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.circles.all });
   queryClient.invalidateQueries({ queryKey: ["circlePartners"] });
   queryClient.invalidateQueries({ queryKey: ["circleRequests"] });
-  queryClient.invalidateQueries({ queryKey: ["orgs"] });
-  queryClient.invalidateQueries({ queryKey: ["defaultOrgId"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.orgs.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.orgs.defaultId() });
   
   // Dashboard summaries
-  queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-  queryClient.invalidateQueries({ queryKey: ["visibility"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.visibility.summary() });
   
   // Demo specific
   queryClient.invalidateQueries({ queryKey: ["demoMatches"] });
@@ -45,9 +46,9 @@ export function invalidateForRoleSwitch(queryClient: QueryClient): void {
  * Call this when switching organizations.
  */
 export function invalidateForOrgSwitch(queryClient: QueryClient): void {
-  queryClient.invalidateQueries({ queryKey: ["jobs", "org"] });
-  queryClient.invalidateQueries({ queryKey: ["matches"] });
-  queryClient.invalidateQueries({ queryKey: ["scheduler"] });
-  queryClient.invalidateQueries({ queryKey: ["borrow"] });
-  queryClient.invalidateQueries({ queryKey: ["circles"] });
+  queryClient.invalidateQueries({ queryKey: queryKeys.jobs.org() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.matches.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.borrow.all });
+  queryClient.invalidateQueries({ queryKey: queryKeys.circles.all });
 }

@@ -4,6 +4,7 @@ import { useDemoMode } from "@/hooks/useDemo";
 import { useMatches } from "@/hooks/useMatches";
 import { useScheduler } from "@/hooks/useScheduler";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface DemoGuideSummary {
   hasSwiped: boolean;
@@ -59,37 +60,32 @@ interface UseDemoGuideSummaryParams {
 
 /**
  * Hook to fetch demo guide progress summary
- * Uses effective data from useMatches/useScheduler + direct queries for other fields
  */
 export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
   const { orgId, userId, role } = params;
   const { isDemoMode } = useDemoMode();
 
-  // Use effective hooks for matches and scheduler
   const matchesQuery = useMatches(role, orgId);
   
-  // Get current week range for scheduler
   const now = new Date();
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() - now.getDay() + 1);
   const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 13); // 2 weeks
+  weekEnd.setDate(weekStart.getDate() + 13);
   
   const range = {
     start: weekStart.toISOString(),
     end: weekEnd.toISOString(),
   };
   
-  // Only use scheduler for employer role
   const schedulerQuery = useScheduler(
     role === "employer" ? orgId ?? undefined : undefined,
     range,
-    [] // matchedTalentIds not needed for summary
+    []
   );
 
-  // Query for fields not covered by effective hooks
   const additionalQuery = useQuery({
-    queryKey: ["demoGuideSummaryAdditional", role, orgId, userId],
+    queryKey: queryKeys.demo.guideSummary(role, orgId, userId),
     queryFn: async () => {
       const result = {
         hasSwiped: false,
@@ -100,7 +96,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
       };
 
       if (role === "employer" && orgId) {
-        // Check swipes (real + demo)
         const [realSwipes, demoSwipes] = await Promise.all([
           supabase
             .from("employer_talent_swipes")
@@ -115,7 +110,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
         ]);
         result.hasSwiped = (realSwipes.count ?? 0) > 0 || (demoSwipes.count ?? 0) > 0;
 
-        // Check messages via demo threads
         const { data: demoThreads } = await supabase
           .from("demo_chat_threads")
           .select("id")
@@ -136,7 +130,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
           }
         }
 
-        // Check real messages
         if (!result.hasSentMessage && userId) {
           const { count: realMsgCount } = await supabase
             .from("messages")
@@ -146,7 +139,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
           result.hasSentMessage = (realMsgCount ?? 0) > 0;
         }
 
-        // Check borrow requests
         const { count: borrowReqCount } = await supabase
           .from("borrow_requests")
           .select("id", { count: "exact", head: true })
@@ -156,7 +148,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
       }
 
       if (role === "talent" && userId) {
-        // Check talent swipes
         const { count: swipeCount } = await supabase
           .from("talent_job_swipes")
           .select("job_post_id", { count: "exact", head: true })
@@ -164,7 +155,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
           .limit(1);
         result.hasSwiped = (swipeCount ?? 0) > 0;
 
-        // Check sent messages
         const { count: msgCount } = await supabase
           .from("messages")
           .select("id", { count: "exact", head: true })
@@ -172,7 +162,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
           .limit(1);
         result.hasSentMessage = (msgCount ?? 0) > 0;
 
-        // Check borrow offers received
         const { count: offerCount } = await supabase
           .from("borrow_offers")
           .select("id", { count: "exact", head: true })
@@ -180,7 +169,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
           .limit(1);
         result.hasBorrowOffer = (offerCount ?? 0) > 0;
 
-        // Check profile updates
         const { data: profile } = await supabase
           .from("talent_profiles")
           .select("bio, desired_roles")
@@ -199,11 +187,9 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
     staleTime: 1000 * 120,
   });
 
-  // Derive summary from effective hooks + additional queries
   const summary = useMemo<DemoGuideSummary>(() => {
     const additional = additionalQuery.data ?? getLocalStorageFallback(role);
     
-    // Use effective data from hooks
     const hasMatchThread = (matchesQuery.data?.length ?? 0) > 0;
     const hasBooking = (schedulerQuery.data?.bookings?.length ?? 0) > 0;
     const hasReleaseOffer = (schedulerQuery.data?.releaseOffers?.length ?? 0) > 0;
@@ -219,7 +205,6 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
       hasUpdatedProfile: additional.hasUpdatedProfile,
     };
 
-    // Save to localStorage for fallback
     saveToLocalStorage(role, result);
 
     return result;
@@ -238,4 +223,3 @@ export function useDemoGuideSummary(params: UseDemoGuideSummaryParams) {
     },
   };
 }
-

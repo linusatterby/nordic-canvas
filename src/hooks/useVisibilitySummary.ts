@@ -6,6 +6,7 @@ import {
   type TalentVisibilityScope,
   type VisibilitySummary,
 } from "@/lib/api/visibility";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Lightweight hook for visibility summary - optimized for dashboard
@@ -14,14 +15,14 @@ export function useVisibilitySummary() {
   const { session, profile } = useAuth();
 
   return useQuery({
-    queryKey: ["visibilitySummary"],
+    queryKey: queryKeys.visibility.summary(),
     queryFn: async () => {
       const { summary, error } = await getVisibilitySummary();
       if (error) throw error;
       return summary;
     },
     enabled: !!session && !!profile,
-    staleTime: 1000 * 180, // 3 minutes - stable dashboard data
+    staleTime: 1000 * 180,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -45,34 +46,23 @@ export function useUpdateVisibilitySummary() {
       if (error) throw error;
       return success;
     },
-    // Optimistic update
     onMutate: async ({ scope, extraHours }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["visibilitySummary"] });
-
-      // Snapshot the previous value
-      const previousSummary = queryClient.getQueryData<VisibilitySummary>(["visibilitySummary"]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData<VisibilitySummary>(["visibilitySummary"], (old) => ({
+      await queryClient.cancelQueries({ queryKey: queryKeys.visibility.summary() });
+      const previousSummary = queryClient.getQueryData<VisibilitySummary>(queryKeys.visibility.summary());
+      queryClient.setQueryData<VisibilitySummary>(queryKeys.visibility.summary(), () => ({
         scope,
         available_for_extra_hours: extraHours,
       }));
-
-      // Return context with the previous value
       return { previousSummary };
     },
-    // On error, roll back to the previous value
     onError: (err, variables, context) => {
       if (context?.previousSummary) {
-        queryClient.setQueryData(["visibilitySummary"], context.previousSummary);
+        queryClient.setQueryData(queryKeys.visibility.summary(), context.previousSummary);
       }
     },
-    // Refetch after error or success
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["visibilitySummary"] });
-      // Also invalidate legacy myVisibility for consistency
-      queryClient.invalidateQueries({ queryKey: ["myVisibility"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.visibility.summary() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.circles.myVisibility() });
     },
   });
 }

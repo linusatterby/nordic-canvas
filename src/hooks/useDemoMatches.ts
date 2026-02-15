@@ -7,13 +7,14 @@ import {
   type DemoThreadDTO,
   type DemoMessageDTO,
 } from "@/lib/api/demoMatches";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook to fetch demo matches for an employer org
  */
 export function useDemoMatches(orgId: string | undefined, enabled: boolean = true) {
   return useQuery({
-    queryKey: ["demoMatches", orgId],
+    queryKey: queryKeys.demo.matches(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { matches, error } = await listDemoMatchesForEmployer(orgId);
@@ -21,7 +22,7 @@ export function useDemoMatches(orgId: string | undefined, enabled: boolean = tru
       return matches;
     },
     enabled: enabled && !!orgId,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60,
   });
 }
 
@@ -30,7 +31,7 @@ export function useDemoMatches(orgId: string | undefined, enabled: boolean = tru
  */
 export function useDemoThreadByMatch(matchId: string | undefined, enabled: boolean = true) {
   return useQuery({
-    queryKey: ["demoThread", "byMatch", matchId],
+    queryKey: queryKeys.chat.demoThread(matchId),
     queryFn: async () => {
       if (!matchId) return null;
       const { thread, error } = await getDemoThreadByMatch(matchId);
@@ -38,7 +39,7 @@ export function useDemoThreadByMatch(matchId: string | undefined, enabled: boole
       return thread;
     },
     enabled: enabled && !!matchId,
-    staleTime: 1000 * 300, // 5 minutes
+    staleTime: 1000 * 300,
   });
 }
 
@@ -47,7 +48,7 @@ export function useDemoThreadByMatch(matchId: string | undefined, enabled: boole
  */
 export function useDemoMessages(threadId: string | undefined, enabled: boolean = true) {
   return useQuery({
-    queryKey: ["demoMessages", threadId],
+    queryKey: queryKeys.chat.demoMessages(threadId),
     queryFn: async () => {
       if (!threadId) return [];
       const { messages, error } = await listDemoMessages(threadId);
@@ -55,8 +56,8 @@ export function useDemoMessages(threadId: string | undefined, enabled: boolean =
       return messages;
     },
     enabled: enabled && !!threadId,
-    staleTime: 0, // Always fresh for chat
-    refetchInterval: 5000, // Poll every 5s in demo mode
+    staleTime: 0,
+    refetchInterval: 5000,
   });
 }
 

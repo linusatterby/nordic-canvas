@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { upsertTalentJobSwipe, type JobWithOrg } from "@/lib/api/jobs";
 import { upsertEmployerTalentSwipe } from "@/lib/api/talent";
 import { logListingInteraction, logCandidateInteraction } from "@/lib/api/ranking";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook for talent to swipe on a job with optimistic updates
@@ -12,50 +13,42 @@ export function useSwipeTalentJob() {
   return useMutation({
     mutationFn: async ({ jobId, direction }: { jobId: string; direction: "yes" | "no" }) => {
       console.log("[useSwipeTalentJob] Swiping job:", jobId, direction);
-      
-      // Log interaction for ranking (non-blocking)
       logListingInteraction(jobId, direction === "yes" ? "swipe_yes" : "swipe_no");
-      
       const { error } = await upsertTalentJobSwipe(jobId, direction);
       if (error) throw error;
       return { jobId, direction };
     },
     onMutate: async ({ jobId }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["jobs"] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
       
-      // Snapshot previous values for all job queries
-      const previousUnswiped = queryClient.getQueriesData({ queryKey: ["jobs", "unswiped"] });
-      const previousHard = queryClient.getQueryData(["jobs", "demo-hard"]);
+      const previousUnswiped = queryClient.getQueriesData({ queryKey: queryKeys.jobs.unswiped() });
+      const previousHard = queryClient.getQueryData(queryKeys.jobs.demoHard());
       
-      // Optimistically remove the job from all caches
       queryClient.setQueriesData(
-        { queryKey: ["jobs", "unswiped"] },
+        { queryKey: queryKeys.jobs.unswiped() },
         (old: JobWithOrg[] | undefined) => old?.filter(job => job.id !== jobId) ?? []
       );
       
       queryClient.setQueryData(
-        ["jobs", "demo-hard"],
+        queryKeys.jobs.demoHard(),
         (old: any[] | undefined) => old?.filter(job => job.id !== jobId) ?? []
       );
       
       return { previousUnswiped, previousHard };
     },
     onError: (_err, _vars, context) => {
-      // Rollback on error
       if (context?.previousUnswiped) {
         context.previousUnswiped.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
       if (context?.previousHard) {
-        queryClient.setQueryData(["jobs", "demo-hard"], context.previousHard);
+        queryClient.setQueryData(queryKeys.jobs.demoHard(), context.previousHard);
       }
     },
     onSettled: () => {
-      // Refetch to ensure consistency after mutation
-      queryClient.invalidateQueries({ queryKey: ["jobs", "unswiped"] });
-      queryClient.invalidateQueries({ queryKey: ["jobs", "demo-hard"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.unswiped() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.demoHard() });
     },
   });
 }
@@ -76,34 +69,24 @@ export function useSwipeEmployerTalent() {
       direction: "yes" | "no";
     }) => {
       console.log("[useSwipeEmployerTalent] Swiping:", params);
-      
-      // Log interaction for ranking (non-blocking)
       logCandidateInteraction(
-        params.orgId,
-        params.jobId,
-        params.talentUserId,
-        params.demoCardId,
+        params.orgId, params.jobId, params.talentUserId, params.demoCardId,
         params.direction === "yes" ? "swipe_yes" : "swipe_no"
       );
-      
       const { error } = await upsertEmployerTalentSwipe(params);
       if (error) throw error;
       return params;
     },
     onMutate: async (params) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["talentFeed"] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.talentFeed.all });
       
-      // Snapshot previous values
-      const previousNormal = queryClient.getQueryData(["talentFeed", params.jobId, params.orgId]);
-      const previousHard = queryClient.getQueryData(["talentFeed", "hard", "demo", params.orgId, params.jobId]);
+      const previousNormal = queryClient.getQueryData(queryKeys.talentFeed.list(params.jobId, params.orgId));
+      const previousHard = queryClient.getQueryData(queryKeys.talentFeed.hardDemo(params.orgId, params.jobId));
       
-      // Get the ID to remove
       const targetId = params.type === "demo_card" ? params.demoCardId : params.talentUserId;
       
-      // Optimistically remove from normal feed
       queryClient.setQueryData(
-        ["talentFeed", params.jobId, params.orgId],
+        queryKeys.talentFeed.list(params.jobId, params.orgId),
         (old: any[] | undefined) => {
           if (!old) return [];
           return old.filter(talent => {
@@ -113,9 +96,8 @@ export function useSwipeEmployerTalent() {
         }
       );
       
-      // Optimistically remove from hard demo feed
       queryClient.setQueryData(
-        ["talentFeed", "hard", "demo", params.orgId, params.jobId],
+        queryKeys.talentFeed.hardDemo(params.orgId, params.jobId),
         (old: any[] | undefined) => {
           if (!old) return [];
           return old.filter(talent => {
@@ -128,32 +110,25 @@ export function useSwipeEmployerTalent() {
       return { previousNormal, previousHard, params };
     },
     onError: (_err, _vars, context) => {
-      // Rollback on error
       if (context?.previousNormal) {
         queryClient.setQueryData(
-          ["talentFeed", context.params.jobId, context.params.orgId],
+          queryKeys.talentFeed.list(context.params.jobId, context.params.orgId),
           context.previousNormal
         );
       }
       if (context?.previousHard) {
         queryClient.setQueryData(
-          ["talentFeed", "hard", "demo", context.params.orgId, context.params.jobId],
+          queryKeys.talentFeed.hardDemo(context.params.orgId, context.params.jobId),
           context.previousHard
         );
       }
     },
     onSettled: (_data, _err, params) => {
-      // Invalidate to ensure consistency after mutation
-      queryClient.invalidateQueries({ 
-        queryKey: ["talentFeed", params.jobId, params.orgId] 
-      });
-      queryClient.invalidateQueries({ 
-        queryKey: ["talentFeed", "hard", "demo", params.orgId, params.jobId] 
-      });
-      // If "yes", also invalidate matches
+      queryClient.invalidateQueries({ queryKey: queryKeys.talentFeed.list(params.jobId, params.orgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.talentFeed.hardDemo(params.orgId, params.jobId) });
       if (params.direction === "yes") {
-        queryClient.invalidateQueries({ queryKey: ["matches"] });
-        queryClient.invalidateQueries({ queryKey: ["orgMatches"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.matches.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.matches.orgMatches() });
       }
     },
   });

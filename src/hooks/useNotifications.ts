@@ -10,23 +10,21 @@ import {
   type NotificationFilters,
 } from "@/lib/api/notifications";
 import { useAuth } from "@/contexts/AuthContext";
-
-const NOTIFICATIONS_KEY = "notifications";
-const UNREAD_COUNT_KEY = "notifications-unread-count";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook for fetching notifications with optional filters
  */
 export function useNotifications(filters: NotificationFilters = {}) {
   return useQuery({
-    queryKey: [NOTIFICATIONS_KEY, filters],
+    queryKey: queryKeys.notifications.list(filters),
     queryFn: async () => {
       const { notifications, error } = await listNotifications(filters);
       if (error) throw error;
       return notifications;
     },
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Polling every 60 seconds
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
   });
 }
 
@@ -35,14 +33,14 @@ export function useNotifications(filters: NotificationFilters = {}) {
  */
 export function useUnreadCount() {
   return useQuery({
-    queryKey: [UNREAD_COUNT_KEY],
+    queryKey: queryKeys.notifications.unreadCount(),
     queryFn: async () => {
       const { count, error } = await getUnreadCount();
       if (error) throw error;
       return count;
     },
     staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000, // More frequent polling for count
+    refetchInterval: 30 * 1000,
   });
 }
 
@@ -59,9 +57,7 @@ export function useMarkNotificationRead() {
       return success;
     },
     onSuccess: () => {
-      // Invalidate both queries
-      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [UNREAD_COUNT_KEY] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
@@ -79,8 +75,7 @@ export function useMarkAllNotificationsRead() {
       return count;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_KEY] });
-      queryClient.invalidateQueries({ queryKey: [UNREAD_COUNT_KEY] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
@@ -94,15 +89,13 @@ export function useNotificationsRealtime() {
 
   const handleNewNotification = useCallback(
     (notification: Notification) => {
-      // Optimistically update the notifications list
       queryClient.setQueryData<Notification[]>(
-        [NOTIFICATIONS_KEY, {}],
+        queryKeys.notifications.list({}),
         (old) => (old ? [notification, ...old] : [notification])
       );
 
-      // Increment unread count
       queryClient.setQueryData<number>(
-        [UNREAD_COUNT_KEY],
+        queryKeys.notifications.unreadCount(),
         (old) => (old ?? 0) + 1
       );
     },

@@ -8,13 +8,14 @@ import {
   declineBorrowOffer,
   closeBorrowRequest,
 } from "@/lib/api/borrow";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook for employer to manage borrow requests
  */
 export function useOrgBorrowRequests(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["borrow", "requests", orgId],
+    queryKey: queryKeys.borrow.requests(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { requests, error } = await listOrgBorrowRequests(orgId);
@@ -30,7 +31,7 @@ export function useOrgBorrowRequests(orgId: string | undefined) {
  */
 export function useTalentBorrowOffers() {
   return useQuery({
-    queryKey: ["borrow", "offers", "talent"],
+    queryKey: queryKeys.borrow.talentOffers(),
     queryFn: async () => {
       const { offers, error } = await listTalentBorrowOffers();
       if (error) throw error;
@@ -79,7 +80,7 @@ export function useCreateBorrowRequest() {
       return { request, offerCount: count };
     },
     onSuccess: (_, { orgId }) => {
-      queryClient.invalidateQueries({ queryKey: ["borrow", "requests", orgId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.borrow.requests(orgId) });
     },
   });
 }
@@ -99,8 +100,8 @@ export function useAcceptBorrowOffer() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["borrow", "offers", "talent"] });
-      queryClient.invalidateQueries({ queryKey: ["scheduler"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.borrow.talentOffers() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.scheduler.all });
     },
   });
 }
@@ -118,7 +119,7 @@ export function useDeclineBorrowOffer() {
       return { success };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["borrow", "offers", "talent"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.borrow.talentOffers() });
     },
   });
 }
@@ -136,7 +137,7 @@ export function useCloseBorrowRequest() {
       return { success };
     },
     onSuccess: (_, { orgId }) => {
-      queryClient.invalidateQueries({ queryKey: ["borrow", "requests", orgId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.borrow.requests(orgId) });
     },
   });
 }

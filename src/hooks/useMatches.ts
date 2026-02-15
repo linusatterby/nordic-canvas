@@ -3,6 +3,7 @@ import { listMyMatches, listOrgMatches, getMatch, getMatchByJobAndTalent, type M
 import { useDemoMode } from "@/hooks/useDemo";
 import { useDemoMatches, type DemoMatchDTO } from "@/hooks/useDemoMatches";
 import { isDemoEffectivelyEnabled } from "@/lib/config/env";
+import { queryKeys } from "@/lib/queryKeys";
 
 // Union type for effective matches (can be real or demo)
 export interface EffectiveMatch {
@@ -25,10 +26,7 @@ export interface EffectiveMatch {
 }
 
 function toEffectiveMatch(match: MatchDTO): EffectiveMatch {
-  return {
-    ...match,
-    is_demo: false,
-  };
+  return { ...match, is_demo: false };
 }
 
 function demoToEffectiveMatch(match: DemoMatchDTO): EffectiveMatch {
@@ -54,18 +52,13 @@ function demoToEffectiveMatch(match: DemoMatchDTO): EffectiveMatch {
 
 /**
  * Hook to fetch matches for talent or employer
- * In demo mode: returns demo matches if no real matches exist
  */
-export function useMatches(
-  role: "talent" | "employer",
-  orgId?: string | null
-) {
+export function useMatches(role: "talent" | "employer", orgId?: string | null) {
   const { isDemoMode } = useDemoMode();
   const demoEnabled = isDemoEffectivelyEnabled(isDemoMode);
   
-  // Fetch real matches
   const realQuery = useQuery({
-    queryKey: ["matches", role, orgId],
+    queryKey: queryKeys.matches.list(role, orgId),
     queryFn: async () => {
       if (role === "talent") {
         const { matches, error } = await listMyMatches();
@@ -79,20 +72,17 @@ export function useMatches(
       }
     },
     enabled: role === "talent" || !!orgId,
-    staleTime: 1000 * 120, // 2 minutes for dashboard
+    staleTime: 1000 * 120,
   });
 
-  // Fetch demo matches (only when demo is effectively enabled for employer)
   const demoQuery = useDemoMatches(
     role === "employer" ? (orgId ?? undefined) : undefined,
     demoEnabled && role === "employer"
   );
 
-  // Compute effective matches
   const realMatches = realQuery.data ?? [];
   const demoMatches = demoQuery.data ?? [];
   
-  // Use real matches if available, otherwise use demo matches when demo is enabled
   const effectiveMatches: EffectiveMatch[] = realMatches.length > 0
     ? realMatches.map(toEffectiveMatch)
     : demoEnabled
@@ -103,7 +93,6 @@ export function useMatches(
     data: effectiveMatches,
     isLoading: realQuery.isLoading || (demoEnabled && demoQuery.isLoading),
     error: realQuery.error || demoQuery.error,
-    // Expose raw data for debugging
     debug: {
       realCount: realMatches.length,
       demoCount: demoMatches.length,
@@ -119,7 +108,7 @@ export function useMatches(
  */
 export function useMatch(matchId: string | undefined) {
   return useQuery({
-    queryKey: ["match", matchId],
+    queryKey: queryKeys.matches.detail(matchId),
     queryFn: async () => {
       if (!matchId) return null;
       const { match, error } = await getMatch(matchId);
@@ -135,7 +124,7 @@ export function useMatch(matchId: string | undefined) {
  */
 export function useCheckMatch(jobId: string | undefined, talentUserId: string | undefined) {
   return useQuery({
-    queryKey: ["checkMatch", jobId, talentUserId],
+    queryKey: queryKeys.matches.check(jobId, talentUserId),
     queryFn: async () => {
       if (!jobId || !talentUserId) return null;
       const { match, error } = await getMatchByJobAndTalent(jobId, talentUserId);

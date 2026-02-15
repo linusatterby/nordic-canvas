@@ -17,19 +17,20 @@ import {
   type OfferActionResult,
 } from "@/lib/api/offers";
 import { useToasts } from "@/components/delight/Toasts";
+import { queryKeys } from "@/lib/queryKeys";
 
 /**
  * Hook for talent to list their received offers
  */
 export function useTalentOffers() {
   return useQuery({
-    queryKey: ["offers", "talent"],
+    queryKey: queryKeys.offers.talent(),
     queryFn: async () => {
       const { offers, error } = await listTalentOffers();
       if (error) throw error;
       return offers;
     },
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60,
   });
 }
 
@@ -38,7 +39,7 @@ export function useTalentOffers() {
  */
 export function useOrgOffers(orgId: string | undefined) {
   return useQuery({
-    queryKey: ["offers", "org", orgId],
+    queryKey: queryKeys.offers.org(orgId),
     queryFn: async () => {
       if (!orgId) return [];
       const { offers, error } = await listOrgOffers(orgId);
@@ -46,7 +47,7 @@ export function useOrgOffers(orgId: string | undefined) {
       return offers;
     },
     enabled: !!orgId,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60,
   });
 }
 
@@ -55,7 +56,7 @@ export function useOrgOffers(orgId: string | undefined) {
  */
 export function useOffer(offerId: string | undefined) {
   return useQuery({
-    queryKey: ["offers", "detail", offerId],
+    queryKey: queryKeys.offers.detail(offerId),
     queryFn: async () => {
       if (!offerId) return null;
       const { offer, error } = await getOffer(offerId);
@@ -63,7 +64,7 @@ export function useOffer(offerId: string | undefined) {
       return offer;
     },
     enabled: !!offerId,
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 30,
   });
 }
 
@@ -80,7 +81,7 @@ export function useCreateOfferDraft() {
       return offer;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["offers", "org", variables.org_id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.offers.org(variables.org_id) });
     },
   });
 }
@@ -99,16 +100,13 @@ export function useUpdateOfferDraft() {
     },
     onSuccess: (offer) => {
       if (offer) {
-        queryClient.invalidateQueries({ queryKey: ["offers", "detail", offer.id] });
-        queryClient.invalidateQueries({ queryKey: ["offers", "org", offer.org_id] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.offers.detail(offer.id) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.offers.org(offer.org_id) });
       }
     },
   });
 }
 
-/**
- * Send offer result type with offerId
- */
 type SendOfferResult = 
   | { ok: true; offerId: string }
   | { ok: false; offerId: string; reason: string; message: string; existingOfferId?: string };
@@ -123,20 +121,14 @@ export function useSendOffer() {
     mutationFn: async (offerId: string): Promise<SendOfferResult> => {
       const result = await sendOffer(offerId);
       if (result.ok === false) {
-        return { 
-          ok: false as const, 
-          offerId, 
-          reason: result.reason, 
-          message: result.message,
-          existingOfferId: result.existingOfferId
-        };
+        return { ok: false as const, offerId, reason: result.reason, message: result.message, existingOfferId: result.existingOfferId };
       }
       return { ok: true as const, offerId };
     },
     onSuccess: (result) => {
       if (result.ok) {
-        queryClient.invalidateQueries({ queryKey: ["offers"] });
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.offers.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
       }
     },
   });
@@ -154,25 +146,15 @@ export function useSendOfferWithFeedback() {
     mutationFn: async (offerId: string): Promise<SendOfferResult> => {
       const result = await sendOffer(offerId);
       if (result.ok === false) {
-        return { 
-          ok: false as const, 
-          offerId, 
-          reason: result.reason, 
-          message: result.message,
-          existingOfferId: result.existingOfferId
-        };
+        return { ok: false as const, offerId, reason: result.reason, message: result.message, existingOfferId: result.existingOfferId };
       }
       return { ok: true as const, offerId };
     },
     onSuccess: (result) => {
       if (result.ok === true) {
-        queryClient.invalidateQueries({ queryKey: ["offers"] });
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
-        addToast({ 
-          type: "success", 
-          title: "Erbjudande skickat!", 
-          message: "Talangen har fått ditt erbjudande." 
-        });
+        queryClient.invalidateQueries({ queryKey: queryKeys.offers.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+        addToast({ type: "success", title: "Erbjudande skickat!", message: "Talangen har fått ditt erbjudande." });
       } else {
         const errorResult = result;
         if (errorResult.reason === 'conflict') {
@@ -180,17 +162,10 @@ export function useSendOfferWithFeedback() {
             type: "error",
             title: "Erbjudande finns redan",
             message: errorResult.message,
-            action: {
-              label: "Öppna erbjudanden",
-              onClick: () => navigate("/employer/inbox?tab=offers"),
-            },
+            action: { label: "Öppna erbjudanden", onClick: () => navigate("/employer/inbox?tab=offers") },
           });
         } else {
-          addToast({
-            type: "error",
-            title: "Kunde inte skicka",
-            message: errorResult.message,
-          });
+          addToast({ type: "error", title: "Kunde inte skicka", message: errorResult.message });
         }
       }
     },
@@ -211,13 +186,11 @@ export function useRespondOffer() {
       return { success, offerId, new_status, match_id };
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["offers"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["activity"] });
-      
-      // If accepted and has match, invalidate matches
+      queryClient.invalidateQueries({ queryKey: queryKeys.offers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.activity.all });
       if (result.match_id) {
-        queryClient.invalidateQueries({ queryKey: ["matches"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.matches.all });
       }
     },
   });
@@ -237,8 +210,8 @@ export function useWithdrawOffer() {
       return { success, offerId };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["offers"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.offers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
@@ -248,10 +221,5 @@ export function useWithdrawOffer() {
  */
 export function usePendingOffersCount() {
   const { data: offers } = useTalentOffers();
-  
-  const pendingCount = (offers ?? []).filter(
-    (o) => o.status === "sent"
-  ).length;
-  
-  return pendingCount;
+  return (offers ?? []).filter((o) => o.status === "sent").length;
 }
