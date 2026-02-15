@@ -59,3 +59,15 @@ export async function getSession(): Promise<{
   const { data, error } = await supabase.auth.getSession();
   return { session: data?.session ?? null, error };
 }
+
+/**
+ * Send a password reset email
+ */
+export async function resetPasswordForEmail(
+  email: string
+): Promise<{ error: AuthError | null }> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: `${window.location.origin}/auth`,
+  });
+  return { error };
+}
