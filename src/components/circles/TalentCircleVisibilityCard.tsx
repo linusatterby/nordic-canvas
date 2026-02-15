@@ -43,8 +43,8 @@ export function TalentCircleVisibilityCard() {
         onSuccess: () => {
           toast.success(
             checked
-              ? "Du syns nu bara för partnerföretag"
-              : "Du syns nu för alla i orten"
+              ? "Du syns nu bara för utvalda arbetsgivare"
+              : "Du syns nu för alla arbetsgivare i området"
           );
         },
         onError: () => {
@@ -115,10 +115,10 @@ export function TalentCircleVisibilityCard() {
             </div>
             <div>
               <span className="font-medium text-foreground text-sm">
-                Synlig bara för Trusted Circle
+                Synlig bara för utvalda arbetsgivare
               </span>
               <p className="text-xs text-muted-foreground">
-                Partnerföretag ja – hela orten nej
+                Endast arbetsgivare du godkänt kan se din profil.
               </p>
             </div>
           </div>
@@ -134,10 +134,10 @@ export function TalentCircleVisibilityCard() {
           <p className="text-xs text-muted-foreground">
             <span className="font-medium">Status:</span>{" "}
             {isOff && "Osynlig för alla"}
-            {isCircleOnly && extraHours && "Synlig för partnerföretag (extra pass)"}
-            {isCircleOnly && !extraHours && "Synlig för partnerföretag (endast matcher)"}
-            {!isCircleOnly && !isOff && extraHours && "Synlig för alla i orten (extra pass)"}
-            {!isCircleOnly && !isOff && !extraHours && "Synlig för alla i orten (endast matcher)"}
+            {isCircleOnly && extraHours && "Synlig bara för utvalda arbetsgivare (extra pass)"}
+            {isCircleOnly && !extraHours && "Synlig bara för utvalda arbetsgivare"}
+            {!isCircleOnly && !isOff && extraHours && "Synlig för alla arbetsgivare i området (extra pass)"}
+            {!isCircleOnly && !isOff && !extraHours && "Synlig för alla arbetsgivare i området"}
           </p>
         </div>
       </CardContent>
