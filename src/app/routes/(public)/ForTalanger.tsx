@@ -5,8 +5,21 @@ import { PublicShell } from "@/app/layout/PublicShell";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 
 export default function ForTalanger() {
+  const { startDemo } = useDemoSession();
+  const [demoLoading, setDemoLoading] = React.useState(false);
+
+  const handleStartTalentDemo = async () => {
+    setDemoLoading(true);
+    try {
+      await startDemo("talent");
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   const scrollToSection = () => {
     document.getElementById("hur-det-funkar")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -31,11 +44,9 @@ export default function ForTalanger() {
               som följer dig mellan uppdrag.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/auth?role=talent">
-                <Button variant="primary" size="lg" className="min-w-[180px]">
-                  Testa demo som talang
+              <Button variant="primary" size="lg" className="min-w-[180px]" onClick={handleStartTalentDemo} disabled={demoLoading}>
+                  {demoLoading ? "Startar…" : "Testa demo som talang"}
                 </Button>
-              </Link>
               <Button 
                 variant="outline" 
                 size="lg" 
@@ -167,15 +178,15 @@ export default function ForTalanger() {
               Prova demo-läget kostnadsfritt – inga konto krävs.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/auth?role=talent">
-                <Button 
+              <Button 
                   variant="primary" 
                   size="lg"
                   className="min-w-[200px]"
+                  onClick={handleStartTalentDemo}
+                  disabled={demoLoading}
                 >
-                  Testa demo som talang
+                  {demoLoading ? "Startar…" : "Testa demo som talang"}
                 </Button>
-              </Link>
               <Link to="/auth/login">
                 <Button 
                   variant="outline" 
