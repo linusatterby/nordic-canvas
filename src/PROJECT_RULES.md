@@ -111,7 +111,16 @@ src/hooks/useComments.ts   → useComments(), useCreateComment()
 
 ---
 
-## 7. Compliance
+## 7. Environment Access
+
+- **All env variable reads** must go through `src/lib/config/runtime.ts` or `src/lib/config/env.ts`.
+- **Never** use `import.meta.env` directly outside `src/lib/config/` or `src/lib/env.ts`.
+- `validateConfig()` from `runtime.ts` runs at startup and enforces cross-env invariants.
+- Authorized exception: `src/integrations/supabase/client.ts` (auto-generated, read-only).
+
+---
+
+## 8. Compliance
 
 Violations are tracked in `src/REPORT_SUPABASE_DIRECT_USAGE.md` (if present).
 

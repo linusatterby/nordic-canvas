@@ -10,29 +10,25 @@ export const IS_DEV = import.meta.env.DEV;
 // Debug flag (from existing debug.ts - re-exported here for completeness)
 export const DEMO_DEBUG_ENABLED = import.meta.env.VITE_DEMO_DEBUG === "true";
 
-// App environment: "demo" | "prod" (default: "demo")
-// Unknown values fall back to "demo" with a console warning.
-const _rawAppEnv = (import.meta.env.VITE_APP_ENV as string) || "demo";
-const VALID_APP_ENVS = ["demo", "prod"] as const;
-export type AppEnv = (typeof VALID_APP_ENVS)[number];
-
-export const APP_ENV: AppEnv = VALID_APP_ENVS.includes(_rawAppEnv as AppEnv)
-  ? (_rawAppEnv as AppEnv)
-  : (() => {
-      console.warn(
-        `[env] Unknown VITE_APP_ENV="${_rawAppEnv}" – falling back to "demo". Valid values: ${VALID_APP_ENVS.join(", ")}`
-      );
-      return "demo" as AppEnv;
-    })();
-export const IS_DEMO_ENV = APP_ENV === "demo";
-
-// Site URL for absolute canonical links (set in prod, empty in demo)
-export const SITE_URL = ((import.meta.env.VITE_SITE_URL as string) || "").replace(/\/+$/, "");
+// Re-export canonical env values from runtime config (single source of truth)
+import {
+  APP_ENV as _APP_ENV,
+  IS_DEMO_ENV as _IS_DEMO_ENV,
+  SITE_URL as _SITE_URL,
+  BACKEND_ENV as _BACKEND_ENV,
+  IS_LIVE_BACKEND as _IS_LIVE_BACKEND,
+} from "./runtime";
+export const APP_ENV = _APP_ENV;
+export const IS_DEMO_ENV = _IS_DEMO_ENV;
+export const SITE_URL = _SITE_URL;
+export const BACKEND_ENV = _BACKEND_ENV;
+export const IS_LIVE_BACKEND = _IS_LIVE_BACKEND;
+export type { AppEnv, BackendEnv } from "./runtime";
 
 // Runtime diagnostics (runs once at module load)
-if (IS_DEMO_ENV) {
+if (_IS_DEMO_ENV) {
   console.info("[SEO] DEMO MODE: noindex,nofollow enabled");
-} else if (APP_ENV === "prod" && !SITE_URL) {
+} else if (_APP_ENV === "prod" && !_SITE_URL) {
   console.warn("[SEO] VITE_APP_ENV=prod but VITE_SITE_URL is empty – canonical & og:image will use relative paths");
 }
 
