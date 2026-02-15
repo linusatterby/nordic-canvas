@@ -278,4 +278,23 @@
   .swipe-enter {
     animation: swipe-enter 160ms ease-out;
   }
+
+  /* Reduced motion: disable slide/rotate, use simple fade or instant */
+  @media (prefers-reduced-motion: reduce) {
+    .swipe-exit-left,
+    .swipe-exit-right {
+      animation: none;
+      opacity: 0;
+      transition: opacity 50ms ease-out;
+    }
+    .swipe-enter {
+      animation: none;
+    }
+    .pulse-delight {
+      animation: none;
+    }
+    .animate-lift:hover {
+      transform: none;
+    }
+  }
 }
