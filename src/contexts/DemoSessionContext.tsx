@@ -70,10 +70,16 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
     const currentRole = (getPersistedDemoRole() as DemoRole) || "employer";
     const currentId = getDemoSessionId();
 
+    // Strip ?demo&role from URL so internal navigation never re-triggers
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("demo");
+    cleanUrl.searchParams.delete("role");
+    window.history.replaceState({}, "", cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+
     // Idempotent: already running with correct role → just navigate
     if (currentId && currentRole === urlRole) {
       const target = urlRole === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
-      navigate(target);
+      navigate(target, { replace: true });
       return;
     }
 
@@ -101,7 +107,7 @@ export function DemoSessionProvider({ children }: { children: React.ReactNode })
       .catch((err) => console.warn("[DemoSession] URL auto-start error:", err))
       .finally(() => {
         const target = urlRole === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
-        navigate(target);
+        navigate(target, { replace: true });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
