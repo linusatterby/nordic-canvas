@@ -133,6 +133,7 @@ export async function listDemoReleaseOffers(
         taken_by_org_id: o.taken_by_org_id,
         status: o.status,
         created_at: o.created_at,
+        demo_session_id: o.demo_session_id,
         booking_start_ts: booking?.start_ts ?? null,
         booking_end_ts: booking?.end_ts ?? null,
         talent_name: talentName ?? "Demo-kandidat",

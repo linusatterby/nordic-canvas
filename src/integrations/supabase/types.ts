@@ -150,6 +150,7 @@ export type Database = {
         Row: {
           borrow_request_id: string
           created_at: string
+          demo_session_id: string | null
           id: string
           responded_at: string | null
           status: string
@@ -158,6 +159,7 @@ export type Database = {
         Insert: {
           borrow_request_id: string
           created_at?: string
+          demo_session_id?: string | null
           id?: string
           responded_at?: string | null
           status?: string
@@ -166,6 +168,7 @@ export type Database = {
         Update: {
           borrow_request_id?: string
           created_at?: string
+          demo_session_id?: string | null
           id?: string
           responded_at?: string | null
           status?: string
@@ -186,6 +189,7 @@ export type Database = {
           circle_id: string | null
           created_at: string
           created_by: string
+          demo_session_id: string | null
           end_ts: string
           id: string
           is_demo: boolean
@@ -201,6 +205,7 @@ export type Database = {
           circle_id?: string | null
           created_at?: string
           created_by: string
+          demo_session_id?: string | null
           end_ts: string
           id?: string
           is_demo?: boolean
@@ -216,6 +221,7 @@ export type Database = {
           circle_id?: string | null
           created_at?: string
           created_by?: string
+          demo_session_id?: string | null
           end_ts?: string
           id?: string
           is_demo?: boolean
@@ -256,6 +262,7 @@ export type Database = {
           action: string
           created_at: string
           demo_card_id: string | null
+          demo_session_id: string | null
           id: string
           job_post_id: string
           org_id: string
@@ -265,6 +272,7 @@ export type Database = {
           action: string
           created_at?: string
           demo_card_id?: string | null
+          demo_session_id?: string | null
           id?: string
           job_post_id: string
           org_id: string
@@ -274,6 +282,7 @@ export type Database = {
           action?: string
           created_at?: string
           demo_card_id?: string | null
+          demo_session_id?: string | null
           id?: string
           job_post_id?: string
           org_id?: string
@@ -457,6 +466,7 @@ export type Database = {
         Row: {
           body: string
           created_at: string
+          demo_session_id: string | null
           id: string
           sender_type: string
           thread_id: string
@@ -464,6 +474,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
+          demo_session_id?: string | null
           id?: string
           sender_type: string
           thread_id: string
@@ -471,6 +482,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
+          demo_session_id?: string | null
           id?: string
           sender_type?: string
           thread_id?: string
@@ -489,18 +501,21 @@ export type Database = {
         Row: {
           created_at: string
           demo_match_id: string | null
+          demo_session_id: string | null
           id: string
           org_id: string
         }
         Insert: {
           created_at?: string
           demo_match_id?: string | null
+          demo_session_id?: string | null
           id?: string
           org_id: string
         }
         Update: {
           created_at?: string
           demo_match_id?: string | null
+          demo_session_id?: string | null
           id?: string
           org_id?: string
         }
@@ -533,6 +548,7 @@ export type Database = {
         Row: {
           created_at: string
           demo_card_id: string | null
+          demo_session_id: string | null
           id: string
           is_seeded: boolean
           job_post_id: string
@@ -543,6 +559,7 @@ export type Database = {
         Insert: {
           created_at?: string
           demo_card_id?: string | null
+          demo_session_id?: string | null
           id?: string
           is_seeded?: boolean
           job_post_id: string
@@ -553,6 +570,7 @@ export type Database = {
         Update: {
           created_at?: string
           demo_card_id?: string | null
+          demo_session_id?: string | null
           id?: string
           is_seeded?: boolean
           job_post_id?: string
@@ -574,6 +592,7 @@ export type Database = {
         Row: {
           created_at: string
           demo_booking_id: string | null
+          demo_session_id: string | null
           from_org_id: string
           id: string
           status: string
@@ -582,6 +601,7 @@ export type Database = {
         Insert: {
           created_at?: string
           demo_booking_id?: string | null
+          demo_session_id?: string | null
           from_org_id: string
           id?: string
           status?: string
@@ -590,6 +610,7 @@ export type Database = {
         Update: {
           created_at?: string
           demo_booking_id?: string | null
+          demo_session_id?: string | null
           from_org_id?: string
           id?: string
           status?: string
@@ -605,10 +626,32 @@ export type Database = {
           },
         ]
       }
+      demo_sessions: {
+        Row: {
+          anon_user_id: string | null
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          anon_user_id?: string | null
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Update: {
+          anon_user_id?: string | null
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
       demo_shift_bookings: {
         Row: {
           created_at: string
           demo_card_id: string | null
+          demo_session_id: string | null
           end_ts: string
           id: string
           is_released: boolean
@@ -620,6 +663,7 @@ export type Database = {
         Insert: {
           created_at?: string
           demo_card_id?: string | null
+          demo_session_id?: string | null
           end_ts: string
           id?: string
           is_released?: boolean
@@ -631,6 +675,7 @@ export type Database = {
         Update: {
           created_at?: string
           demo_card_id?: string | null
+          demo_session_id?: string | null
           end_ts?: string
           id?: string
           is_released?: boolean
@@ -695,6 +740,7 @@ export type Database = {
         Row: {
           created_at: string
           demo_card_id: string
+          demo_session_id: string | null
           direction: string
           job_post_id: string
           org_id: string
@@ -703,6 +749,7 @@ export type Database = {
         Insert: {
           created_at?: string
           demo_card_id: string
+          demo_session_id?: string | null
           direction: string
           job_post_id: string
           org_id: string
@@ -711,6 +758,7 @@ export type Database = {
         Update: {
           created_at?: string
           demo_card_id?: string
+          demo_session_id?: string | null
           direction?: string
           job_post_id?: string
           org_id?: string
@@ -873,6 +921,7 @@ export type Database = {
           available_to: string | null
           contact_preference: string | null
           created_at: string
+          demo_session_id: string | null
           deposit: number | null
           end_date: string
           furnished: boolean
@@ -903,6 +952,7 @@ export type Database = {
           available_to?: string | null
           contact_preference?: string | null
           created_at?: string
+          demo_session_id?: string | null
           deposit?: number | null
           end_date: string
           furnished?: boolean
@@ -933,6 +983,7 @@ export type Database = {
           available_to?: string | null
           contact_preference?: string | null
           created_at?: string
+          demo_session_id?: string | null
           deposit?: number | null
           end_date?: string
           furnished?: boolean
@@ -1360,16 +1411,19 @@ export type Database = {
       }
       org_members: {
         Row: {
+          demo_session_id: string | null
           org_id: string
           role: string
           user_id: string
         }
         Insert: {
+          demo_session_id?: string | null
           org_id: string
           role: string
           user_id: string
         }
         Update: {
+          demo_session_id?: string | null
           org_id?: string
           role?: string
           user_id?: string
@@ -1394,6 +1448,7 @@ export type Database = {
       orgs: {
         Row: {
           created_at: string
+          demo_session_id: string | null
           id: string
           is_demo: boolean
           location: string | null
@@ -1401,6 +1456,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          demo_session_id?: string | null
           id?: string
           is_demo?: boolean
           location?: string | null
@@ -1408,6 +1464,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          demo_session_id?: string | null
           id?: string
           is_demo?: boolean
           location?: string | null
@@ -1420,6 +1477,7 @@ export type Database = {
           available_from: string | null
           available_to: string | null
           created_at: string
+          demo_session_id: string | null
           full_name: string | null
           home_base: string | null
           is_demo: boolean
@@ -1431,6 +1489,7 @@ export type Database = {
           available_from?: string | null
           available_to?: string | null
           created_at?: string
+          demo_session_id?: string | null
           full_name?: string | null
           home_base?: string | null
           is_demo?: boolean
@@ -1442,6 +1501,7 @@ export type Database = {
           available_from?: string | null
           available_to?: string | null
           created_at?: string
+          demo_session_id?: string | null
           full_name?: string | null
           home_base?: string | null
           is_demo?: boolean
@@ -1592,18 +1652,21 @@ export type Database = {
       talent_job_swipes: {
         Row: {
           created_at: string
+          demo_session_id: string | null
           direction: string
           job_post_id: string
           talent_user_id: string
         }
         Insert: {
           created_at?: string
+          demo_session_id?: string | null
           direction: string
           job_post_id: string
           talent_user_id: string
         }
         Update: {
           created_at?: string
+          demo_session_id?: string | null
           direction?: string
           job_post_id?: string
           talent_user_id?: string
@@ -1621,6 +1684,7 @@ export type Database = {
       talent_profiles: {
         Row: {
           bio: string | null
+          demo_session_id: string | null
           desired_roles: string[] | null
           housing_need: boolean | null
           legacy_score_cached: number | null
@@ -1628,6 +1692,7 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          demo_session_id?: string | null
           desired_roles?: string[] | null
           housing_need?: boolean | null
           legacy_score_cached?: number | null
@@ -1635,6 +1700,7 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          demo_session_id?: string | null
           desired_roles?: string[] | null
           housing_need?: boolean | null
           legacy_score_cached?: number | null
@@ -1645,18 +1711,21 @@ export type Database = {
       talent_visibility: {
         Row: {
           available_for_extra_hours: boolean
+          demo_session_id: string | null
           scope: string
           talent_user_id: string
           updated_at: string
         }
         Insert: {
           available_for_extra_hours?: boolean
+          demo_session_id?: string | null
           scope?: string
           talent_user_id: string
           updated_at?: string
         }
         Update: {
           available_for_extra_hours?: boolean
+          demo_session_id?: string | null
           scope?: string
           talent_user_id?: string
           updated_at?: string
@@ -1976,6 +2045,7 @@ export type Database = {
           partner_org_name: string
         }[]
       }
+      get_demo_session_id: { Args: never; Returns: string }
       get_job_posts_field_map: { Args: never; Returns: Json }
       get_match_weights: {
         Args: { p_location?: string; p_org_id?: string }

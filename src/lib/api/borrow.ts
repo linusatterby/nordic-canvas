@@ -20,6 +20,7 @@ export interface BorrowOffer {
   status: string;
   responded_at: string | null;
   created_at: string;
+  demo_session_id: string | null;
 }
 
 export interface BorrowRequestWithOffers extends BorrowRequest {
