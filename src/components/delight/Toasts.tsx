@@ -20,23 +20,30 @@ interface ToastProps extends ToastData {
   onDismiss: (id: string) => void;
 }
 
-const toastStyles: Record<ToastType, { bg: string; icon: React.ReactNode }> = {
+const toastStyles: Record<ToastType, { bg: string; iconClass: string }> = {
   match: {
-    bg: "bg-primary text-primary-foreground",
-    icon: <Sparkles className="h-5 w-5" />,
+    bg: "bg-[hsl(var(--c-primary))] text-[hsl(var(--c-frost))]",
+    iconClass: "text-[hsl(var(--c-frost))]",
   },
   success: {
-    bg: "bg-verified text-verified-foreground",
-    icon: <CheckCircle className="h-5 w-5" />,
+    bg: "bg-[hsl(var(--c-teal))]/95 text-[hsl(var(--c-frost))]",
+    iconClass: "text-[hsl(var(--c-frost))]",
   },
   error: {
-    bg: "bg-destructive text-destructive-foreground",
-    icon: <AlertCircle className="h-5 w-5" />,
+    bg: "bg-[hsl(var(--c-error))] text-[hsl(var(--c-frost))]",
+    iconClass: "text-[hsl(var(--c-frost))]",
   },
   info: {
-    bg: "bg-card text-card-foreground border border-border",
-    icon: <MessageCircle className="h-5 w-5 text-primary" />,
+    bg: "bg-[hsl(var(--c-surface))] text-[hsl(var(--c-text-primary))] border border-[hsl(var(--c-border))]",
+    iconClass: "text-[hsl(var(--c-primary))]",
   },
+};
+
+const iconMap: Record<ToastType, React.ReactNode> = {
+  match: <Sparkles className="h-5 w-5" />,
+  success: <CheckCircle className="h-5 w-5" />,
+  error: <AlertCircle className="h-5 w-5" />,
+  info: <MessageCircle className="h-5 w-5" />,
 };
 
 export function Toast({ id, type, title, message, action, onDismiss }: ToastProps) {
@@ -52,15 +59,15 @@ export function Toast({ id, type, title, message, action, onDismiss }: ToastProp
   return (
     <div
       className={cn(
-        "flex items-start gap-3 rounded-xl p-4 shadow-lift slide-in-right",
+        "flex items-start gap-3 rounded-2xl px-4 py-3 shadow-lg shadow-black/10 border border-white/10 slide-in-right",
         style.bg
       )}
       role="alert"
     >
-      <div className="shrink-0">{style.icon}</div>
+      <div className={cn("shrink-0 mt-0.5", style.iconClass)}>{iconMap[type]}</div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium">{title}</p>
-        {message && <p className="text-sm opacity-90 mt-0.5">{message}</p>}
+        <p className="font-semibold text-[0.9375rem] leading-tight">{title}</p>
+        {message && <p className="text-sm opacity-80 mt-1 font-normal">{message}</p>}
         {action && (
           <Button
             variant={type === "info" ? "primary" : "ghost"}
@@ -74,7 +81,7 @@ export function Toast({ id, type, title, message, action, onDismiss }: ToastProp
       </div>
       <button
         onClick={() => onDismiss(id)}
-        className="shrink-0 opacity-70 hover:opacity-100 transition-opacity"
+        className="shrink-0 opacity-70 hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white/30 rounded-md p-0.5 transition-opacity"
         aria-label="Stäng"
       >
         <X className="h-4 w-4" />
@@ -91,7 +98,7 @@ interface ToastContainerProps {
 export const ToastContainer = React.forwardRef<HTMLDivElement, ToastContainerProps>(
   function ToastContainer({ toasts, onDismiss }, ref) {
     return (
-      <div ref={ref} className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-full max-w-sm">
+      <div ref={ref} className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 w-full max-w-[400px]">
         {toasts.map((toast) => (
           <Toast key={toast.id} {...toast} onDismiss={onDismiss} />
         ))}
