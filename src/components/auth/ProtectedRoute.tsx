@@ -10,12 +10,29 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
-  const { isDemoSession } = useDemoSession();
+  const { isDemoSession, demoRole } = useDemoSession();
   const location = useLocation();
 
-  // Demo sessions bypass auth
+  // Demo bypass is strictly scoped:
+  //  - Only employer/talent areas matching the active demoRole are allowed.
+  //  - Admin routes always require real auth.
   if (isDemoSession) {
-    return <>{children}</>;
+    const path = location.pathname;
+    const isEmployerArea = path.startsWith("/employer");
+    const isTalentArea = path.startsWith("/talent");
+    const isAdminArea = path.startsWith("/admin");
+
+    // Never bypass admin routes in demo
+    if (!isAdminArea) {
+      // Allow if path matches the demo role
+      if (demoRole === "employer" && isEmployerArea) return <>{children}</>;
+      if (demoRole === "talent" && isTalentArea) return <>{children}</>;
+
+      // Redirect to the correct area for the active demo role
+      const target = demoRole === "employer" ? "/employer/jobs" : "/talent/swipe-jobs";
+      return <Navigate to={target} replace />;
+    }
+    // Admin area falls through to normal auth check below
   }
 
   if (loading) {
