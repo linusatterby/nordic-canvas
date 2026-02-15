@@ -33,22 +33,21 @@ describe("Återställ swipes button", () => {
 
 describe("Återställ swipes toast feedback", () => {
   it("shows success toast on successful reset", () => {
-    // Simulates the onSuccess path in TalentSwipeJobs handleResetDemoSwipes
     const rpcResult = { success: true, deleted_count: 5, error: null };
     const toast = rpcResult.success
-      ? { type: "success", title: "Återställt" }
-      : { type: "error", title: "Fel" };
+      ? { type: "success", title: "Swipes återställda" }
+      : { type: "error", title: "Kunde inte återställa swipes" };
     expect(toast.type).toBe("success");
-    expect(toast.title).toBe("Återställt");
+    expect(toast.title).toBe("Swipes återställda");
   });
 
   it("shows error toast on RPC failure", () => {
     const rpcResult = { success: false, error: new Error("RPC failed") };
     const toast = rpcResult.success
-      ? { type: "success", title: "Återställt" }
-      : { type: "error", title: "Fel" };
+      ? { type: "success", title: "Swipes återställda" }
+      : { type: "error", title: "Kunde inte återställa swipes" };
     expect(toast.type).toBe("error");
-    expect(toast.title).toBe("Fel");
+    expect(toast.title).toBe("Kunde inte återställa swipes");
   });
 
   it("shows error toast on network error (mutation catch)", () => {
