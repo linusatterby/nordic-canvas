@@ -2,7 +2,7 @@ import { PublicShell } from "@/app/layout/PublicShell";
 
 export function Privacy() {
   return (
-    <PublicShell>
+    <PublicShell pageTitle="Integritetspolicy" canonicalPath="/privacy">
       <div className="container mx-auto px-4 py-16 max-w-2xl">
         <h1 className="text-3xl font-bold text-foreground mb-6">Integritetspolicy</h1>
         <div className="prose prose-sm text-muted-foreground space-y-4">

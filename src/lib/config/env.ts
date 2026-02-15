@@ -10,6 +10,11 @@ export const IS_DEV = import.meta.env.DEV;
 // Debug flag (from existing debug.ts - re-exported here for completeness)
 export const DEMO_DEBUG_ENABLED = import.meta.env.VITE_DEMO_DEBUG === "true";
 
+// App environment: "demo" | "prod" (default: "demo")
+// Controls indexing, analytics, etc.
+export const APP_ENV = (import.meta.env.VITE_APP_ENV as string) || "demo";
+export const IS_DEMO_ENV = APP_ENV === "demo";
+
 // Demo feature flags
 // DEMO_ENABLED: Master switch for demo functionality (default: true)
 // Set VITE_DEMO_ENABLED=false in production to completely disable demo features
@@ -42,6 +47,8 @@ export function getEnvStatus() {
   return {
     IS_PROD,
     IS_DEV,
+    APP_ENV,
+    IS_DEMO_ENV,
     DEMO_ENABLED,
     DEMO_DEBUG_ENABLED,
     ALLOW_DEMO_SEED,

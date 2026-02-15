@@ -60,7 +60,7 @@ export function Landing() {
   };
 
   return (
-    <PublicShell>
+    <PublicShell pageTitle="Hem" canonicalPath="/"  >
       {/* Hero */}
       <section className="relative overflow-hidden py-20 lg:py-32">
         {/* Warm gradient backdrop */}

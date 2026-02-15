@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,57 +9,43 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoSessionProvider } from "@/contexts/DemoSessionContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleGate } from "@/components/auth/RoleGate";
-
-// Public routes
-import Landing from "@/app/routes/(public)/Landing";
-import ForTalanger from "@/app/routes/(public)/ForTalanger";
-import ForArbetsgivare from "@/app/routes/(public)/ForArbetsgivare";
-import Auth from "@/app/routes/(public)/Auth";
-import Privacy from "@/app/routes/(public)/Privacy";
-import Terms from "@/app/routes/(public)/Terms";
-import ForgotPassword from "@/app/routes/(public)/ForgotPassword";
-import AdminHealth from "@/app/routes/(admin)/AdminHealth";
-
-// Talent routes
-import TalentDashboard from "@/app/routes/(talent)/TalentDashboard";
-import TalentProfile from "@/app/routes/(talent)/TalentProfile";
-import TalentSwipeJobs from "@/app/routes/(talent)/TalentSwipeJobs";
-import TalentMatches from "@/app/routes/(talent)/TalentMatches";
-import TalentMatchChat from "@/app/routes/(talent)/TalentMatchChat";
-import TalentActivity from "@/app/routes/(talent)/TalentActivity";
-import TalentInbox from "@/app/routes/(talent)/TalentInbox";
-import TalentHousing from "@/app/routes/(talent)/TalentHousing";
-import EmployerActivity from "@/app/routes/(employer)/EmployerActivity";
-import EmployerInbox from "@/app/routes/(employer)/EmployerInbox";
-// Employer routes
-import EmployerDashboard from "@/app/routes/(employer)/EmployerDashboard";
-import EmployerScheduler from "@/app/routes/(employer)/EmployerScheduler";
-import EmployerJobs from "@/app/routes/(employer)/EmployerJobs";
-import EmployerSwipeTalent from "@/app/routes/(employer)/EmployerSwipeTalent";
-import EmployerMatches from "@/app/routes/(employer)/EmployerMatches";
-import EmployerMatchChat from "@/app/routes/(employer)/EmployerMatchChat";
-import EmployerBorrow from "@/app/routes/(employer)/EmployerBorrow";
-
-// Host routes
-import HostHousing from "@/app/routes/(host)/HostHousing";
-import HostInbox from "@/app/routes/(host)/HostInbox";
-
-// Settings routes
-import Settings from "@/app/routes/(settings)/Settings";
-import SettingsProfile from "@/app/routes/(settings)/SettingsProfile";
-import SettingsAccount from "@/app/routes/(settings)/SettingsAccount";
-
-import NotFound from "./pages/NotFound";
+import { routes, type AppRoute } from "@/app/routes/routeConfig";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60, // 1 minute default
-      refetchOnWindowFocus: false, // Reduce unnecessary refetches
-      retry: 1, // Single retry for faster failure
+      staleTime: 1000 * 60,
+      refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 });
+
+function renderRoute(route: AppRoute) {
+  const Element = route.element;
+  let node = <Element />;
+
+  if (route.guard === "protected") {
+    if (route.allow) {
+      node = (
+        <ProtectedRoute>
+          <RoleGate allow={route.allow}>{node}</RoleGate>
+        </ProtectedRoute>
+      );
+    } else {
+      node = <ProtectedRoute>{node}</ProtectedRoute>;
+    }
+  }
+
+  // Wrap lazy components in Suspense
+  return (
+    <Route
+      key={route.path}
+      path={route.path}
+      element={<Suspense fallback={null}>{node}</Suspense>}
+    />
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -66,56 +53,11 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <DemoSessionProvider>
-          <ToastProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              {/* Public */}
-              <Route path="/" element={<Landing />} />
-              <Route path="/for-talanger" element={<ForTalanger />} />
-              <Route path="/for-arbetsgivare" element={<ForArbetsgivare />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/login" element={<Auth />} />
-              <Route path="/auth/signup" element={<Auth />} />
-              <Route path="/auth/forgot" element={<ForgotPassword />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              
-              {/* Admin */}
-              <Route path="/admin/health" element={<AdminHealth />} />
-
-              {/* Talent */}
-              <Route path="/talent/dashboard" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentDashboard /></RoleGate></ProtectedRoute>} />
-              <Route path="/talent/profile" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentProfile /></RoleGate></ProtectedRoute>} />
-              <Route path="/talent/swipe-jobs" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentSwipeJobs /></RoleGate></ProtectedRoute>} />
-              <Route path="/talent/matches" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentMatches /></RoleGate></ProtectedRoute>} />
-              <Route path="/talent/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentMatchChat /></RoleGate></ProtectedRoute>} />
-              <Route path="/talent/activity" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentActivity /></RoleGate></ProtectedRoute>} />
-              <Route path="/talent/inbox" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentInbox /></RoleGate></ProtectedRoute>} />
-              <Route path="/talent/housing" element={<ProtectedRoute><RoleGate allow={["talent"]}><TalentHousing /></RoleGate></ProtectedRoute>} />
-
-              <Route path="/employer/dashboard" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerDashboard /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/jobs" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerJobs /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/swipe-talent/:jobId" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerSwipeTalent /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/matches" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerMatches /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/matches/:matchId" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerMatchChat /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/scheduler" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerScheduler /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/borrow" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerBorrow /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/activity" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerActivity /></RoleGate></ProtectedRoute>} />
-              <Route path="/employer/inbox" element={<ProtectedRoute><RoleGate allow={["employer"]}><EmployerInbox /></RoleGate></ProtectedRoute>} />
-
-              {/* Host */}
-              <Route path="/host/housing" element={<ProtectedRoute><RoleGate allow={["host"]}><HostHousing /></RoleGate></ProtectedRoute>} />
-              <Route path="/host/inbox" element={<ProtectedRoute><RoleGate allow={["host"]}><HostInbox /></RoleGate></ProtectedRoute>} />
-
-              {/* Settings */}
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="/settings/profile" element={<ProtectedRoute><SettingsProfile /></ProtectedRoute>} />
-              <Route path="/settings/account" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
-
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ToastProvider>
+            <ToastProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>{routes.map(renderRoute)}</Routes>
+            </ToastProvider>
           </DemoSessionProvider>
         </AuthProvider>
       </BrowserRouter>

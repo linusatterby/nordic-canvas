@@ -12,7 +12,7 @@ export default function ForTalanger() {
   };
 
   return (
-    <PublicShell>
+    <PublicShell pageTitle="För Talanger" pageDescription="Hitta säsongsjobb som matchar din profil och tillgänglighet." canonicalPath="/for-talanger">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-delight/5" />
