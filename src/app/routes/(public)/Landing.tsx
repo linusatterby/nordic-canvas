@@ -62,27 +62,27 @@ export function Landing() {
   return (
     <PublicShell canonicalPath="/"  >
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
+      <section className="relative overflow-hidden pt-10 pb-16 lg:pt-16 lg:pb-24">
         {/* Warm gradient backdrop */}
         <div className="absolute inset-0 bg-gradient-to-br from-warm-accent-muted/40 via-transparent to-primary-muted/20" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-warm-accent/5 blur-[120px] -translate-y-1/2 translate-x-1/4" />
 
         <div className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
-            <Badge variant="primary" className="mb-6">
+            <Badge variant="primary" className="mb-4">
               <Zap className="h-3 w-3" />
               Besöksnäringen är igång
             </Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Din nästa roll i besöksnäringen — börjar här
             </h1>
-            <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Vi kopplar ihop talanger och arbetsgivare inom hotell, restaurang,
               turism och upplevelser. Matcha rätt. Fyll passen. Kom igång.
             </p>
 
             {/* Floating hero panel */}
-            <div className="glass rounded-[20px] shadow-lift p-6 sm:p-8 max-w-xl mx-auto mb-8">
+            <div className="glass rounded-[20px] shadow-lift p-5 sm:p-7 max-w-xl mx-auto mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
                 <Link to="/auth/signup?role=talent">
                   <Button variant="primary" size="lg" className="gap-2 w-full sm:w-auto">
@@ -107,7 +107,7 @@ export function Landing() {
             </div>
 
             {/* Role chips */}
-            <div className="max-w-2xl mx-auto mt-10">
+            <div className="max-w-2xl mx-auto mt-6">
               <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-3">Populära roller</p>
               <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none justify-center flex-wrap sm:flex-nowrap sm:justify-center"
                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
@@ -128,7 +128,7 @@ export function Landing() {
           </div>
 
           {/* Value blocks glass strip */}
-          <div className="glass rounded-[18px] shadow-card max-w-2xl mx-auto mt-14">
+          <div className="glass rounded-[18px] shadow-card max-w-2xl mx-auto mt-10">
             <div className="flex flex-col sm:flex-row items-stretch divide-y sm:divide-y-0 sm:divide-x divide-border/40">
               {valueBlocks.map((block) => (
                 <div key={block.title} className="flex-1 flex flex-col items-center text-center py-5 px-5 gap-1.5">
