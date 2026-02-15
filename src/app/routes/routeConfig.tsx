@@ -11,6 +11,7 @@ const Terms = lazy(() => import("@/app/routes/(public)/Terms"));
 
 // ── Eager-loaded protected pages ──────────────────────────────
 import AdminHealth from "@/app/routes/(admin)/AdminHealth";
+import AdminDiagnostics from "@/app/routes/(admin)/AdminDiagnostics";
 
 import TalentDashboard from "@/app/routes/(talent)/TalentDashboard";
 import TalentProfile from "@/app/routes/(talent)/TalentProfile";
@@ -97,6 +98,7 @@ export const routes: RouteDef[] = [
 
   // Admin
   { id: "admin-health", path: "/admin/health", kind: "app", element: AdminHealth, guard: "admin" },
+  { id: "admin-diagnostics", path: "/admin/diagnostics", kind: "app", element: AdminDiagnostics, guard: "admin" },
 
   // Talent
   { id: "talent-dashboard", path: "/talent/dashboard", kind: "app", element: TalentDashboard, guard: "protected", allow: ["talent"] },
