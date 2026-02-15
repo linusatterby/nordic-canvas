@@ -199,7 +199,7 @@ export function JobPreferencesEditor({ className }: Props) {
           {seasonal && (
             <div className="ml-7 grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label htmlFor="season-from" className="text-xs">Från</Label>
+                <Label htmlFor="season-from" className="text-xs">Säsong från</Label>
                 <Input
                   id="season-from"
                   type="date"
@@ -208,7 +208,7 @@ export function JobPreferencesEditor({ className }: Props) {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="season-to" className="text-xs">Till</Label>
+                <Label htmlFor="season-to" className="text-xs">Säsong till</Label>
                 <Input
                   id="season-to"
                   type="date"

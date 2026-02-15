@@ -8,8 +8,8 @@ const PROFILE_SRC = fs.readFileSync(PROFILE_PATH, "utf-8");
 const PREFS_EDITOR_PATH = path.resolve("src/components/profile/JobPreferencesEditor.tsx");
 const PREFS_SRC = fs.readFileSync(PREFS_EDITOR_PATH, "utf-8");
 
-describe("TalentProfile – Certifikat tab", () => {
-  it('renders "Certifikat" tab trigger, not "Badges"', () => {
+describe("TalentProfile - Certifikat tab", () => {
+  it('renders Certifikat tab trigger, not Badges', () => {
     expect(PROFILE_SRC).toContain('"credentials">Certifikat');
     expect(PROFILE_SRC).not.toContain('"badges">Badges');
   });
@@ -18,17 +18,24 @@ describe("TalentProfile – Certifikat tab", () => {
     expect(PROFILE_SRC).toContain("CredentialsList");
   });
 
-  it('does not render a duplicate "Perioder" availability card', () => {
+  it("does not render a duplicate Perioder availability card", () => {
     expect(PROFILE_SRC).not.toContain('"Perioder"');
   });
 
   it("has no duplicate seasonal date inputs outside JobPreferencesEditor", () => {
-    // The profile page itself should not contain date inputs for seasons
     expect(PROFILE_SRC).not.toContain('type="date"');
+  });
+
+  it("does not render the Tillganglighet card", () => {
+    expect(PROFILE_SRC).not.toContain("AvailabilityEditor");
+  });
+
+  it("has only one save action via JobPreferencesEditor", () => {
+    expect(PROFILE_SRC).not.toContain("Spara tillganglighet");
   });
 });
 
-describe("JobPreferencesEditor – validation rules", () => {
+describe("JobPreferencesEditor - validation rules", () => {
   it("validates that permanent requires earliest_start", () => {
     expect(PREFS_SRC).toContain("permanent && !permanentStart");
   });
@@ -46,7 +53,19 @@ describe("JobPreferencesEditor – validation rules", () => {
   });
 });
 
-describe("JobPreferencesEditor – shift availability integration", () => {
+describe("JobPreferencesEditor - seasonal labels", () => {
+  it("uses seasonal from label", () => {
+    expect(PREFS_SRC).toContain("season-from");
+    expect(PREFS_SRC).toMatch(/S.song fr.n/);
+  });
+
+  it("uses seasonal to label", () => {
+    expect(PREFS_SRC).toContain("season-to");
+    expect(PREFS_SRC).toMatch(/S.song till/);
+  });
+});
+
+describe("JobPreferencesEditor - shift availability integration", () => {
   it("uses useShiftAvailability hook", () => {
     expect(PREFS_SRC).toContain("useShiftAvailability");
   });
@@ -56,7 +75,6 @@ describe("JobPreferencesEditor – shift availability integration", () => {
   });
 
   it("timeblocks match DB constraint (morning, day, evening)", () => {
-    // Only these 3 timeblocks should exist
     expect(PREFS_SRC).toContain('"morning"');
     expect(PREFS_SRC).toContain('"day"');
     expect(PREFS_SRC).toContain('"evening"');
@@ -70,7 +88,7 @@ describe("JobPreferencesEditor – shift availability integration", () => {
   });
 });
 
-describe("API files – talent namespace", () => {
+describe("API files - talent namespace", () => {
   it("credentials API lives under talent/", () => {
     expect(fs.existsSync(path.resolve("src/lib/api/talent/credentials.ts"))).toBe(true);
     expect(fs.existsSync(path.resolve("src/lib/api/credentials.ts"))).toBe(false);

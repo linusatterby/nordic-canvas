@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
 import { Avatar } from "@/components/ui/Avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
-import { AvailabilityEditor } from "@/components/profile/AvailabilityEditor";
+
 import { JobPreferencesEditor } from "@/components/profile/JobPreferencesEditor";
 import { CredentialsList } from "@/components/profile/CredentialsList";
 import { Star, Shield, MapPin, Edit2, Video } from "lucide-react";
@@ -128,13 +128,7 @@ export function TalentProfile() {
 
           {/* Schedule Tab */}
           <TabsContent value="schedule">
-            <div className="space-y-4">
-              {/* Job preferences - single source of truth for availability */}
-              <JobPreferencesEditor />
-
-              {/* Availability Editor - editable dates */}
-              <AvailabilityEditor />
-            </div>
+            <JobPreferencesEditor />
           </TabsContent>
 
           {/* Reviews Tab */}
