@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Star, ChevronRight, Award, Calendar, TrendingUp, Home } from "lucide-react";
+import { Star, ChevronRight, Award, Calendar, TrendingUp, Home, Info } from "lucide-react";
 import { AppShell } from "@/app/layout/AppShell";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Link } from "react-router-dom";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { TalentBorrowOffers } from "@/components/borrow/TalentBorrowOffers";
 import { TalentCircleVisibilityCard } from "@/components/circles/TalentCircleVisibilityCard";
 import { useTalentDashboardSummary } from "@/hooks/useDashboardSummary";
@@ -54,7 +55,7 @@ export function TalentDashboard() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-primary" />
-                Season Passport
+                Karriärpass
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 Din resa i besöksnäringen
@@ -95,8 +96,18 @@ export function TalentDashboard() {
                     {summary?.badgesCount ?? 0}
                   </div>
                 )}
-                <div className="text-sm text-muted-foreground mt-1">
+                <div className="text-sm text-muted-foreground mt-1 flex items-center justify-center gap-1">
                   Intjänade badges
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="inline-flex" aria-label="Info om badges vs certifikat">
+                        <Info className="h-3.5 w-3.5 text-muted-foreground/60" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
+                      Badges tjänar du genom uppdrag och aktivitet i plattformen. Certifikat lägger du till själv (t.ex. HLR, skoterkort) i din profil.
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
 

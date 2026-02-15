@@ -41,7 +41,7 @@ const talentSections: NavSection[] = [
     items: [
       { icon: <Briefcase className="h-5 w-5" />, label: "Jobb", href: "/talent/swipe-jobs" },
       { icon: <Home className="h-5 w-5" />, label: "Boende", href: "/talent/housing" },
-      { icon: <Users className="h-5 w-5" />, label: "Matcher", href: "/talent/matches" },
+      { icon: <Users className="h-5 w-5" />, label: "Matchningar & förslag", href: "/talent/matches" },
     ],
   },
   {
