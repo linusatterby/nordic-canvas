@@ -3,6 +3,8 @@
  *
  * Catches PGRST201 (ambiguous relationship / HTTP 300) and surfaces a
  * developer-friendly message in dev/test while keeping prod output generic.
+ *
+ * Includes a 5-second dedupe to avoid log/toast spam during retries.
  */
 
 import { IS_DEV } from "@/lib/config/env";
@@ -23,6 +25,31 @@ export type NormalisedPostgrestError =
   | PostgrestGenericError
   | null;
 
+/* ── Dedupe state ─────────────────────────────────────────────── */
+const DEDUPE_WINDOW_MS = 5_000;
+const recentLogs = new Map<string, number>();
+
+function shouldLog(key: string): boolean {
+  const now = Date.now();
+  const last = recentLogs.get(key);
+  if (last && now - last < DEDUPE_WINDOW_MS) return false;
+  recentLogs.set(key, now);
+  // Housekeeping: evict stale entries
+  if (recentLogs.size > 50) {
+    for (const [k, ts] of recentLogs) {
+      if (now - ts > DEDUPE_WINDOW_MS) recentLogs.delete(k);
+    }
+  }
+  return true;
+}
+
+/** Exposed for testing only */
+export function _resetDedupeState(): void {
+  recentLogs.clear();
+}
+
+/* ── Detection ────────────────────────────────────────────────── */
+
 /**
  * Detect whether a Supabase error is the PGRST201 ambiguous relationship error.
  */
@@ -34,6 +61,8 @@ export function isPGRST201(error: unknown): boolean {
   if (e.code === "300" || (typeof e.message === "string" && e.message.includes("PGRST201"))) return true;
   return false;
 }
+
+/* ── Normalisation ────────────────────────────────────────────── */
 
 /**
  * Normalise a Supabase/PostgREST error into a typed object.
@@ -64,9 +93,12 @@ export function normalisePostgrestError(error: unknown): NormalisedPostgrestErro
   };
 }
 
+/* ── Logging (with dedupe) ────────────────────────────────────── */
+
 /**
  * Log a normalised PostgREST error.
- * In dev/test: console.error with hint.  In prod: generic log only.
+ * In dev/test: console.error with hint (deduped per 5s window).
+ * In prod: generic log only.
  */
 export function handlePostgrestError(
   label: string,
@@ -76,14 +108,16 @@ export function handlePostgrestError(
 
   if (!norm) return new Error("Unknown error");
 
+  const dedupeKey = `${norm.kind}:${norm.message}`;
+
   if (norm.kind === "ambiguous_relationship") {
-    if (IS_DEV || import.meta.env.MODE === "test") {
+    if ((IS_DEV || import.meta.env.MODE === "test") && shouldLog(dedupeKey)) {
       console.error(
         `[${label}] ⚠️ PGRST201 Ambiguous relationship!\n` +
           `  Message: ${norm.message}\n` +
           `  Fix: ${norm.hint}`
       );
-    } else {
+    } else if (!IS_DEV && import.meta.env.MODE !== "test" && shouldLog(dedupeKey)) {
       console.error(`[${label}] Database query error`);
     }
     return new Error(
@@ -93,6 +127,8 @@ export function handlePostgrestError(
     );
   }
 
-  console.error(`[${label}] PostgREST error: ${norm.message}`);
+  if (shouldLog(dedupeKey)) {
+    console.error(`[${label}] PostgREST error: ${norm.message}`);
+  }
   return new Error(norm.message);
 }
