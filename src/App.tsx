@@ -10,7 +10,7 @@ import { DemoSessionProvider } from "@/contexts/DemoSessionContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
-import { routes, type AppRoute } from "@/app/routes/routeConfig";
+import { routes, type RouteDef } from "@/app/routes/routeConfig";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function renderRoute(route: AppRoute) {
+function renderRoute(route: RouteDef) {
   const Element = route.element;
   let node = <Element />;
 
