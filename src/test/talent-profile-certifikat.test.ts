@@ -17,6 +17,15 @@ describe("TalentProfile – Certifikat tab", () => {
   it("imports CredentialsList component", () => {
     expect(PROFILE_SRC).toContain("CredentialsList");
   });
+
+  it('does not render a duplicate "Perioder" availability card', () => {
+    expect(PROFILE_SRC).not.toContain('"Perioder"');
+  });
+
+  it("has no duplicate seasonal date inputs outside JobPreferencesEditor", () => {
+    // The profile page itself should not contain date inputs for seasons
+    expect(PROFILE_SRC).not.toContain('type="date"');
+  });
 });
 
 describe("JobPreferencesEditor – validation rules", () => {
