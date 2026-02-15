@@ -1,9 +1,10 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, Home, Star, Shield, Zap, CheckCircle2, Clock, ShieldCheck, MapPin } from "lucide-react";
+import { ArrowRight, Users, Home, Star, Shield, Zap, CheckCircle2, Clock, ShieldCheck, MapPin, Play } from "lucide-react";
 import { PublicShell } from "@/app/layout/PublicShell";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 
 const features = [
   {
@@ -46,6 +47,18 @@ const roleChips = [
 ];
 
 export function Landing() {
+  const { startDemo } = useDemoSession();
+  const [demoLoading, setDemoLoading] = React.useState(false);
+
+  const handleStartDemo = async (role: "employer" | "talent") => {
+    setDemoLoading(true);
+    try {
+      await startDemo(role);
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   return (
     <PublicShell>
       {/* Hero */}
@@ -178,12 +191,24 @@ export function Landing() {
               <p className="text-white/80 mb-8 max-w-lg mx-auto">
                 Skapa konto på under 2 minuter. Gratis för talanger.
               </p>
-              <Link to="/auth/signup">
-                <Button variant="primary" size="lg" className="gap-2 shadow-lg shadow-primary/25 ring-1 ring-white/10">
-                  Skapa konto
-                  <ArrowRight className="h-4 w-4" />
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link to="/auth/signup">
+                  <Button variant="primary" size="lg" className="gap-2 shadow-lg shadow-primary/25 ring-1 ring-white/10">
+                    Skapa konto
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="gap-2"
+                  onClick={() => handleStartDemo("employer")}
+                  disabled={demoLoading}
+                >
+                  <Play className="h-4 w-4" />
+                  {demoLoading ? "Startar…" : "Starta demo"}
                 </Button>
-              </Link>
+              </div>
             </div>
           </div>
         </div>

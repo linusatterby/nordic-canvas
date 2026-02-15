@@ -5,9 +5,11 @@ import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { signOut } from "@/lib/supabase/auth";
 import { toast } from "sonner";
 import { useUnreadCount } from "@/hooks/useNotifications";
+import { FlaskConical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -34,6 +36,7 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, user } = useAuth();
+  const { isDemoSession, endDemo } = useDemoSession();
   const { data: unreadCount, isLoading: unreadLoading } = useUnreadCount();
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Användare";
@@ -55,6 +58,19 @@ export function TopNav({ onMenuToggle, isSidebarOpen }: TopNavProps) {
 
   return (
     <header className="sticky top-0 z-30 h-16 glass border-b border-border/50 flex items-center px-4 gap-4">
+      {/* Demo badge */}
+      {isDemoSession && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warm-accent-muted text-warm-accent text-xs font-semibold uppercase tracking-wider">
+            <FlaskConical className="h-3 w-3" />
+            Demo
+          </span>
+          <Button variant="ghost" size="sm" onClick={endDemo} className="h-7 px-2 text-xs text-muted-foreground">
+            Avsluta
+          </Button>
+        </div>
+      )}
+
       {/* Menu Toggle (Mobile) */}
       <Button
         variant="ghost"

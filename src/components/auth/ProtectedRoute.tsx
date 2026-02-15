@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoSession } from "@/contexts/DemoSessionContext";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 interface ProtectedRouteProps {
@@ -9,7 +10,13 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
+  const { isDemoSession } = useDemoSession();
   const location = useLocation();
+
+  // Demo sessions bypass auth
+  if (isDemoSession) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
@@ -24,7 +31,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    // Save the attempted location for redirect after login
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
