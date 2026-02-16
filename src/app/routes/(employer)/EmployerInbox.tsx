@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
@@ -255,7 +256,7 @@ export default function EmployerInbox() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">
-                        {match.talent_name || "Kandidat"}
+                        {match.talent_name || LABELS.candidate}
                       </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {match.job_title || "Uppdrag"}

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell } from "@/app/layout/AppShell";
 import { Card } from "@/components/ui/Card";
@@ -50,7 +51,7 @@ export default function HostInbox() {
           <div className="flex-1 overflow-hidden p-4">
             <HousingChatView
               threadId={activeThreadId}
-              recipientName={activeThread.talent_name || "Kandidat"}
+              recipientName={activeThread.talent_name || LABELS.candidate}
             />
           </div>
         </div>
@@ -89,7 +90,7 @@ export default function HostInbox() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-medium text-foreground truncate">
-                        {thread.talent_name || "Kandidat"}
+                        {thread.talent_name || LABELS.candidate}
                       </p>
                       {thread.last_message_at && (
                         <span className="text-xs text-muted-foreground shrink-0">

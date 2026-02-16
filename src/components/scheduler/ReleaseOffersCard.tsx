@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { useNavigate } from "react-router-dom";
 import { Share2, ArrowRight, Clock, User, Calendar } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -212,7 +213,7 @@ export function ReleaseOffersCard({ orgId, bookings, releaseOffers = [] }: Relea
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
                     <Badge variant="verified" size="sm">
-                      {booking.talent_name ?? "Kandidat"}
+                      {booking.talent_name ?? LABELS.candidate}
                     </Badge>
                     {booking.is_demo && (
                       <Badge variant="warn" size="sm">DEMO</Badge>

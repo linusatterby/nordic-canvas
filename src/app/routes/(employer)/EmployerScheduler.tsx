@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/app/layout/AppShell";
 import { Card } from "@/components/ui/Card";
@@ -285,7 +286,7 @@ export function EmployerScheduler() {
                             size="sm"
                             className="w-full justify-center text-[10px] cursor-help"
                           >
-                            {booking.talent_name ?? "Kandidat"}
+                            {booking.talent_name ?? LABELS.candidate}
                           </Badge>
                           {/* Tooltip */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-ink text-frost text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">

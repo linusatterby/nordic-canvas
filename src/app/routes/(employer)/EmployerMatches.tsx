@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/app/layout/AppShell";
 import { Card } from "@/components/ui/Card";
@@ -85,7 +86,7 @@ export function EmployerMatches() {
                     <Avatar size="lg" fallback={(match.talent_name ?? "T").slice(0, 2)} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-foreground">{match.talent_name ?? "Kandidat"}</h3>
+                        <h3 className="font-semibold text-foreground">{match.talent_name ?? LABELS.candidate}</h3>
                         {match.is_demo && (
                           <Badge variant="warn" size="sm">DEMO</Badge>
                         )}
@@ -170,7 +171,7 @@ export function EmployerMatches() {
             type="no-matches" 
             title="Inga matchningar ännu"
             message="Swipea höger på kandidater du vill kontakta."
-            action={{ label: "Hitta kandidater", onClick: () => navigate("/employer/swipe-talent") }} 
+            action={{ label: LABELS.findCandidates, onClick: () => navigate("/employer/swipe-talent") }} 
           />
         )}
       </div>
