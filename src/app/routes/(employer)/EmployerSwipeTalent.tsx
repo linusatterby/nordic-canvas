@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppShell } from "@/app/layout/AppShell";
 import { CandidateCard } from "@/components/cards/CandidateCard";
@@ -314,7 +315,7 @@ export function EmployerSwipeTalent() {
             <CandidateCard
               id={currentTalent.user_id ?? currentTalent.demo_card_id ?? "unknown"}
               name={currentTalent.full_name ?? "Anonym"}
-              role={currentTalent.role_key ?? "Kandidat"}
+              role={currentTalent.role_key ?? LABELS.candidate}
               legacyScore={currentTalent.legacy_score_cached ?? 50}
               badges={currentTalent.badges.map((b) => ({
                 label: b.label ?? b.badge_key,

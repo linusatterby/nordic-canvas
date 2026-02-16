@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { AppShell } from "@/app/layout/AppShell";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -442,7 +443,7 @@ export function EmployerBorrow() {
                             <div className="flex flex-wrap gap-1">
                               {req.offers.slice(0, 5).map((o) => (
                                 <Badge key={o.id} variant="default" size="sm">
-                                  {o.talent_name ?? "Kandidat"}
+                                  {o.talent_name ?? LABELS.candidate}
                                 </Badge>
                               ))}
                               {req.offers.length > 5 && (

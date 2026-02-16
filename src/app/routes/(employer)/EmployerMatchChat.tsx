@@ -1,4 +1,5 @@
 import * as React from "react";
+import { LABELS } from "@/config/labels";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppShell } from "@/app/layout/AppShell";
 import { Button } from "@/components/ui/Button";
@@ -53,7 +54,7 @@ export function EmployerMatchChat() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="font-semibold text-foreground">{match?.talent_name ?? "Kandidat"}</h1>
+              <h1 className="font-semibold text-foreground">{match?.talent_name ?? LABELS.candidate}</h1>
               <p className="text-sm text-muted-foreground">{match?.job_title}</p>
             </div>
           </div>
