@@ -39,7 +39,7 @@ import Settings from "@/app/routes/(settings)/Settings";
 import SettingsProfile from "@/app/routes/(settings)/SettingsProfile";
 import SettingsAccount from "@/app/routes/(settings)/SettingsAccount";
 
-import NotFound from "@/pages/NotFound";
+import NotFound from "@/app/routes/_errors/NotFoundPage";
 
 // ── Route definition types ────────────────────────────────────
 export type RoleAllow = "talent" | "employer" | "host";
