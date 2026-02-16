@@ -10,11 +10,9 @@ import * as path from "path";
  */
 
 const ALLOWED_FILES = new Set([
-  // Auth context needs direct session access
-  "src/contexts/AuthContext.tsx",
-  "src/hooks/useSession.ts",
-  // TODO: refactor useScheduler to use API layer
-  "src/hooks/useScheduler.ts",
+  "src/contexts/AuthContext.tsx",   // Auth context needs direct session access
+  "src/hooks/useSession.ts",        // Session hook wraps auth listener
+  "src/hooks/useScheduler.ts",      // TODO: refactor to use API layer
 ]);
 
 function collectTsFiles(dir: string): string[] {
