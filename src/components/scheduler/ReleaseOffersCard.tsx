@@ -43,7 +43,7 @@ export function ReleaseOffersCard({ orgId, bookings, releaseOffers = [] }: Relea
       ...realOffers.map(o => ({ ...o, is_demo: false })),
       ...demoOnlyOffers.map(o => ({
         id: o.id,
-        talent_name: o.talent_name ?? "Demo-talang",
+        talent_name: o.talent_name ?? "Demo-kandidat",
         from_org_name: "Demo-partner",
         start_ts: o.booking_start_ts,
         is_demo: true,
@@ -212,7 +212,7 @@ export function ReleaseOffersCard({ orgId, bookings, releaseOffers = [] }: Relea
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
                     <Badge variant="verified" size="sm">
-                      {booking.talent_name ?? "Talang"}
+                      {booking.talent_name ?? "Kandidat"}
                     </Badge>
                     {booking.is_demo && (
                       <Badge variant="warn" size="sm">DEMO</Badge>

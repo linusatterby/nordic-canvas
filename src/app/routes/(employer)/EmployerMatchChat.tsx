@@ -53,7 +53,7 @@ export function EmployerMatchChat() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="font-semibold text-foreground">{match?.talent_name ?? "Talang"}</h1>
+              <h1 className="font-semibold text-foreground">{match?.talent_name ?? "Kandidat"}</h1>
               <p className="text-sm text-muted-foreground">{match?.job_title}</p>
             </div>
           </div>
@@ -81,7 +81,7 @@ export function EmployerMatchChat() {
         <MatchChatView
           matchId={matchId}
           quickReplies={quickReplies}
-          emptyMessage="Säg hej till talangen!"
+          emptyMessage="Säg hej till kandidaten!"
         />
       </div>
 
