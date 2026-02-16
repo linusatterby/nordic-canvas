@@ -1,6 +1,8 @@
 /**
  * Diagnostics page – only accessible in test/demo environments.
- * Shows runtime config, Supabase ping, recent log buffer, and copy-to-clipboard.
+ * Shows runtime config, backend ping, recent log buffer, and copy-to-clipboard.
+ *
+ * All Supabase calls are delegated to the API layer (no direct imports).
  */
 import * as React from "react";
 import { Navigate } from "react-router-dom";
@@ -9,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { APP_ENV, BACKEND_ENV, SITE_URL, IS_LIVE_BACKEND } from "@/lib/config/env";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/config/runtime";
 import { getLogBuffer, type LogEvent } from "@/lib/logging/logger";
-import { supabase } from "@/integrations/supabase/client";
+import { pingBackend, invokeSeedTest } from "@/lib/api/adminDiagnostics";
 import { toast } from "sonner";
 
 function maskUrl(url: string): string {
@@ -57,21 +59,13 @@ function DiagnosticsContent() {
   const handlePing = async () => {
     setPinging(true);
     setPingResult(null);
-    const start = performance.now();
-    try {
-      const { error } = await supabase.auth.getSession();
-      const latency = Math.round(performance.now() - start);
-      if (error) {
-        setPingResult(`❌ Error: ${error.message} (${latency}ms)`);
-      } else {
-        setPingResult(`✅ OK (${latency}ms)`);
-      }
-    } catch (err) {
-      const latency = Math.round(performance.now() - start);
-      setPingResult(`❌ Failed: ${err instanceof Error ? err.message : String(err)} (${latency}ms)`);
-    } finally {
-      setPinging(false);
+    const result = await pingBackend();
+    if (result.ok) {
+      setPingResult(`✅ OK (${result.latencyMs}ms)`);
+    } else {
+      setPingResult(`❌ ${result.error} (${result.latencyMs}ms)`);
     }
+    setPinging(false);
   };
 
   const handleCopy = () => {
@@ -112,7 +106,7 @@ function DiagnosticsContent() {
           <dd className="font-mono">{BACKEND_ENV}</dd>
           <dt className="text-muted-foreground">SITE_URL</dt>
           <dd className="font-mono">{SITE_URL || "(empty)"}</dd>
-          <dt className="text-muted-foreground">Supabase host</dt>
+          <dt className="text-muted-foreground">Backend host</dt>
           <dd className="font-mono">{maskUrl(SUPABASE_URL)}</dd>
           <dt className="text-muted-foreground">Anon key</dt>
           <dd className="font-mono">{maskKey(SUPABASE_ANON_KEY)}</dd>
@@ -124,7 +118,7 @@ function DiagnosticsContent() {
         <h2 className="font-semibold text-foreground">Backend Ping</h2>
         <div className="flex items-center gap-3">
           <Button size="sm" variant="outline" onClick={handlePing} disabled={pinging}>
-            {pinging ? "Pingar…" : "Ping Supabase"}
+            {pinging ? "Pingar…" : "Ping Backend"}
           </Button>
           {pingResult && <span className="text-sm font-mono">{pingResult}</span>}
         </div>
@@ -177,27 +171,20 @@ function SeedSection() {
   const handleSeed = async () => {
     setSeeding(true);
     setSeedResult(null);
-    try {
-      const { data, error } = await supabase.functions.invoke("seed-test");
-      if (error) {
-        setSeedResult(`❌ ${error.message}`);
-      } else if (data?.ok) {
-        setSeedResult(`✅ Seed klart (${data.elapsed_ms}ms)`);
-      } else {
-        setSeedResult(`❌ ${data?.error || "Okänt fel"}`);
-      }
-    } catch (err) {
-      setSeedResult(`❌ ${err instanceof Error ? err.message : String(err)}`);
-    } finally {
-      setSeeding(false);
+    const result = await invokeSeedTest();
+    if (result.ok) {
+      setSeedResult(`✅ Seed klart (${result.elapsedMs}ms)`);
+    } else {
+      setSeedResult(`❌ ${result.error}`);
     }
+    setSeeding(false);
   };
 
   return (
     <Card className="p-4 space-y-3">
       <h2 className="font-semibold text-foreground">Seed / Test Data</h2>
       <p className="text-xs text-muted-foreground">
-        Kör idempotent seed av baseline demo-data. Kräver service_role (via edge function).
+        Kör idempotent seed av baseline demo-data. Kräver service_role (via backend function).
         Blockerad i live.
       </p>
       <div className="flex items-center gap-3">
