@@ -224,9 +224,9 @@ export function EmployerScheduler() {
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-warn" />
               <div>
-                <p className="text-sm font-medium text-foreground">Inga matchade talanger</p>
+                <p className="text-sm font-medium text-foreground">Inga matchade kandidater</p>
                 <p className="text-xs text-muted-foreground">
-                  Matcha med talanger för att börja schemalägga.{" "}
+                  Matcha med kandidater för att börja schemalägga.{" "}
                   <button 
                     className="text-primary underline"
                     onClick={() => navigate("/employer/jobs")}
@@ -285,7 +285,7 @@ export function EmployerScheduler() {
                             size="sm"
                             className="w-full justify-center text-[10px] cursor-help"
                           >
-                            {booking.talent_name ?? "Talang"}
+                            {booking.talent_name ?? "Kandidat"}
                           </Badge>
                           {/* Tooltip */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-ink text-frost text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">

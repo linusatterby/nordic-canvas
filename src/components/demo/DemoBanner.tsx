@@ -48,7 +48,7 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
     try {
       const result = await seedScenarioMutation.mutateAsync(undefined);
       toast.success("Demo-scenario skapat", {
-        description: `Scenario med ${result?.seeded?.talent_source === "real_demo_user" ? "riktig demo-talang" : "demo-kort"} har skapats.`,
+        description: `Scenario med ${result?.seeded?.talent_source === "real_demo_user" ? "riktig demo-kandidat" : "demo-kort"} har skapats.`,
       });
     } catch (error) {
       toast.error("Kunde inte skapa scenario", {
@@ -70,8 +70,8 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
     // Invalidate all role-specific queries to ensure fresh data
     invalidateForRoleSwitch(queryClient);
     navigate(SAFE_LANDINGS.talent);
-    toast.info("Växlat till talang-vy", {
-      description: "Du ser nu demo som talang.",
+    toast.info("Växlat till kandidat-vy", {
+      description: "Du ser nu demo som kandidat.",
     });
   };
 
@@ -101,11 +101,11 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
                   size="sm"
                   onClick={handleSwitchToTalent}
                   className="h-7 px-2 text-xs"
-                  title="Växla till talang-perspektiv"
+                  title="Växla till kandidat-perspektiv"
                 >
                   <Users className="h-3.5 w-3.5 mr-1" />
-                  <span className="hidden sm:inline">Till talang</span>
-                  <span className="sm:hidden">Talang</span>
+                  <span className="hidden sm:inline">Till kandidat</span>
+                  <span className="sm:hidden">Kandidat</span>
                 </Button>
               )}
               {!isEmployerView && (

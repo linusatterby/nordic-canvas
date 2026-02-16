@@ -10,8 +10,8 @@ export interface PayrollRow {
   Start: string;
   Slut: string;
   Timmar: string;
-  Talang: string;
-  TalangID: string;
+  Kandidat: string;
+  KandidatID: string;
   Källa: "DEMO" | "REAL";
 }
 
@@ -33,8 +33,8 @@ export function buildPayrollRows(bookings: EffectiveBooking[]): PayrollRow[] {
         Start: format(startDate, "HH:mm"),
         Slut: format(endDate, "HH:mm"),
         Timmar: hours,
-        Talang: booking.talent_name ?? "Okänd",
-        TalangID: booking.talent_user_id,
+        Kandidat: booking.talent_name ?? "Okänd",
+        KandidatID: booking.talent_user_id,
         Källa: booking.is_demo ? "DEMO" : "REAL",
       };
     });

@@ -27,7 +27,7 @@ export default function ForArbetsgivare() {
               <span className="text-primary">inte veckor</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Matcha talang + schema + boende och dela resurser i Trusted Circles 
+              Matcha kandidat + schema + boende och dela resurser i Trusted Circles 
               när trycket ökar.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -67,7 +67,7 @@ export default function ForArbetsgivare() {
               <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
                 <Users className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Swipea talang</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Swipea kandidater</h3>
               <p className="text-muted-foreground text-sm">
                 Bedöm snabbt och gå till match & chatt.
               </p>

@@ -81,7 +81,7 @@ export function EmployerDashboard() {
           <Link to="/employer/jobs">
             <Card variant="interactive" className="h-full p-3 sm:p-4">
               <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-2 sm:mb-3" />
-              <h3 className="font-semibold text-sm sm:text-base">Hitta talanger</h3>
+              <h3 className="font-semibold text-sm sm:text-base">Hitta kandidater</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">12 nya profiler</p>
             </Card>
           </Link>

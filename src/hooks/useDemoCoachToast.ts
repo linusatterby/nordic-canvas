@@ -12,7 +12,7 @@ type ToastKey =
 
 const TOAST_MESSAGES: Record<ToastKey, { title: string; description: string }> = {
   "swipe-talent": {
-    title: "Tips: Swipea talanger",
+    title: "Tips: Swipea kandidater",
     description: "Tryck JA på två kort för att skapa en match och öppna chatten.",
   },
   "swipe-jobs": {
@@ -25,7 +25,7 @@ const TOAST_MESSAGES: Record<ToastKey, { title: string; description: string }> =
   },
   borrow: {
     title: "Tips: Borrow",
-    description: "Skicka en request, byt sedan till talang och acceptera.",
+    description: "Skicka en request, byt sedan till kandidat och acceptera.",
   },
   matches: {
     title: "Tips: Matches",

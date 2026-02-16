@@ -418,7 +418,7 @@ export function EmployerJobs() {
           <EmptyState 
             type="no-jobs" 
             title="Inga annonser att visa" 
-            message="Skapa din första annons och nå kvalificerade talanger direkt via nätverket." 
+            message="Skapa din första annons och nå kvalificerade kandidater direkt via nätverket." 
             action={{ label: "Skapa annons", onClick: () => setShowCreateJob(true) }} 
           />
         )}

@@ -32,7 +32,7 @@ const features = [
 
 const valueBlocks = [
   { icon: <Clock className="h-4 w-4" />, title: "Snabb match", desc: "Svar på minuter, inte dagar" },
-  { icon: <ShieldCheck className="h-4 w-4" />, title: "Verifierad identitet", desc: "Tryggt för både talang och arbetsgivare" },
+  { icon: <ShieldCheck className="h-4 w-4" />, title: "Verifierad identitet", desc: "Tryggt för både kandidat och arbetsgivare" },
   { icon: <MapPin className="h-4 w-4" />, title: "Besöksnäringsfokus", desc: "Hotell, restaurang, turism och upplevelser" },
 ];
 
@@ -78,7 +78,7 @@ export function Landing() {
               Din nästa roll i besöksnäringen — börjar här
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Vi kopplar ihop talanger och arbetsgivare inom hotell, restaurang,
+              Vi kopplar ihop kandidater och arbetsgivare inom hotell, restaurang,
               turism och upplevelser. Matcha rätt. Fyll passen. Kom igång.
             </p>
 
@@ -186,7 +186,7 @@ export function Landing() {
               Redo att komma igång?
             </h2>
             <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-              Skapa konto på under 2 minuter. Gratis för talanger.
+              Skapa konto på under 2 minuter. Gratis för kandidater.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link to="/auth/signup">

@@ -26,7 +26,7 @@ describe("Demo CTA config integrity", () => {
   it("TALENT_DEMO_CTA has correct role and pathPrefix", () => {
     expect(TALENT_DEMO_CTA.role).toBe("talent");
     expect(TALENT_DEMO_CTA.pathPrefix).toBe("/talent");
-    expect(TALENT_DEMO_CTA.label).toContain("talang");
+    expect(TALENT_DEMO_CTA.label).toContain("kandidat");
   });
 
   it("EMPLOYER_DEMO_CTA has correct role and pathPrefix", () => {

@@ -70,7 +70,7 @@ export function EmployerMatches() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-foreground">Matchningar</h1>
-          <p className="text-sm text-muted-foreground mt-1">Talanger som matchat med dina jobb</p>
+          <p className="text-sm text-muted-foreground mt-1">Kandidater som matchat med dina jobb</p>
         </div>
 
         {matches && matches.length > 0 ? (
@@ -85,7 +85,7 @@ export function EmployerMatches() {
                     <Avatar size="lg" fallback={(match.talent_name ?? "T").slice(0, 2)} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-foreground">{match.talent_name ?? "Talang"}</h3>
+                        <h3 className="font-semibold text-foreground">{match.talent_name ?? "Kandidat"}</h3>
                         {match.is_demo && (
                           <Badge variant="warn" size="sm">DEMO</Badge>
                         )}
@@ -169,8 +169,8 @@ export function EmployerMatches() {
           <EmptyState 
             type="no-matches" 
             title="Inga matchningar ännu"
-            message="Swipea höger på talanger du vill kontakta."
-            action={{ label: "Hitta talanger", onClick: () => navigate("/employer/swipe-talent") }} 
+            message="Swipea höger på kandidater du vill kontakta."
+            action={{ label: "Hitta kandidater", onClick: () => navigate("/employer/swipe-talent") }} 
           />
         )}
       </div>

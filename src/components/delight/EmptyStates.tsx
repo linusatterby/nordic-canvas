@@ -89,7 +89,7 @@ const emptyStateDefaults: Record<EmptyStateType, { icon: React.ReactNode; title:
   "no-jobs": {
     icon: <Briefcase className="h-12 w-12" />,
     title: "Du har inga jobb ännu",
-    message: "Skapa ett jobb för att börja hitta talanger för säsongen.",
+    message: "Skapa ett jobb för att börja hitta kandidater för säsongen.",
   },
   "no-talents": {
     icon: <Users className="h-12 w-12" />,
