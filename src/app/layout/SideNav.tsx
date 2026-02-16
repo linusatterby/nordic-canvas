@@ -15,6 +15,7 @@ import {
   Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
+import { MatildusLogo } from "@/components/brand/MatildusLogo";
 import { Button } from "@/components/ui/Button";
 import type { Role } from "@/lib/constants/roles";
 
@@ -121,10 +122,7 @@ export function SideNav({ role, isOpen, onToggle }: SideNavProps) {
       <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
         {isOpen && (
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">ST</span>
-            </div>
-            <span className="font-semibold text-sm">Seasonal Talent</span>
+            <MatildusLogo showWordmark iconSize="h-8 w-8" className="text-frost" />
           </Link>
         )}
         <Button

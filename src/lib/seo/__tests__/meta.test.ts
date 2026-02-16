@@ -70,20 +70,20 @@ describe("buildMeta with SITE_URL", () => {
 
   it("builds absolute canonical when SITE_URL is set", async () => {
     vi.doMock("@/lib/config/env", () => ({
-      SITE_URL: "https://seasonaltalent.se",
+      SITE_URL: "https://matildus.se",
     }));
     const { buildMeta: buildMetaWithUrl } = await import("@/lib/seo/meta");
     const meta = buildMetaWithUrl({ canonicalPath: "/for-talanger" });
-    expect(meta.canonical).toBe("https://seasonaltalent.se/for-talanger");
+    expect(meta.canonical).toBe("https://matildus.se/for-talanger");
   });
 
   it("builds absolute og:image when SITE_URL is set", async () => {
     vi.doMock("@/lib/config/env", () => ({
-      SITE_URL: "https://seasonaltalent.se",
+      SITE_URL: "https://matildus.se",
     }));
     const { buildMeta: buildMetaWithUrl, DEFAULT_OG_IMAGE: ogImg } = await import("@/lib/seo/meta");
     const meta = buildMetaWithUrl();
-    expect(meta.ogImage).toBe(`https://seasonaltalent.se${ogImg}`);
+    expect(meta.ogImage).toBe(`https://matildus.se${ogImg}`);
   });
 });
 

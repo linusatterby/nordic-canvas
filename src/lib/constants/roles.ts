@@ -1,4 +1,4 @@
-// User roles in the Seasonal Talent Ecosystem
+// User roles in the Matildus platform
 export const ROLES = {
   TALENT: 'talent',
   EMPLOYER: 'employer',

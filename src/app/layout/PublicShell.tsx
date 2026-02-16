@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils/classnames";
 import { Button } from "@/components/ui/Button";
 import { PageMeta } from "@/lib/seo/PageMeta";
 import { IS_DEMO_ENV } from "@/lib/config/env";
+import { MatildusLogo } from "@/components/brand/MatildusLogo";
 
 interface PublicShellProps {
   children: React.ReactNode;
@@ -40,12 +41,8 @@ export function PublicShell({ children, pageTitle, pageDescription, canonicalPat
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">ST</span>
-            </div>
-            <span className="font-semibold text-lg text-foreground hidden sm:block">
-              Seasonal Talent
-            </span>
+            <MatildusLogo showWordmark className="hidden sm:inline-flex" />
+            <MatildusLogo showWordmark={false} className="sm:hidden" />
           </Link>
 
           {/* Desktop Nav */}
@@ -133,7 +130,7 @@ export function PublicShell({ children, pageTitle, pageDescription, canonicalPat
       <footer className="border-t border-border bg-card py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <p>© 2025. Alla rättigheter förbehållna.</p>
+            <p>© 2025 Matildus. Alla rättigheter förbehållna.</p>
             <div className="flex items-center gap-4">
               <Link to="/privacy" className="hover:text-foreground transition-colors">
                 Integritet

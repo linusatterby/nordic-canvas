@@ -114,7 +114,7 @@ npx vitest run            # Unit tests
 | `VITE_SUPABASE_PROJECT_ID` | Yes | - | Your Supabase project ID |
 | `VITE_APP_ENV` | No | `demo` | `demo` = noindex/nofollow, `prod` = indexable |
 | `VITE_BACKEND_ENV` | No | `test` | `test` = dev/staging backend, `live` = production backend |
-| `VITE_SITE_URL` | Live only | - | Absolute base URL (e.g. `https://seasonaltalent.se`). **Required when `BACKEND_ENV=live`.** |
+| `VITE_SITE_URL` | Live only | - | Absolute base URL (e.g. `https://matildus.se`). **Required when `BACKEND_ENV=live`.** |
 | `VITE_DEMO_DEBUG` | No | `false` | Enable debug panels and technical info in demo mode |
 | `VITE_DEMO_ENABLED` | No | `true` | Master switch for demo functionality |
 | `VITE_ALLOW_DEMO_SEED` | No | `false` | Allow demo scenario seeding |
@@ -138,7 +138,7 @@ npm run dev
 VITE_APP_ENV=prod VITE_BACKEND_ENV=test npm run dev
 
 # Production build
-VITE_APP_ENV=prod VITE_BACKEND_ENV=live VITE_SITE_URL=https://seasonaltalent.se npm run build
+VITE_APP_ENV=prod VITE_BACKEND_ENV=live VITE_SITE_URL=https://matildus.se npm run build
 ```
 
 ### Development Setup
@@ -158,7 +158,7 @@ For production builds, use these recommended settings:
 ```sh
 VITE_APP_ENV=prod
 VITE_BACKEND_ENV=live
-VITE_SITE_URL=https://seasonaltalent.se
+VITE_SITE_URL=https://matildus.se
 VITE_DEMO_DEBUG=false
 VITE_DEMO_ENABLED=false
 VITE_ALLOW_DEMO_SEED=false

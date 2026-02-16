@@ -1,4 +1,4 @@
-// Status enums for the Seasonal Talent Ecosystem
+// Status enums for the Matildus platform
 
 export const MATCH_STATUS = {
   PENDING: 'pending',

@@ -1,4 +1,4 @@
-// Formatting utilities for the Seasonal Talent Ecosystem
+// Formatting utilities for the Matildus platform
 
 export function formatPercentage(value: number, decimals = 0): string {
   return `${value.toFixed(decimals)}%`;

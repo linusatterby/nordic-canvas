@@ -1,4 +1,5 @@
 import { PublicShell } from "@/app/layout/PublicShell";
+import { APP_NAME } from "@/config/brand";
 
 export function Privacy() {
   return (
@@ -7,13 +8,13 @@ export function Privacy() {
         <h1 className="text-3xl font-bold text-foreground mb-6">Integritetspolicy</h1>
         <div className="prose prose-sm text-muted-foreground space-y-4">
           <p>
-            Denna sida innehåller information om hur Seasonal Talent hanterar dina personuppgifter.
+            Denna sida innehåller information om hur {APP_NAME} hanterar dina personuppgifter.
             Innehållet uppdateras inom kort.
           </p>
           <p>
             Har du frågor om vår hantering av personuppgifter? Kontakta oss på{" "}
-            <a href="mailto:info@seasonaltalent.se" className="text-primary hover:underline">
-              info@seasonaltalent.se
+            <a href="mailto:info@matildus.se" className="text-primary hover:underline">
+              info@matildus.se
             </a>
           </p>
         </div>
