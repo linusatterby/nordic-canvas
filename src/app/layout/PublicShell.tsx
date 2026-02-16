@@ -24,7 +24,7 @@ export function PublicShell({ children, pageTitle, pageDescription, canonicalPat
 
   const navLinks = [
     { href: "/", label: "Hem" },
-    { href: "/for-talanger", label: "För Talanger" },
+    { href: "/for-talanger", label: "För Kandidater" },
     { href: "/for-arbetsgivare", label: "För Arbetsgivare" },
   ];
 

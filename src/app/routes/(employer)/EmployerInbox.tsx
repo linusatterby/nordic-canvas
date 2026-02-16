@@ -231,7 +231,7 @@ export default function EmployerInbox() {
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-medium text-foreground">Inga matchningar ännu</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Matchningar med talanger visas här
+                  Matchningar med kandidater visas här
                 </p>
                 <Button
                   variant="primary"
@@ -255,7 +255,7 @@ export default function EmployerInbox() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">
-                        {match.talent_name || "Talang"}
+                        {match.talent_name || "Kandidat"}
                       </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {match.job_title || "Uppdrag"}

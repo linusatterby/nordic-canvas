@@ -66,17 +66,17 @@ const scopeLabels: Record<BorrowScope, { label: string; icon: React.ReactNode; d
   internal: {
     label: "Intern pool",
     icon: <Building2 className="h-4 w-4" />,
-    description: "Talanger du redan matchat med",
+    description: "Kandidater du redan matchat med",
   },
   circle: {
     label: "Trusted Circle",
     icon: <Handshake className="h-4 w-4" />,
-    description: "Partnerföretags tillgängliga talanger",
+    description: "Partnerföretags tillgängliga kandidater",
   },
   local: {
     label: "Lokalt ekosystem",
     icon: <Globe className="h-4 w-4" />,
-    description: "Alla publika talanger i orten",
+    description: "Alla publika kandidater i orten",
   },
 };
 
@@ -212,7 +212,7 @@ export function EmployerBorrow() {
       addToast({
         type: "success",
         title: "Förfrågan skapad!",
-        message: offerCount > 0 ? `${offerCount} talanger notifierade.` : "Inga tillgängliga talanger hittades.",
+        message: offerCount > 0 ? `${offerCount} kandidater notifierade.` : "Inga tillgängliga kandidater hittades.",
       });
     } catch {
       addToast({ type: "error", title: "Fel", message: "Kunde inte skapa förfrågan." });
@@ -325,7 +325,7 @@ export function EmployerBorrow() {
           <div>
             <h1 className="text-xl font-bold text-foreground">Låna personal</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Hitta tillgängliga talanger – intern, via partner eller lokalt
+              Hitta tillgängliga kandidater – intern, via partner eller lokalt
             </p>
           </div>
           <Button variant="primary" size="sm" className="gap-2" onClick={() => setShowCreate(true)}>
@@ -442,7 +442,7 @@ export function EmployerBorrow() {
                             <div className="flex flex-wrap gap-1">
                               {req.offers.slice(0, 5).map((o) => (
                                 <Badge key={o.id} variant="default" size="sm">
-                                  {o.talent_name ?? "Talang"}
+                                  {o.talent_name ?? "Kandidat"}
                                 </Badge>
                               ))}
                               {req.offers.length > 5 && (
@@ -634,7 +634,7 @@ export function EmployerBorrow() {
           <ModalHeader>
             <ModalTitle>Ny förfrågan</ModalTitle>
             <ModalDescription>
-              Beskriv vad du behöver så hittar vi tillgängliga talanger.
+              Beskriv vad du behöver så hittar vi tillgängliga kandidater.
             </ModalDescription>
           </ModalHeader>
 

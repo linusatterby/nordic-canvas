@@ -21,7 +21,7 @@ const talentNavItems: NavItem[] = [
 const employerNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/employer/dashboard" },
   { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
-  { icon: <Users className="h-5 w-5" />, label: "Talanger", href: "/employer/swipe-talent" },
+  { icon: <Users className="h-5 w-5" />, label: "Kandidater", href: "/employer/swipe-talent" },
   { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/employer/inbox" },
 ];
 

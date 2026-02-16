@@ -70,7 +70,7 @@ const employerSections: NavSection[] = [
     heading: "Rekrytering",
     items: [
       { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
-      { icon: <Users className="h-5 w-5" />, label: "Hitta talanger", href: "/employer/jobs" },
+      { icon: <Users className="h-5 w-5" />, label: "Hitta kandidater", href: "/employer/jobs" },
       { icon: <Calendar className="h-5 w-5" />, label: "Schema", href: "/employer/scheduler" },
       { icon: <ArrowLeftRight className="h-5 w-5" />, label: "Låna personal", href: "/employer/borrow" },
     ],

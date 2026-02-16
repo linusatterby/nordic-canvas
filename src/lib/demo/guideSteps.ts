@@ -13,7 +13,7 @@ export interface GuideStep {
 const EMPLOYER_STEPS: GuideStep[] = [
   {
     id: "employer-swipe",
-    title: "Swipea talanger",
+    title: "Swipea kandidater",
     description: "Hitta och matcha kandidater för dina jobb",
     ctaLabel: "Börja swipea",
     href: "/employer/jobs",
@@ -32,7 +32,7 @@ const EMPLOYER_STEPS: GuideStep[] = [
   {
     id: "employer-chat",
     title: "Skicka ett meddelande",
-    description: "Chatta med matchade talanger",
+    description: "Chatta med matchade kandidater",
     ctaLabel: "Öppna chatt",
     href: "/employer/matches",
     icon: "chat",

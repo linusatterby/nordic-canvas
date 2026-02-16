@@ -121,7 +121,7 @@ export function DemoGuideModal({ open, onOpenChange }: DemoGuideModalProps) {
             <div>
               <ModalTitle>Demo-guide</ModalTitle>
               <ModalDescription>
-                {activeRole === "employer" ? "Utforska som arbetsgivare" : "Utforska som talang"}
+                {activeRole === "employer" ? "Utforska som arbetsgivare" : "Utforska som kandidat"}
               </ModalDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ export function DemoGuideModal({ open, onOpenChange }: DemoGuideModalProps) {
               )}
             </div>
             <span className="text-sm font-medium">
-              {activeRole === "employer" ? "Arbetsgivarvy" : "Talangvy"}
+              {activeRole === "employer" ? "Arbetsgivarvy" : "Kandidatvy"}
             </span>
           </div>
 

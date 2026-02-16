@@ -11,7 +11,7 @@ export interface DemoCtaConfig {
 
 export const TALENT_DEMO_CTA: DemoCtaConfig = {
   role: "talent",
-  label: "Testa demo som talang",
+  label: "Testa demo som kandidat",
   loadingLabel: "Startar…",
   pathPrefix: "/talent",
 } as const;

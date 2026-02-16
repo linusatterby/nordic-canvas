@@ -107,7 +107,7 @@ export function OfferComposerModal({ open, onClose, orgId, talentUserId, matchId
           return;
         }
         
-        addToast({ type: "success", title: "Erbjudande skickat!", message: "Talangen har fått ditt erbjudande." });
+        addToast({ type: "success", title: "Erbjudande skickat!", message: "Kandidaten har fått ditt erbjudande." });
         reset();
         onClose();
       }

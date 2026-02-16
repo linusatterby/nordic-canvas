@@ -87,8 +87,8 @@ export type RouteDef = PublicRoute | AppRoute | CatchAllRoute;
 export const routes: RouteDef[] = [
   // Public
   { id: "landing", path: "/", kind: "public", element: Landing, guard: "public", meta: { canonicalPath: "/" } },
-  { id: "for-talanger", path: "/for-talanger", kind: "public", element: ForTalanger, guard: "public", meta: { pageTitle: "För Talanger", pageDescription: "Hitta säsongsjobb som matchar din profil och tillgänglighet.", canonicalPath: "/for-talanger" } },
-  { id: "for-arbetsgivare", path: "/for-arbetsgivare", kind: "public", element: ForArbetsgivare, guard: "public", meta: { pageTitle: "För Arbetsgivare", pageDescription: "Hitta säsongstalanger snabbt och tryggt.", canonicalPath: "/for-arbetsgivare" } },
+  { id: "for-talanger", path: "/for-talanger", kind: "public", element: ForTalanger, guard: "public", meta: { pageTitle: "För Kandidater", pageDescription: "Hitta säsongsjobb som matchar din profil och tillgänglighet.", canonicalPath: "/for-talanger" } },
+  { id: "for-arbetsgivare", path: "/for-arbetsgivare", kind: "public", element: ForArbetsgivare, guard: "public", meta: { pageTitle: "För Arbetsgivare", pageDescription: "Hitta kandidater snabbt och tryggt.", canonicalPath: "/for-arbetsgivare" } },
   { id: "auth", path: "/auth", kind: "public", element: Auth, guard: "public", meta: { pageTitle: "Logga in", canonicalPath: "/auth" } },
   { id: "auth-login", path: "/auth/login", kind: "public", element: Auth, guard: "public", meta: { pageTitle: "Logga in", canonicalPath: "/auth/login" } },
   { id: "auth-signup", path: "/auth/signup", kind: "public", element: Auth, guard: "public", meta: { pageTitle: "Skapa konto", canonicalPath: "/auth/signup" } },

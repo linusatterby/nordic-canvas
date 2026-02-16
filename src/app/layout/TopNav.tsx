@@ -26,7 +26,7 @@ interface TopNavProps {
 
 const roleLabels: Record<string, string> = {
   employer: "Arbetsgivare",
-  talent: "Talang",
+  talent: "Kandidat",
   host: "Värd",
 };
 

@@ -67,7 +67,7 @@ export function CreateBookingModal({
     setError(null);
 
     if (!selectedTalent) {
-      setError("Välj en talang");
+      setError("Välj en kandidat");
       return;
     }
 
@@ -106,7 +106,7 @@ export function CreateBookingModal({
     });
 
     if (hasBookingConflict) {
-      setError("Krockar med en befintlig bokning för denna talang");
+      setError("Krockar med en befintlig bokning för denna kandidat");
       return;
     }
 
@@ -119,7 +119,7 @@ export function CreateBookingModal({
     });
 
     if (hasBusyConflict) {
-      setError("Talangen är upptagen under denna tid (bokad av annan arbetsgivare)");
+      setError("Kandidaten är upptagen under denna tid (bokad av annan arbetsgivare)");
       return;
     }
 
@@ -138,21 +138,21 @@ export function CreateBookingModal({
       <ModalContent className="max-w-md">
         <ModalHeader>
           <ModalTitle>Skapa bokning</ModalTitle>
-          <ModalDescription>Boka in en talang från dina matchningar.</ModalDescription>
+          <ModalDescription>Boka in en kandidat från dina matchningar.</ModalDescription>
         </ModalHeader>
 
         <div className="space-y-4 py-4">
           {/* Talent selector */}
           <div className="space-y-2">
-            <Label>Talang</Label>
+            <Label>Kandidat</Label>
             <Select value={selectedTalent} onValueChange={setSelectedTalent}>
               <SelectTrigger>
-                <SelectValue placeholder="Välj talang..." />
+                <SelectValue placeholder="Välj kandidat..." />
               </SelectTrigger>
               <SelectContent>
                 {talents.length === 0 ? (
                   <div className="px-3 py-2 text-sm text-muted-foreground">
-                    Inga matchade talanger
+                    Inga matchade kandidater
                   </div>
                 ) : (
                   talents.map((t) => (

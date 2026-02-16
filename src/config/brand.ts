@@ -5,10 +5,10 @@
 
 export const APP_NAME = "Matildus" as const;
 
-export const APP_TAGLINE = "Matcha rätt jobb & talang" as const;
+export const APP_TAGLINE = "Matcha rätt jobb & kandidat" as const;
 
 export const APP_DESCRIPTION =
-  "Plattformen som kopplar ihop talanger och arbetsgivare inom besöksnäringen. Hitta rätt jobb eller rätt talang – snabbt och enkelt." as const;
+  "Plattformen som kopplar ihop kandidater och arbetsgivare inom besöksnäringen. Hitta rätt jobb eller rätt kandidat – snabbt och enkelt." as const;
 
 /** Short logo mark text (for collapsed sidebar / small icon contexts) */
 export const LOGO_MARK = "M" as const;
