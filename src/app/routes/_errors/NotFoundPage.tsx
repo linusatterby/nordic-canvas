@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { EmptyState } from "@/components/delight/EmptyStates";
 
-const NotFound = () => {
+const NotFoundPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,4 +29,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default NotFoundPage;
