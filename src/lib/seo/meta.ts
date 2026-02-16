@@ -11,11 +11,12 @@ import { SITE_URL } from "@/lib/config/env";
 /** Default OG image served from public/ */
 export const DEFAULT_OG_IMAGE = "/og/default.png";
 
+import { APP_NAME, APP_TAGLINE, APP_DESCRIPTION } from "@/config/brand";
+
 export const siteDefaults = {
-  siteName: "Seasonal Talent",
-  defaultTitle: "Seasonal Talent – Matcha jobb & talanger",
-  defaultDescription:
-    "Plattformen som matchar säsongsarbetare med arbetsgivare. Hitta rätt jobb eller rätt talang – snabbt och enkelt.",
+  siteName: APP_NAME,
+  defaultTitle: `${APP_NAME} – ${APP_TAGLINE}`,
+  defaultDescription: APP_DESCRIPTION,
 } as const;
 
 export interface MetaConfig {

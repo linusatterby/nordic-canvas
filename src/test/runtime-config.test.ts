@@ -91,7 +91,7 @@ describe("runtime config validation logic", () => {
   });
 
   it("test backend with live-looking SITE_URL → warning", () => {
-    const r = validateRaw({ appEnv: "demo", backendEnv: "test", siteUrl: "https://seasonaltalent.se", supabaseUrl: "http://localhost", supabaseKey: "key" });
+    const r = validateRaw({ appEnv: "demo", backendEnv: "test", siteUrl: "https://matildus.se", supabaseUrl: "http://localhost", supabaseKey: "key" });
     expect(r.ok).toBe(true);
     expect(r.warnings.some((w) => w.includes("live-looking"))).toBe(true);
   });
