@@ -50,7 +50,7 @@ export default function HostInbox() {
           <div className="flex-1 overflow-hidden p-4">
             <HousingChatView
               threadId={activeThreadId}
-              recipientName={activeThread.talent_name || "Talang"}
+              recipientName={activeThread.talent_name || "Kandidat"}
             />
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function HostInbox() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-medium text-foreground truncate">
-                        {thread.talent_name || "Talang"}
+                        {thread.talent_name || "Kandidat"}
                       </p>
                       {thread.last_message_at && (
                         <span className="text-xs text-muted-foreground shrink-0">
@@ -114,7 +114,7 @@ export default function HostInbox() {
             <Inbox className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
             <p className="text-muted-foreground">Inga förfrågningar än</p>
             <p className="text-sm text-muted-foreground mt-1">
-              När talanger kontaktar dig visas det här
+              När kandidater kontaktar dig visas det här
             </p>
           </Card>
         )}

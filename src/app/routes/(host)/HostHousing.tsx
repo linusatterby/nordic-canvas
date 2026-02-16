@@ -111,7 +111,7 @@ export default function HostHousing() {
       toast({
         title: newStatus === "published" ? "Publicerad!" : "Stängd",
         description: newStatus === "published"
-          ? "Boendet är nu synligt för talanger."
+          ? "Boendet är nu synligt för kandidater."
           : "Boendet är nu stängt.",
       });
     } catch (err) {
