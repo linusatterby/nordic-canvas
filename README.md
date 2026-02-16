@@ -87,6 +87,10 @@ npx vitest run            # Unit tests
 
 ## Environment Variables
 
+> **Lovable Cloud** manages `.env` automatically — you should never commit or edit it manually.
+> For local development, copy `.env.example` and fill in your values.
+> The `.env` file is git-ignored; `.env.example` is the committed reference.
+
 ### Quick Start
 
 1. Copy the example file:

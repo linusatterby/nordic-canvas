@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { IS_LIVE_BACKEND } from "@/lib/config/env";
 
 /**
  * Admin diagnostics API layer.
@@ -29,12 +30,15 @@ export async function pingBackend(): Promise<{
   }
 }
 
-/** Invoke the seed-test edge function */
+/** Invoke the seed-test edge function. Hard-blocked on live backend. */
 export async function invokeSeedTest(): Promise<{
   ok: boolean;
   elapsedMs?: number;
   error?: string;
 }> {
+  if (IS_LIVE_BACKEND) {
+    return { ok: false, error: "Seed är inaktiverat mot live backend" };
+  }
   try {
     const { data, error } = await supabase.functions.invoke("seed-test");
     if (error) {
