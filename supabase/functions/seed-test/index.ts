@@ -393,12 +393,168 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── 4. Demo inbox items for talent view (idempotent via title + tab) ──
+    const DEMO_INBOX_ITEMS = [
+      // --- Notifications (4) ---
+      {
+        tab: "notification",
+        title: "Ny matchning: Servis – Innerstaden Visby",
+        body: "Visby Strandhotell har en ny roll som matchar dina preferenser. Kolla matchningen och svara snabbt.",
+        org_name: "Visby Strandhotell",
+        severity: "info",
+        metadata: { cta: "Öppna matchning" },
+        sort_order: 1,
+      },
+      {
+        tab: "notification",
+        title: "Erbjudande: Fjällhotellet Åre vill boka dig",
+        body: "De vill säkra personal tidigt. Svara ja/nej så snart du kan.",
+        org_name: "Fjällhotellet Åre",
+        severity: "warning",
+        metadata: { cta: "Se erbjudande" },
+        sort_order: 2,
+      },
+      {
+        tab: "notification",
+        title: "Nytt meddelande från Sälen Resort & Spa",
+        body: "Fråga om tillgänglighet för ett extrapass nästa helg.",
+        org_name: "Sälen Resort & Spa",
+        severity: "info",
+        metadata: { cta: "Öppna chatten" },
+        sort_order: 3,
+      },
+      {
+        tab: "notification",
+        title: "Tips: Lägg till certifikat för fler träffar",
+        body: "HLR, hygien och kassavana ökar din matchscore. Uppdatera din profil på 1 minut.",
+        org_name: null,
+        severity: "success",
+        metadata: { cta: "Gå till certifikat" },
+        sort_order: 4,
+      },
+      // --- Matches (3) ---
+      {
+        tab: "match",
+        title: "Servis – Innerstaden Visby (sommar)",
+        body: null,
+        org_name: "Visby Strandhotell",
+        status: "matched",
+        metadata: { score: 33, reason: "Rollmatch: Servis ✓, Ort: Visby ✓, Period: Sommar ✓, Certifikat: saknas (HLR) → +0" },
+        sort_order: 1,
+      },
+      {
+        tab: "match",
+        title: "Reception – Fjällhotellet Åre (vinter)",
+        body: null,
+        org_name: "Fjällhotellet Åre",
+        status: "matched",
+        metadata: { score: 58, reason: "Rollmatch: Reception ✓, Ort: Åre ✓, Boende erbjuds ✓, Tillgänglighet: demo-bypass aktiv" },
+        sort_order: 2,
+      },
+      {
+        tab: "match",
+        title: "Disk/Runner – Sälen Resort & Spa (extrapass)",
+        body: null,
+        org_name: "Sälen Resort & Spa",
+        status: "matched",
+        metadata: { score: 46, reason: "Extrapass ✓, Kvällar ✓, Kort varsel ✓, Certifikat: hygien saknas → -" },
+        sort_order: 3,
+      },
+      // --- Offers (2) ---
+      {
+        tab: "offer",
+        title: "Erbjudande: Reception (vinter), start 2026-12-01",
+        body: "Vi kan erbjuda personalboende och introduktion på plats. Vill du gå vidare?",
+        org_name: "Fjällhotellet Åre",
+        status: "sent",
+        metadata: { start_date: "2026-12-01" },
+        sort_order: 1,
+      },
+      {
+        tab: "offer",
+        title: "Erbjudande: Servis (sommar), start 2026-06-15",
+        body: "Heltid under högsäsong. Möjlighet till förlängning i augusti.",
+        org_name: "Visby Strandhotell",
+        status: "sent",
+        metadata: { start_date: "2026-06-15" },
+        sort_order: 2,
+      },
+      // --- Messages (1 thread with 6 messages) ---
+      {
+        tab: "message",
+        title: "Visby Strandhotell • Servis (sommar)",
+        body: null,
+        org_name: "Visby Strandhotell",
+        status: "active",
+        metadata: {
+          messages: [
+            { sender_type: "employer", body: "Hej! Såg din profil – du verkar passa fint hos oss i sommar. Är du öppen för Visby juni–aug?" },
+            { sender_type: "talent", body: "Hej! Ja, jag är intresserad. Vilka tider och omfattning tänker ni?" },
+            { sender_type: "employer", body: "Primärt kvällar + helger. 100% vecka 26–32. Kan du börja runt 15 juni?" },
+            { sender_type: "talent", body: "Det låter bra. Jag kan börja 15 juni. Har ni personalboende?" },
+            { sender_type: "employer", body: "Vi har boende i närheten (delat). Vi kan ta detaljer om du vill gå vidare." },
+            { sender_type: "talent", body: "Toppen, jag vill gärna gå vidare. Skicka gärna nästa steg!" },
+          ],
+        },
+        sort_order: 1,
+      },
+      // --- Requests (2) ---
+      {
+        tab: "request",
+        title: "Förfrågan: Extrapass fredag 18:00–23:00",
+        body: "Kan du täcka ett pass i restaurangen nu på fredag? Snabb återkoppling uppskattas.",
+        org_name: "Sälen Resort & Spa",
+        status: "pending",
+        metadata: { options: ["Kan", "Kan inte"] },
+        sort_order: 1,
+      },
+      {
+        tab: "request",
+        title: "Förfrågan: Kort intervju (15 min) denna vecka",
+        body: "Vi vill stämma av erfarenhet och upplägg. Vilken tid passar bäst?",
+        org_name: "Fjällhotellet Åre",
+        status: "pending",
+        metadata: { options: ["Föreslå tid", "Inte aktuell"] },
+        sort_order: 2,
+      },
+    ];
+
+    let inboxCreated = 0;
+    let inboxExisting = 0;
+
+    for (const item of DEMO_INBOX_ITEMS) {
+      const { data: existing } = await sb
+        .from("demo_inbox_items")
+        .select("id")
+        .eq("title", item.title)
+        .eq("tab", item.tab)
+        .eq("is_demo", true)
+        .maybeSingle();
+
+      if (existing) {
+        inboxExisting++;
+      } else {
+        const { error: itemErr } = await sb.from("demo_inbox_items").insert({
+          ...item,
+          is_demo: true,
+        });
+        if (itemErr) {
+          errors.push(`inbox_item "${item.title}": ${itemErr.message}`);
+        } else {
+          inboxCreated++;
+        }
+      }
+    }
+
     results._summary = {
       orgs: orgIds.filter(Boolean).length,
       jobs_created: jobsCreated,
       jobs_existing: jobsExisting,
       jobs_total: DEMO_JOBS.length,
       talent_cards: DEMO_TALENT_CARDS.length,
+      inbox_created: inboxCreated,
+      inbox_existing: inboxExisting,
+      inbox_total: DEMO_INBOX_ITEMS.length,
     };
 
     const elapsed = Date.now() - startTime;

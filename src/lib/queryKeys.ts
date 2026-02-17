@@ -86,6 +86,7 @@ export const queryKeys = {
       ["demoReleaseOffers", orgId, start, end] as const,
     guideSummary: (role: string, orgId?: string | null, userId?: string | null) =>
       ["demoGuideSummaryAdditional", role, orgId, userId] as const,
+    inbox: (tab?: string) => ["demoInbox", tab] as const,
   },
 
   // --- Housing ---

@@ -610,6 +610,48 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_inbox_items: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          is_demo: boolean
+          metadata: Json | null
+          org_name: string | null
+          severity: string | null
+          sort_order: number | null
+          status: string | null
+          tab: string
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          metadata?: Json | null
+          org_name?: string | null
+          severity?: string | null
+          sort_order?: number | null
+          status?: string | null
+          tab: string
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          metadata?: Json | null
+          org_name?: string | null
+          severity?: string | null
+          sort_order?: number | null
+          status?: string | null
+          tab?: string
+          title?: string
+        }
+        Relationships: []
+      }
       demo_matches: {
         Row: {
           created_at: string
