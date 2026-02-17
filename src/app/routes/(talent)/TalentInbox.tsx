@@ -15,6 +15,16 @@ import { useTalentOffers, usePendingOffersCount } from "@/hooks/useOffers";
 import { OffersList, OfferDetailModal } from "@/components/offers";
 import { getSeverityDotClass } from "@/lib/api/notifications";
 import { cn } from "@/lib/utils";
+import { useDemoMode } from "@/hooks/useDemo";
+import { isDemoEffectivelyEnabled } from "@/lib/config/env";
+import {
+  useDemoNotifications,
+  useDemoMatchItems,
+  useDemoOfferItems,
+  useDemoMessageItems,
+  useDemoRequestItems,
+} from "@/hooks/useDemoInbox";
+import type { DemoInboxItem } from "@/lib/api/demoInbox";
 import { 
   MessageSquare, 
   Users, 
@@ -25,10 +35,22 @@ import {
   FileText
 } from "lucide-react";
 
+/** Small demo badge chip */
+function DemoBadge() {
+  return (
+    <Badge variant="outline" size="sm" className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
+      Demo
+    </Badge>
+  );
+}
+
 export default function TalentInbox() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
+  const { isDemoMode } = useDemoMode();
+  const demoEnabled = isDemoEffectivelyEnabled(isDemoMode);
+
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches("talent");
   const { data: borrowOffers, isLoading: borrowOffersLoading, refetch: refetchBorrowOffers } = useTalentBorrowOffers();
   const { data: notifications, isLoading: notificationsLoading, refetch: refetchNotifications } = useNotifications({ limit: 30 });
@@ -36,7 +58,39 @@ export default function TalentInbox() {
   const markRead = useMarkNotificationRead();
   const pendingOffersCount = usePendingOffersCount();
 
+  // Demo data hooks
+  const { data: demoNotifications } = useDemoNotifications();
+  const { data: demoMatches } = useDemoMatchItems();
+  const { data: demoOffers } = useDemoOfferItems();
+  const { data: demoMessages } = useDemoMessageItems();
+  const { data: demoRequests } = useDemoRequestItems();
+
   const pendingBorrowOffers = borrowOffers?.filter((o) => o.status === "pending") ?? [];
+
+  // Merge real + demo data
+  const effectiveNotifications = notifications && notifications.length > 0
+    ? notifications
+    : demoEnabled && demoNotifications && demoNotifications.length > 0
+      ? demoNotifications
+      : notifications ?? [];
+
+  const effectiveMatches = matches && matches.length > 0
+    ? matches
+    : demoEnabled && demoMatches && demoMatches.length > 0
+      ? demoMatches
+      : matches ?? [];
+
+  const effectiveBorrowOffers = pendingBorrowOffers.length > 0
+    ? pendingBorrowOffers
+    : demoEnabled && demoRequests && demoRequests.length > 0
+      ? demoRequests
+      : pendingBorrowOffers;
+
+  const usingDemoNotifications = demoEnabled && (!notifications || notifications.length === 0) && (demoNotifications?.length ?? 0) > 0;
+  const usingDemoMatches = demoEnabled && (!matches || matches.length === 0) && (demoMatches?.length ?? 0) > 0;
+  const usingDemoOffers = demoEnabled && (demoOffers?.length ?? 0) > 0;
+  const usingDemoRequests = demoEnabled && pendingBorrowOffers.length === 0 && (demoRequests?.length ?? 0) > 0;
+  const usingDemoMessages = demoEnabled && (demoMessages?.length ?? 0) > 0;
 
   // Handle offerId from URL (from notification deep-link)
   const urlOfferId = searchParams.get("offerId");
@@ -53,20 +107,25 @@ export default function TalentInbox() {
 
   const handleCloseOfferModal = () => {
     setSelectedOfferId(null);
-    // Clear URL params
     if (urlOfferId) {
       setSearchParams({});
     }
   };
 
-  const handleNotificationClick = (notification: { id: string; is_read: boolean; href?: string | null }) => {
-    if (!notification.is_read) {
+  const handleNotificationClick = (notification: { id: string; is_read?: boolean; href?: string | null }) => {
+    if ("is_read" in notification && !notification.is_read) {
       markRead.mutate(notification.id);
     }
     if (notification.href) {
       navigate(notification.href);
     }
   };
+
+  // Tab badge counts
+  const notifCount = usingDemoNotifications ? demoNotifications!.length : (unreadCount ?? 0);
+  const matchCount = effectiveMatches.length;
+  const offerCount = usingDemoOffers ? demoOffers!.length : pendingOffersCount;
+  const requestCount = usingDemoRequests ? demoRequests!.length : pendingBorrowOffers.length;
 
   return (
     <AppShell role="talent">
@@ -83,40 +142,49 @@ export default function TalentInbox() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full grid grid-cols-4">
+          <TabsList className="w-full grid grid-cols-5">
             <TabsTrigger value="notifications" className="gap-1 text-xs sm:text-sm">
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Notiser</span>
-              {unreadCount && unreadCount > 0 && (
+              {notifCount > 0 && (
                 <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
-                  {unreadCount > 9 ? "9+" : unreadCount}
+                  {notifCount > 9 ? "9+" : notifCount}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="matches" className="gap-1 text-xs sm:text-sm">
               <MessageSquare className="h-4 w-4" />
               <span className="hidden sm:inline">Matchningar</span>
-              {matches && matches.length > 0 && (
+              {matchCount > 0 && (
                 <Badge variant="default" className="ml-1 h-5 px-1.5 text-xs">
-                  {matches.length}
+                  {matchCount}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="job-offers" className="gap-1 text-xs sm:text-sm">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Erbjudanden</span>
-              {pendingOffersCount > 0 && (
+              {offerCount > 0 && (
                 <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
-                  {pendingOffersCount}
+                  {offerCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="gap-1 text-xs sm:text-sm">
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">Meddelanden</span>
+              {usingDemoMessages && (
+                <Badge variant="default" className="ml-1 h-5 px-1.5 text-xs">
+                  {demoMessages!.length}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="borrow-offers" className="gap-1 text-xs sm:text-sm">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Förfrågan</span>
-              {pendingBorrowOffers.length > 0 && (
+              {requestCount > 0 && (
                 <Badge variant="new" className="ml-1 h-5 px-1.5 text-xs">
-                  {pendingBorrowOffers.length}
+                  {requestCount}
                 </Badge>
               )}
             </TabsTrigger>
@@ -147,6 +215,10 @@ export default function TalentInbox() {
                     </div>
                   </div>
                 </Card>
+              ))
+            ) : usingDemoNotifications ? (
+              (demoNotifications ?? []).map((item) => (
+                <DemoNotificationCard key={item.id} item={item} />
               ))
             ) : !notifications || notifications.length === 0 ? (
               <Card className="p-8 text-center">
@@ -219,10 +291,14 @@ export default function TalentInbox() {
                   </div>
                 </Card>
               ))
-            ) : matchesError ? (
+            ) : matchesError && !usingDemoMatches ? (
               <Card className="p-6 text-center">
                 <p className="text-destructive">Kunde inte ladda matchningar</p>
               </Card>
+            ) : usingDemoMatches ? (
+              (demoMatches ?? []).map((item) => (
+                <DemoMatchCard key={item.id} item={item} />
+              ))
             ) : !matches || matches.length === 0 ? (
               <Card className="p-8 text-center">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -275,16 +351,41 @@ export default function TalentInbox() {
             )}
           </TabsContent>
 
-          {/* Job Offers Tab (NEW) */}
+          {/* Job Offers Tab */}
           <TabsContent value="job-offers" className="mt-4">
-            <OffersList
-              role="talent"
-              onSelectOffer={(id) => setSelectedOfferId(id)}
-              selectedOfferId={selectedOfferId}
-            />
+            {usingDemoOffers ? (
+              <div className="space-y-3">
+                {(demoOffers ?? []).map((item) => (
+                  <DemoOfferCard key={item.id} item={item} />
+                ))}
+              </div>
+            ) : (
+              <OffersList
+                role="talent"
+                onSelectOffer={(id) => setSelectedOfferId(id)}
+                selectedOfferId={selectedOfferId}
+              />
+            )}
           </TabsContent>
 
-          {/* Borrow Offers Tab */}
+          {/* Messages Tab */}
+          <TabsContent value="messages" className="mt-4 space-y-3">
+            {usingDemoMessages ? (
+              (demoMessages ?? []).map((item) => (
+                <DemoMessageCard key={item.id} item={item} />
+              ))
+            ) : (
+              <Card className="p-8 text-center">
+                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-medium text-foreground">Inga meddelanden</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Konversationer med arbetsgivare visas här
+                </p>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Borrow Offers / Requests Tab */}
           <TabsContent value="borrow-offers" className="mt-4 space-y-3">
             <div className="flex justify-end mb-2">
               <Button
@@ -306,6 +407,10 @@ export default function TalentInbox() {
                     <Skeleton className="h-3 w-1/2" />
                   </div>
                 </Card>
+              ))
+            ) : usingDemoRequests ? (
+              (demoRequests ?? []).map((item) => (
+                <DemoRequestCard key={item.id} item={item} />
               ))
             ) : pendingBorrowOffers.length === 0 ? (
               <Card className="p-8 text-center">
@@ -352,11 +457,167 @@ export default function TalentInbox() {
       </div>
 
       {/* Offer Detail Modal */}
-      <OfferDetailModal
-        offerId={selectedOfferId}
-        onClose={handleCloseOfferModal}
-        role="talent"
-      />
+      {!usingDemoOffers && (
+        <OfferDetailModal
+          offerId={selectedOfferId}
+          onClose={handleCloseOfferModal}
+          role="talent"
+        />
+      )}
     </AppShell>
+  );
+}
+
+// ── Demo card components ──
+
+function DemoNotificationCard({ item }: { item: DemoInboxItem }) {
+  return (
+    <Card className="p-3 bg-primary/5 border-l-2 border-l-primary">
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 mt-1">
+          <div className={cn(
+            "h-2 w-2 rounded-full",
+            getSeverityDotClass(item.severity as "info" | "success" | "warning" | "urgent")
+          )} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+            <DemoBadge />
+          </div>
+          {item.body && (
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.body}</p>
+          )}
+          {item.org_name && (
+            <p className="text-xs text-muted-foreground/70 mt-1">{item.org_name}</p>
+          )}
+        </div>
+        <Badge variant="new" className="h-4 px-1 text-[10px] flex-shrink-0">Ny</Badge>
+      </div>
+    </Card>
+  );
+}
+
+function DemoMatchCard({ item }: { item: DemoInboxItem }) {
+  const score = (item.metadata as { score?: number })?.score;
+  const reason = (item.metadata as { reason?: string })?.reason;
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+          {score != null ? (
+            <span className="text-sm font-bold text-primary">{score}</span>
+          ) : (
+            <MessageSquare className="h-5 w-5 text-primary" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <p className="font-medium text-foreground truncate">{item.org_name}</p>
+            <DemoBadge />
+          </div>
+          <p className="text-sm text-muted-foreground truncate">{item.title}</p>
+          {reason && (
+            <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">{reason}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="default" className="text-xs">Ny</Badge>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function DemoOfferCard({ item }: { item: DemoInboxItem }) {
+  return (
+    <Card className="p-4 border-primary/50">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10 text-primary">
+          <FileText className="h-5 w-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-medium text-foreground truncate">{item.title}</h4>
+            <Badge variant="default" size="sm">Väntar på svar</Badge>
+            <DemoBadge />
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {item.org_name && <span>{item.org_name}</span>}
+          </p>
+          {item.body && (
+            <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">{item.body}</p>
+          )}
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      </div>
+    </Card>
+  );
+}
+
+function DemoMessageCard({ item }: { item: DemoInboxItem }) {
+  const messages = (item.metadata as { messages?: { sender_type: string; body: string }[] })?.messages ?? [];
+  const lastMessage = messages[messages.length - 1];
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <MessageSquare className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <p className="font-medium text-foreground truncate">{item.title}</p>
+            <DemoBadge />
+          </div>
+          {lastMessage && (
+            <p className="text-sm text-muted-foreground truncate">
+              {lastMessage.sender_type === "employer" ? "Arbetsgivare: " : "Du: "}
+              {lastMessage.body}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground/70 mt-1">{messages.length} meddelanden</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="new" className="text-xs">{messages.length}</Badge>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function DemoRequestCard({ item }: { item: DemoInboxItem }) {
+  const options = (item.metadata as { options?: string[] })?.options ?? [];
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-start gap-3">
+        <div className="h-12 w-12 rounded-full bg-delight/10 flex items-center justify-center flex-shrink-0">
+          <Calendar className="h-5 w-5 text-delight" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <p className="font-medium text-foreground">{item.org_name}</p>
+            <DemoBadge />
+          </div>
+          <p className="text-sm text-muted-foreground">{item.title}</p>
+          {item.body && (
+            <p className="text-xs text-muted-foreground/80 mt-1">{item.body}</p>
+          )}
+          {options.length > 0 && (
+            <div className="flex gap-2 mt-2">
+              {options.map((opt) => (
+                <Button key={opt} variant="outline" size="sm" className="text-xs">
+                  {opt}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }

@@ -68,6 +68,13 @@ export { getTalentDashboardSummary, type TalentDashboardSummary } from "./dashbo
 // --- Demo ---
 export { resetDemo, resetDemoForUser, listMyDemoOrgs, seedDemoScenario } from "./demo";
 
+// --- Demo Inbox ---
+export {
+  listDemoInboxItems,
+  type DemoInboxItem,
+  type DemoInboxTab,
+} from "./demoInbox";
+
 // --- Demo Guide ---
 export type { DemoGuideSummary } from "./demoGuide";
 
