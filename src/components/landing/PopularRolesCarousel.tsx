@@ -50,7 +50,7 @@ export function PopularRolesCarousel({ roles }: Props) {
           aria-label="Scrolla roller vänster"
           onClick={() => scroll(-1)}
           disabled={!canScrollLeft}
-          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10
+          className="hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10
                      h-8 w-8 items-center justify-center rounded-full
                      bg-card border border-border shadow-md
                      text-foreground/70 hover:text-primary hover:border-primary/30
@@ -65,7 +65,7 @@ export function PopularRolesCarousel({ roles }: Props) {
           aria-label="Scrolla roller höger"
           onClick={() => scroll(1)}
           disabled={!canScrollRight}
-          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10
+          className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10
                      h-8 w-8 items-center justify-center rounded-full
                      bg-card border border-border shadow-md
                      text-foreground/70 hover:text-primary hover:border-primary/30
@@ -92,7 +92,7 @@ export function PopularRolesCarousel({ roles }: Props) {
         <div
           ref={trackRef}
           className="flex gap-2 overflow-x-auto snap-x snap-mandatory pb-1
-                     flex-nowrap md:px-6"
+                     flex-nowrap md:px-10"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {roles.map((role) => (
