@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Users, Home, Star, Shield, Zap, CheckCircle2, Clock, ShieldCheck, MapPin, Play } from "lucide-react";
+import { PopularRolesCarousel } from "@/components/landing/PopularRolesCarousel";
 import { PublicShell } from "@/app/layout/PublicShell";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -108,24 +109,7 @@ export function Landing() {
             </div>
 
             {/* Role chips */}
-            <div className="max-w-2xl mx-auto mt-6">
-              <p className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-3">Populära roller</p>
-              <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none justify-center flex-wrap sm:flex-nowrap sm:justify-center"
-                   style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-                {roleChips.map((role) => (
-                  <span
-                    key={role}
-                    className="snap-start shrink-0 px-4 py-1.5 rounded-full text-sm font-medium
-                               bg-card border border-border
-                               text-foreground/80
-                               hover:bg-warm-accent-muted hover:text-primary hover:border-primary/30
-                               transition-all duration-fast cursor-default select-none"
-                  >
-                    {role}
-                  </span>
-                ))}
-              </div>
-            </div>
+            <PopularRolesCarousel roles={roleChips} />
           </div>
 
           {/* Value blocks glass strip */}
