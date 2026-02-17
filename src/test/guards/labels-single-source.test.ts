@@ -60,9 +60,6 @@ describe("Labels single-source guard", () => {
       if (ALLOWED_FILES.has(file)) continue;
       const content = fs.readFileSync(file, "utf-8");
 
-      // Skip files that already import LABELS — they're doing the right thing
-      if (/import\s.*LABELS.*from\s+["']@\/config\/labels["']/.test(content)) continue;
-
       const lines = content.split("\n");
       for (let i = 0; i < lines.length; i++) {
         for (const rule of TERM_RULES) {
