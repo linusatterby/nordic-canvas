@@ -394,6 +394,7 @@ Deno.serve(async (req) => {
     }
 
     // ── 4. Demo inbox items for talent view (idempotent via title + tab) ──
+    // Metadata includes rich payload for read-only preview rendering
     const DEMO_INBOX_ITEMS = [
       // --- Notifications (4) ---
       {
@@ -402,7 +403,7 @@ Deno.serve(async (req) => {
         body: "Visby Strandhotell har en ny roll som matchar dina preferenser. Kolla matchningen och svara snabbt.",
         org_name: "Visby Strandhotell",
         severity: "info",
-        metadata: { cta: "Öppna matchning" },
+        metadata: { cta: "Öppna matchning", ctaLabel: "Öppna matchning" },
         sort_order: 1,
       },
       {
@@ -411,7 +412,7 @@ Deno.serve(async (req) => {
         body: "De vill säkra personal tidigt. Svara ja/nej så snart du kan.",
         org_name: "Fjällhotellet Åre",
         severity: "warning",
-        metadata: { cta: "Se erbjudande" },
+        metadata: { cta: "Se erbjudande", ctaLabel: "Se erbjudande" },
         sort_order: 2,
       },
       {
@@ -420,7 +421,7 @@ Deno.serve(async (req) => {
         body: "Fråga om tillgänglighet för ett extrapass nästa helg.",
         org_name: "Sälen Resort & Spa",
         severity: "info",
-        metadata: { cta: "Öppna chatten" },
+        metadata: { cta: "Öppna chatten", ctaLabel: "Öppna chatten" },
         sort_order: 3,
       },
       {
@@ -429,7 +430,7 @@ Deno.serve(async (req) => {
         body: "HLR, hygien och kassavana ökar din matchscore. Uppdatera din profil på 1 minut.",
         org_name: null,
         severity: "success",
-        metadata: { cta: "Gå till certifikat" },
+        metadata: { cta: "Gå till certifikat", ctaLabel: "Gå till certifikat" },
         sort_order: 4,
       },
       // --- Matches (3) ---
@@ -439,7 +440,20 @@ Deno.serve(async (req) => {
         body: null,
         org_name: "Visby Strandhotell",
         status: "matched",
-        metadata: { score: 33, reason: "Rollmatch: Servis ✓, Ort: Visby ✓, Period: Sommar ✓, Certifikat: saknas (HLR) → +0" },
+        metadata: {
+          score: 33,
+          jobTitle: "Servis – Innerstaden Visby (sommar)",
+          location: "Visby",
+          periodText: "Juni–Augusti 2026",
+          housing: "",
+          whyBullets: [
+            "Rollmatch: Servis ✓",
+            "Ort: Visby ✓",
+            "Period: Sommar ✓",
+            "Certifikat: saknas (HLR) → +0",
+          ],
+          reason: "Rollmatch: Servis ✓, Ort: Visby ✓, Period: Sommar ✓, Certifikat: saknas (HLR) → +0",
+        },
         sort_order: 1,
       },
       {
@@ -448,7 +462,20 @@ Deno.serve(async (req) => {
         body: null,
         org_name: "Fjällhotellet Åre",
         status: "matched",
-        metadata: { score: 58, reason: "Rollmatch: Reception ✓, Ort: Åre ✓, Boende erbjuds ✓, Tillgänglighet: demo-bypass aktiv" },
+        metadata: {
+          score: 58,
+          jobTitle: "Reception – Fjällhotellet Åre (vinter)",
+          location: "Åre",
+          periodText: "December 2026 – April 2027",
+          housing: "Personalboende erbjuds",
+          whyBullets: [
+            "Rollmatch: Reception ✓",
+            "Ort: Åre ✓",
+            "Boende erbjuds ✓",
+            "Tillgänglighet: demo-bypass aktiv",
+          ],
+          reason: "Rollmatch: Reception ✓, Ort: Åre ✓, Boende erbjuds ✓, Tillgänglighet: demo-bypass aktiv",
+        },
         sort_order: 2,
       },
       {
@@ -457,7 +484,20 @@ Deno.serve(async (req) => {
         body: null,
         org_name: "Sälen Resort & Spa",
         status: "matched",
-        metadata: { score: 46, reason: "Extrapass ✓, Kvällar ✓, Kort varsel ✓, Certifikat: hygien saknas → -" },
+        metadata: {
+          score: 46,
+          jobTitle: "Disk/Runner – Sälen Resort & Spa (extrapass)",
+          location: "Sälen",
+          periodText: "Extrapass, kort varsel",
+          housing: "",
+          whyBullets: [
+            "Extrapass ✓",
+            "Kvällar ✓",
+            "Kort varsel ✓",
+            "Certifikat: hygien saknas → -",
+          ],
+          reason: "Extrapass ✓, Kvällar ✓, Kort varsel ✓, Certifikat: hygien saknas → -",
+        },
         sort_order: 3,
       },
       // --- Offers (2) ---
@@ -467,7 +507,12 @@ Deno.serve(async (req) => {
         body: "Vi kan erbjuda personalboende och introduktion på plats. Vill du gå vidare?",
         org_name: "Fjällhotellet Åre",
         status: "sent",
-        metadata: { start_date: "2026-12-01" },
+        metadata: {
+          startDate: "2026-12-01",
+          start_date: "2026-12-01",
+          housingText: "Personalboende ingår",
+          status: "Väntar på svar",
+        },
         sort_order: 1,
       },
       {
@@ -476,7 +521,12 @@ Deno.serve(async (req) => {
         body: "Heltid under högsäsong. Möjlighet till förlängning i augusti.",
         org_name: "Visby Strandhotell",
         status: "sent",
-        metadata: { start_date: "2026-06-15" },
+        metadata: {
+          startDate: "2026-06-15",
+          start_date: "2026-06-15",
+          housingText: "",
+          status: "Nytt",
+        },
         sort_order: 2,
       },
       // --- Messages (1 thread with 6 messages) ---
@@ -487,6 +537,7 @@ Deno.serve(async (req) => {
         org_name: "Visby Strandhotell",
         status: "active",
         metadata: {
+          threadTitle: "Visby Strandhotell • Servis (sommar)",
           messages: [
             { sender_type: "employer", body: "Hej! Såg din profil – du verkar passa fint hos oss i sommar. Är du öppen för Visby juni–aug?" },
             { sender_type: "talent", body: "Hej! Ja, jag är intresserad. Vilka tider och omfattning tänker ni?" },
@@ -505,7 +556,7 @@ Deno.serve(async (req) => {
         body: "Kan du täcka ett pass i restaurangen nu på fredag? Snabb återkoppling uppskattas.",
         org_name: "Sälen Resort & Spa",
         status: "pending",
-        metadata: { options: ["Kan", "Kan inte"] },
+        metadata: { options: ["Kan", "Kan inte"], actions: ["Kan", "Kan inte"] },
         sort_order: 1,
       },
       {
@@ -514,7 +565,7 @@ Deno.serve(async (req) => {
         body: "Vi vill stämma av erfarenhet och upplägg. Vilken tid passar bäst?",
         org_name: "Fjällhotellet Åre",
         status: "pending",
-        metadata: { options: ["Föreslå tid", "Inte aktuell"] },
+        metadata: { options: ["Föreslå tid", "Inte aktuell"], actions: ["Föreslå tid", "Inte aktuell"] },
         sort_order: 2,
       },
     ];
@@ -532,6 +583,14 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (existing) {
+        // Update metadata for richer preview payload
+        const { error: updateErr } = await sb
+          .from("demo_inbox_items")
+          .update({ metadata: item.metadata })
+          .eq("id", existing.id);
+        if (updateErr) {
+          errors.push(`inbox_update "${item.title}": ${updateErr.message}`);
+        }
         inboxExisting++;
       } else {
         const { error: itemErr } = await sb.from("demo_inbox_items").insert({
