@@ -25,6 +25,7 @@ import {
   useDemoRequestItems,
 } from "@/hooks/useDemoInbox";
 import type { DemoInboxItem } from "@/lib/api/demoInbox";
+import { DemoInboxPreview } from "@/components/demo/DemoInboxPreview";
 import { 
   MessageSquare, 
   Users, 
@@ -38,9 +39,7 @@ import {
 
 // ── Discreet demo badge (Nordic Warm Minimal) ──
 function DemoBadge() {
-  // Never render in live
   if (IS_LIVE_BACKEND) return null;
-
   return (
     <span className="inline-flex items-center gap-0.5 rounded-pill px-1.5 py-px text-[9px] font-medium uppercase tracking-wider border border-teal/20 bg-teal-muted text-teal select-none">
       <Sparkles className="h-2.5 w-2.5" />
@@ -54,7 +53,6 @@ export default function TalentInbox() {
   const [searchParams, setSearchParams] = useSearchParams();
   
   const { isDemoMode } = useDemoMode();
-  // Hard guard: demo features never active on live backend
   const demoEnabled = !IS_LIVE_BACKEND && isDemoEffectivelyEnabled(isDemoMode);
 
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches("talent");
@@ -64,7 +62,7 @@ export default function TalentInbox() {
   const markRead = useMarkNotificationRead();
   const pendingOffersCount = usePendingOffersCount();
 
-  // Demo data hooks (queries auto-disabled when !demoEnabled via useDemoInbox)
+  // Demo data hooks
   const { data: demoNotifications, refetch: refetchDemoNotif } = useDemoNotifications();
   const { data: demoMatches, refetch: refetchDemoMatches } = useDemoMatchItems();
   const { data: demoOffers, refetch: refetchDemoOffers } = useDemoOfferItems();
@@ -73,18 +71,25 @@ export default function TalentInbox() {
 
   const pendingBorrowOffers = borrowOffers?.filter((o) => o.status === "pending") ?? [];
 
-  // Merge real + demo data (demo only as fallback when real is empty)
+  // Merge logic
   const usingDemoNotifications = demoEnabled && (!notifications || notifications.length === 0) && (demoNotifications?.length ?? 0) > 0;
   const usingDemoMatches = demoEnabled && (!matches || matches.length === 0) && (demoMatches?.length ?? 0) > 0;
   const usingDemoOffers = demoEnabled && (demoOffers?.length ?? 0) > 0;
   const usingDemoRequests = demoEnabled && pendingBorrowOffers.length === 0 && (demoRequests?.length ?? 0) > 0;
   const usingDemoMessages = demoEnabled && (demoMessages?.length ?? 0) > 0;
 
-  const effectiveNotifications = usingDemoNotifications ? demoNotifications! : (notifications ?? []);
-  const effectiveMatches = usingDemoMatches ? demoMatches! : (matches ?? []);
-  const effectiveBorrowOffers = usingDemoRequests ? demoRequests! : pendingBorrowOffers;
+  // Demo preview state
+  const [previewItem, setPreviewItem] = React.useState<DemoInboxItem | null>(null);
 
-  // Handle offerId from URL (from notification deep-link)
+  const openDemoPreview = React.useCallback((item: DemoInboxItem) => {
+    setPreviewItem(item);
+  }, []);
+
+  const closeDemoPreview = React.useCallback(() => {
+    setPreviewItem(null);
+  }, []);
+
+  // URL-driven offer modal
   const urlOfferId = searchParams.get("offerId");
   const urlTab = searchParams.get("tab");
   const [selectedOfferId, setSelectedOfferId] = React.useState<string | null>(urlOfferId);
@@ -99,28 +104,24 @@ export default function TalentInbox() {
 
   const handleCloseOfferModal = () => {
     setSelectedOfferId(null);
-    if (urlOfferId) {
-      setSearchParams({});
-    }
+    if (urlOfferId) setSearchParams({});
   };
 
   const handleNotificationClick = (notification: { id: string; is_read?: boolean; href?: string | null }) => {
     if ("is_read" in notification && !notification.is_read) {
       markRead.mutate(notification.id);
     }
-    if (notification.href) {
-      navigate(notification.href);
-    }
+    if (notification.href) navigate(notification.href);
   };
 
-  // Tab badge counts: real + demo when demo active, real only in live
+  // Tab counts
   const notifCount = (notifications?.filter(n => !n.is_read).length ?? 0) + (demoEnabled ? (demoNotifications?.length ?? 0) : 0);
   const matchCount = (matches?.length ?? 0) + (demoEnabled ? (demoMatches?.length ?? 0) : 0);
   const offerCount = pendingOffersCount + (demoEnabled ? (demoOffers?.length ?? 0) : 0);
   const requestCount = pendingBorrowOffers.length + (demoEnabled ? (demoRequests?.length ?? 0) : 0);
   const messageCount = demoEnabled ? (demoMessages?.length ?? 0) : 0;
 
-  // Refetch both real + demo without duplicate spam
+  // Refetch
   const handleRefresh = React.useCallback(() => {
     refetchNotifications?.();
     if (demoEnabled) refetchDemoNotif();
@@ -194,15 +195,10 @@ export default function TalentInbox() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Notifications Tab */}
+          {/* ── Notifications Tab ── */}
           <TabsContent value="notifications" className="mt-4 space-y-3">
             <div className="flex justify-end mb-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={notificationsLoading}
-              >
+              <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={notificationsLoading}>
                 <RefreshCw className={cn("h-4 w-4 mr-1", notificationsLoading && "animate-spin")} />
                 Uppdatera
               </Button>
@@ -222,15 +218,13 @@ export default function TalentInbox() {
               ))
             ) : usingDemoNotifications ? (
               (demoNotifications ?? []).map((item) => (
-                <DemoNotificationCard key={item.id} item={item} />
+                <DemoNotificationCard key={item.id} item={item} onClick={openDemoPreview} />
               ))
             ) : !notifications || notifications.length === 0 ? (
               <Card className="p-8 text-center">
                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-medium text-foreground">Inga notiser</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Du har inga notiser just nu
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">Du har inga notiser just nu</p>
               </Card>
             ) : (
               notifications.map((notification) => (
@@ -244,109 +238,53 @@ export default function TalentInbox() {
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-1">
-                      <div 
-                        className={cn(
-                          "h-2 w-2 rounded-full",
-                          getSeverityDotClass((notification as { severity?: string }).severity as "info" | "success" | "warning" | "urgent" || "info")
-                        )} 
-                      />
+                      <div className={cn("h-2 w-2 rounded-full", getSeverityDotClass((notification as { severity?: string }).severity as "info" | "success" | "warning" | "urgent" || "info"))} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={cn(
-                        "text-sm truncate",
-                        !notification.is_read ? "font-medium text-foreground" : "text-muted-foreground"
-                      )}>
-                        {notification.title}
-                      </p>
-                      {notification.body && (
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                          {notification.body}
-                        </p>
-                      )}
+                      <p className={cn("text-sm truncate", !notification.is_read ? "font-medium text-foreground" : "text-muted-foreground")}>{notification.title}</p>
+                      {notification.body && <p className="text-xs text-muted-foreground mt-0.5 truncate">{notification.body}</p>}
                       <p className="text-xs text-muted-foreground/70 mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), {
-                          addSuffix: true,
-                          locale: sv,
-                        })}
+                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: sv })}
                       </p>
                     </div>
-                    {!notification.is_read && (
-                      <Badge variant="new" className="h-4 px-1 text-[10px] flex-shrink-0">
-                        Ny
-                      </Badge>
-                    )}
+                    {!notification.is_read && <Badge variant="new" className="h-4 px-1 text-[10px] flex-shrink-0">Ny</Badge>}
                   </div>
                 </Card>
               ))
             )}
           </TabsContent>
 
-          {/* Matches Tab */}
+          {/* ── Matches Tab ── */}
           <TabsContent value="matches" className="mt-4 space-y-3">
             {matchesLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i} className="p-4">
-                  <div className="flex gap-3">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-2/3" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                </Card>
+                <Card key={i} className="p-4"><div className="flex gap-3"><Skeleton className="h-12 w-12 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-2/3" /><Skeleton className="h-3 w-1/2" /></div></div></Card>
               ))
             ) : matchesError && !usingDemoMatches ? (
-              <Card className="p-6 text-center">
-                <p className="text-destructive">Kunde inte ladda matchningar</p>
-              </Card>
+              <Card className="p-6 text-center"><p className="text-destructive">Kunde inte ladda matchningar</p></Card>
             ) : usingDemoMatches ? (
               (demoMatches ?? []).map((item) => (
-                <DemoMatchCard key={item.id} item={item} />
+                <DemoMatchCard key={item.id} item={item} onClick={openDemoPreview} />
               ))
             ) : !matches || matches.length === 0 ? (
               <Card className="p-8 text-center">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-medium text-foreground">Inga matchningar ännu</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Börja swipea för att hitta matchningar
-                </p>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="mt-4"
-                  onClick={() => navigate("/talent/swipe-jobs")}
-                >
-                  Hitta jobb
-                </Button>
+                <p className="text-sm text-muted-foreground mt-1">Börja swipea för att hitta matchningar</p>
+                <Button variant="primary" size="sm" className="mt-4" onClick={() => navigate("/talent/swipe-jobs")}>Hitta jobb</Button>
               </Card>
             ) : (
               matches.map((match) => (
-                <Card
-                  key={match.id}
-                  className="p-4 cursor-pointer hover:bg-secondary/50 transition-colors"
-                  onClick={() => navigate(`/talent/matches/${match.id}`)}
-                >
+                <Card key={match.id} className="p-4 cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => navigate(`/talent/matches/${match.id}`)}>
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageSquare className="h-5 w-5 text-primary" />
-                    </div>
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center"><MessageSquare className="h-5 w-5 text-primary" /></div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground truncate">
-                        {match.org_name || "Arbetsgivare"}
-                      </p>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {match.job_title || "Uppdrag"}
-                      </p>
-                      {match.last_message && (
-                        <p className="text-xs text-muted-foreground mt-1 truncate">
-                          {match.last_message}
-                        </p>
-                      )}
+                      <p className="font-medium text-foreground truncate">{match.org_name || "Arbetsgivare"}</p>
+                      <p className="text-sm text-muted-foreground truncate">{match.job_title || "Uppdrag"}</p>
+                      {match.last_message && <p className="text-xs text-muted-foreground mt-1 truncate">{match.last_message}</p>}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="default" className="text-xs">
-                        {match.status === "matched" ? "Ny" : "Aktiv"}
-                      </Badge>
+                      <Badge variant="default" className="text-xs">{match.status === "matched" ? "Ny" : "Aktiv"}</Badge>
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
@@ -355,49 +293,38 @@ export default function TalentInbox() {
             )}
           </TabsContent>
 
-          {/* Job Offers Tab */}
+          {/* ── Job Offers Tab ── */}
           <TabsContent value="job-offers" className="mt-4">
             {usingDemoOffers ? (
               <div className="space-y-3">
                 {(demoOffers ?? []).map((item) => (
-                  <DemoOfferCard key={item.id} item={item} />
+                  <DemoOfferCard key={item.id} item={item} onClick={openDemoPreview} />
                 ))}
               </div>
             ) : (
-              <OffersList
-                role="talent"
-                onSelectOffer={(id) => setSelectedOfferId(id)}
-                selectedOfferId={selectedOfferId}
-              />
+              <OffersList role="talent" onSelectOffer={(id) => setSelectedOfferId(id)} selectedOfferId={selectedOfferId} />
             )}
           </TabsContent>
 
-          {/* Messages Tab */}
+          {/* ── Messages Tab ── */}
           <TabsContent value="messages" className="mt-4 space-y-3">
             {usingDemoMessages ? (
               (demoMessages ?? []).map((item) => (
-                <DemoMessageCard key={item.id} item={item} />
+                <DemoMessageCard key={item.id} item={item} onClick={openDemoPreview} />
               ))
             ) : (
               <Card className="p-8 text-center">
                 <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-medium text-foreground">Inga meddelanden</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Konversationer med arbetsgivare visas här
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">Konversationer med arbetsgivare visas här</p>
               </Card>
             )}
           </TabsContent>
 
-          {/* Borrow Offers / Requests Tab */}
+          {/* ── Requests Tab ── */}
           <TabsContent value="borrow-offers" className="mt-4 space-y-3">
             <div className="flex justify-end mb-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRefreshRequests}
-                disabled={borrowOffersLoading}
-              >
+              <Button variant="ghost" size="sm" onClick={handleRefreshRequests} disabled={borrowOffersLoading}>
                 <RefreshCw className={cn("h-4 w-4 mr-1", borrowOffersLoading && "animate-spin")} />
                 Uppdatera
               </Button>
@@ -405,53 +332,29 @@ export default function TalentInbox() {
 
             {borrowOffersLoading ? (
               Array.from({ length: 2 }).map((_, i) => (
-                <Card key={i} className="p-4">
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </Card>
+                <Card key={i} className="p-4"><div className="space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-3 w-1/2" /></div></Card>
               ))
             ) : usingDemoRequests ? (
               (demoRequests ?? []).map((item) => (
-                <DemoRequestCard key={item.id} item={item} />
+                <DemoRequestCard key={item.id} item={item} onClick={openDemoPreview} />
               ))
             ) : pendingBorrowOffers.length === 0 ? (
               <Card className="p-8 text-center">
                 <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-medium text-foreground">Inga väntande förfrågningar</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Låneförfrågningar från arbetsgivare visas här
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">Låneförfrågningar från arbetsgivare visas här</p>
               </Card>
             ) : (
               pendingBorrowOffers.map((offer) => (
-                <Card
-                  key={offer.id}
-                  className="p-4 cursor-pointer hover:bg-secondary/50 transition-colors"
-                  onClick={() => navigate("/talent/dashboard")}
-                >
+                <Card key={offer.id} className="p-4 cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => navigate("/talent/dashboard")}>
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-delight/10 flex items-center justify-center">
-                      <Calendar className="h-5 w-5 text-delight" />
-                    </div>
+                    <div className="h-12 w-12 rounded-full bg-delight/10 flex items-center justify-center"><Calendar className="h-5 w-5 text-delight" /></div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground">
-                        {offer.org_name || "Arbetsgivare"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Extratid-förfrågan
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(offer.created_at), {
-                          addSuffix: true,
-                          locale: sv,
-                        })}
-                      </p>
+                      <p className="font-medium text-foreground">{offer.org_name || "Arbetsgivare"}</p>
+                      <p className="text-sm text-muted-foreground">Extratid-förfrågan</p>
+                      <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(offer.created_at), { addSuffix: true, locale: sv })}</p>
                     </div>
-                    <Badge variant="new" className="flex-shrink-0">
-                      Svara
-                    </Badge>
+                    <Badge variant="new" className="flex-shrink-0">Svara</Badge>
                   </div>
                 </Card>
               ))
@@ -460,54 +363,65 @@ export default function TalentInbox() {
         </Tabs>
       </div>
 
-      {/* Offer Detail Modal */}
+      {/* Offer Detail Modal (real only) */}
       {!usingDemoOffers && (
-        <OfferDetailModal
-          offerId={selectedOfferId}
-          onClose={handleCloseOfferModal}
-          role="talent"
-        />
+        <OfferDetailModal offerId={selectedOfferId} onClose={handleCloseOfferModal} role="talent" />
       )}
+
+      {/* Demo preview drawer/sheet */}
+      <DemoInboxPreview item={previewItem} open={!!previewItem} onClose={closeDemoPreview} />
     </AppShell>
   );
 }
 
-// ── Demo card components ──
+// ── Demo card components (now clickable) ──
 
-function DemoNotificationCard({ item }: { item: DemoInboxItem }) {
+interface DemoCardProps {
+  item: DemoInboxItem;
+  onClick: (item: DemoInboxItem) => void;
+}
+
+function DemoNotificationCard({ item, onClick }: DemoCardProps) {
   return (
-    <Card className="p-3 bg-primary/5 border-l-2 border-l-primary">
+    <Card
+      className="p-3 bg-primary/5 border-l-2 border-l-primary cursor-pointer transition-all hover:shadow-card hover:translate-y-[-1px]"
+      onClick={() => onClick(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick(item)}
+      aria-label={`Öppna förhandsvisning: ${item.title}`}
+    >
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 mt-1">
-          <div className={cn(
-            "h-2 w-2 rounded-full",
-            getSeverityDotClass(item.severity as "info" | "success" | "warning" | "urgent")
-          )} />
+          <div className={cn("h-2 w-2 rounded-full", getSeverityDotClass(item.severity as "info" | "success" | "warning" | "urgent"))} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
             <DemoBadge />
           </div>
-          {item.body && (
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.body}</p>
-          )}
-          {item.org_name && (
-            <p className="text-xs text-muted-foreground/70 mt-1">{item.org_name}</p>
-          )}
+          {item.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.body}</p>}
+          {item.org_name && <p className="text-xs text-muted-foreground/70 mt-1">{item.org_name}</p>}
         </div>
-        <Badge variant="new" className="h-4 px-1 text-[10px] flex-shrink-0">Ny</Badge>
+        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
       </div>
     </Card>
   );
 }
 
-function DemoMatchCard({ item }: { item: DemoInboxItem }) {
+function DemoMatchCard({ item, onClick }: DemoCardProps) {
   const score = (item.metadata as { score?: number })?.score;
   const reason = (item.metadata as { reason?: string })?.reason;
 
   return (
-    <Card className="p-4">
+    <Card
+      className="p-4 cursor-pointer transition-all hover:shadow-card hover:translate-y-[-1px]"
+      onClick={() => onClick(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick(item)}
+      aria-label={`Öppna förhandsvisning: ${item.title}`}
+    >
       <div className="flex items-center gap-3">
         <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
           {score != null ? (
@@ -522,9 +436,7 @@ function DemoMatchCard({ item }: { item: DemoInboxItem }) {
             <DemoBadge />
           </div>
           <p className="text-sm text-muted-foreground truncate">{item.title}</p>
-          {reason && (
-            <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">{reason}</p>
-          )}
+          {reason && <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">{reason}</p>}
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="default" className="text-xs">Ny</Badge>
@@ -535,9 +447,16 @@ function DemoMatchCard({ item }: { item: DemoInboxItem }) {
   );
 }
 
-function DemoOfferCard({ item }: { item: DemoInboxItem }) {
+function DemoOfferCard({ item, onClick }: DemoCardProps) {
   return (
-    <Card className="p-4 border-primary/50">
+    <Card
+      className="p-4 border-primary/50 cursor-pointer transition-all hover:shadow-card hover:translate-y-[-1px]"
+      onClick={() => onClick(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick(item)}
+      aria-label={`Öppna förhandsvisning: ${item.title}`}
+    >
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10 text-primary">
           <FileText className="h-5 w-5" />
@@ -548,12 +467,8 @@ function DemoOfferCard({ item }: { item: DemoInboxItem }) {
             <Badge variant="default" size="sm">Väntar på svar</Badge>
             <DemoBadge />
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {item.org_name && <span>{item.org_name}</span>}
-          </p>
-          {item.body && (
-            <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">{item.body}</p>
-          )}
+          <p className="text-xs text-muted-foreground mt-0.5">{item.org_name && <span>{item.org_name}</span>}</p>
+          {item.body && <p className="text-xs text-muted-foreground/80 mt-1 line-clamp-2">{item.body}</p>}
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
       </div>
@@ -561,12 +476,19 @@ function DemoOfferCard({ item }: { item: DemoInboxItem }) {
   );
 }
 
-function DemoMessageCard({ item }: { item: DemoInboxItem }) {
+function DemoMessageCard({ item, onClick }: DemoCardProps) {
   const messages = (item.metadata as { messages?: { sender_type: string; body: string }[] })?.messages ?? [];
   const lastMessage = messages[messages.length - 1];
 
   return (
-    <Card className="p-4">
+    <Card
+      className="p-4 cursor-pointer transition-all hover:shadow-card hover:translate-y-[-1px]"
+      onClick={() => onClick(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick(item)}
+      aria-label={`Öppna förhandsvisning: ${item.title}`}
+    >
       <div className="flex items-center gap-3">
         <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
           <MessageSquare className="h-5 w-5 text-primary" />
@@ -593,11 +515,16 @@ function DemoMessageCard({ item }: { item: DemoInboxItem }) {
   );
 }
 
-function DemoRequestCard({ item }: { item: DemoInboxItem }) {
-  const options = (item.metadata as { options?: string[] })?.options ?? [];
-
+function DemoRequestCard({ item, onClick }: DemoCardProps) {
   return (
-    <Card className="p-4">
+    <Card
+      className="p-4 cursor-pointer transition-all hover:shadow-card hover:translate-y-[-1px]"
+      onClick={() => onClick(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onClick(item)}
+      aria-label={`Öppna förhandsvisning: ${item.title}`}
+    >
       <div className="flex items-start gap-3">
         <div className="h-12 w-12 rounded-full bg-delight/10 flex items-center justify-center flex-shrink-0">
           <Calendar className="h-5 w-5 text-delight" />
@@ -608,19 +535,9 @@ function DemoRequestCard({ item }: { item: DemoInboxItem }) {
             <DemoBadge />
           </div>
           <p className="text-sm text-muted-foreground">{item.title}</p>
-          {item.body && (
-            <p className="text-xs text-muted-foreground/80 mt-1">{item.body}</p>
-          )}
-          {options.length > 0 && (
-            <div className="flex gap-2 mt-2">
-              {options.map((opt) => (
-                <Button key={opt} variant="outline" size="sm" className="text-xs">
-                  {opt}
-                </Button>
-              ))}
-            </div>
-          )}
+          {item.body && <p className="text-xs text-muted-foreground/80 mt-1">{item.body}</p>}
         </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
       </div>
     </Card>
   );
