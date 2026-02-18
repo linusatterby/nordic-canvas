@@ -16,7 +16,7 @@ import { OffersList, OfferDetailModal } from "@/components/offers";
 import { getSeverityDotClass } from "@/lib/api/notifications";
 import { cn } from "@/lib/utils";
 import { useDemoMode } from "@/hooks/useDemo";
-import { isDemoEffectivelyEnabled } from "@/lib/config/env";
+import { isDemoEffectivelyEnabled, IS_LIVE_BACKEND } from "@/lib/config/env";
 import {
   useDemoNotifications,
   useDemoMatchItems,
@@ -32,15 +32,20 @@ import {
   Bell,
   ChevronRight,
   RefreshCw,
-  FileText
+  FileText,
+  Sparkles,
 } from "lucide-react";
 
-/** Small demo badge chip */
+// ── Discreet demo badge (Nordic Warm Minimal) ──
 function DemoBadge() {
+  // Never render in live
+  if (IS_LIVE_BACKEND) return null;
+
   return (
-    <Badge variant="outline" size="sm" className="ml-1 text-[10px] uppercase tracking-wider opacity-60">
+    <span className="inline-flex items-center gap-0.5 rounded-pill px-1.5 py-px text-[9px] font-medium uppercase tracking-wider border border-teal/20 bg-teal-muted text-teal select-none">
+      <Sparkles className="h-2.5 w-2.5" />
       Demo
-    </Badge>
+    </span>
   );
 }
 
@@ -49,7 +54,8 @@ export default function TalentInbox() {
   const [searchParams, setSearchParams] = useSearchParams();
   
   const { isDemoMode } = useDemoMode();
-  const demoEnabled = isDemoEffectivelyEnabled(isDemoMode);
+  // Hard guard: demo features never active on live backend
+  const demoEnabled = !IS_LIVE_BACKEND && isDemoEffectivelyEnabled(isDemoMode);
 
   const { data: matches, isLoading: matchesLoading, error: matchesError } = useMatches("talent");
   const { data: borrowOffers, isLoading: borrowOffersLoading, refetch: refetchBorrowOffers } = useTalentBorrowOffers();
@@ -58,39 +64,25 @@ export default function TalentInbox() {
   const markRead = useMarkNotificationRead();
   const pendingOffersCount = usePendingOffersCount();
 
-  // Demo data hooks
-  const { data: demoNotifications } = useDemoNotifications();
-  const { data: demoMatches } = useDemoMatchItems();
-  const { data: demoOffers } = useDemoOfferItems();
-  const { data: demoMessages } = useDemoMessageItems();
-  const { data: demoRequests } = useDemoRequestItems();
+  // Demo data hooks (queries auto-disabled when !demoEnabled via useDemoInbox)
+  const { data: demoNotifications, refetch: refetchDemoNotif } = useDemoNotifications();
+  const { data: demoMatches, refetch: refetchDemoMatches } = useDemoMatchItems();
+  const { data: demoOffers, refetch: refetchDemoOffers } = useDemoOfferItems();
+  const { data: demoMessages, refetch: refetchDemoMessages } = useDemoMessageItems();
+  const { data: demoRequests, refetch: refetchDemoRequests } = useDemoRequestItems();
 
   const pendingBorrowOffers = borrowOffers?.filter((o) => o.status === "pending") ?? [];
 
-  // Merge real + demo data
-  const effectiveNotifications = notifications && notifications.length > 0
-    ? notifications
-    : demoEnabled && demoNotifications && demoNotifications.length > 0
-      ? demoNotifications
-      : notifications ?? [];
-
-  const effectiveMatches = matches && matches.length > 0
-    ? matches
-    : demoEnabled && demoMatches && demoMatches.length > 0
-      ? demoMatches
-      : matches ?? [];
-
-  const effectiveBorrowOffers = pendingBorrowOffers.length > 0
-    ? pendingBorrowOffers
-    : demoEnabled && demoRequests && demoRequests.length > 0
-      ? demoRequests
-      : pendingBorrowOffers;
-
+  // Merge real + demo data (demo only as fallback when real is empty)
   const usingDemoNotifications = demoEnabled && (!notifications || notifications.length === 0) && (demoNotifications?.length ?? 0) > 0;
   const usingDemoMatches = demoEnabled && (!matches || matches.length === 0) && (demoMatches?.length ?? 0) > 0;
   const usingDemoOffers = demoEnabled && (demoOffers?.length ?? 0) > 0;
   const usingDemoRequests = demoEnabled && pendingBorrowOffers.length === 0 && (demoRequests?.length ?? 0) > 0;
   const usingDemoMessages = demoEnabled && (demoMessages?.length ?? 0) > 0;
+
+  const effectiveNotifications = usingDemoNotifications ? demoNotifications! : (notifications ?? []);
+  const effectiveMatches = usingDemoMatches ? demoMatches! : (matches ?? []);
+  const effectiveBorrowOffers = usingDemoRequests ? demoRequests! : pendingBorrowOffers;
 
   // Handle offerId from URL (from notification deep-link)
   const urlOfferId = searchParams.get("offerId");
@@ -121,11 +113,23 @@ export default function TalentInbox() {
     }
   };
 
-  // Tab badge counts
-  const notifCount = usingDemoNotifications ? demoNotifications!.length : (unreadCount ?? 0);
-  const matchCount = effectiveMatches.length;
-  const offerCount = usingDemoOffers ? demoOffers!.length : pendingOffersCount;
-  const requestCount = usingDemoRequests ? demoRequests!.length : pendingBorrowOffers.length;
+  // Tab badge counts: real + demo when demo active, real only in live
+  const notifCount = (notifications?.filter(n => !n.is_read).length ?? 0) + (demoEnabled ? (demoNotifications?.length ?? 0) : 0);
+  const matchCount = (matches?.length ?? 0) + (demoEnabled ? (demoMatches?.length ?? 0) : 0);
+  const offerCount = pendingOffersCount + (demoEnabled ? (demoOffers?.length ?? 0) : 0);
+  const requestCount = pendingBorrowOffers.length + (demoEnabled ? (demoRequests?.length ?? 0) : 0);
+  const messageCount = demoEnabled ? (demoMessages?.length ?? 0) : 0;
+
+  // Refetch both real + demo without duplicate spam
+  const handleRefresh = React.useCallback(() => {
+    refetchNotifications?.();
+    if (demoEnabled) refetchDemoNotif();
+  }, [demoEnabled, refetchNotifications, refetchDemoNotif]);
+
+  const handleRefreshRequests = React.useCallback(() => {
+    refetchBorrowOffers?.();
+    if (demoEnabled) refetchDemoRequests();
+  }, [demoEnabled, refetchBorrowOffers, refetchDemoRequests]);
 
   return (
     <AppShell role="talent">
@@ -173,9 +177,9 @@ export default function TalentInbox() {
             <TabsTrigger value="messages" className="gap-1 text-xs sm:text-sm">
               <MessageSquare className="h-4 w-4" />
               <span className="hidden sm:inline">Meddelanden</span>
-              {usingDemoMessages && (
+              {messageCount > 0 && (
                 <Badge variant="default" className="ml-1 h-5 px-1.5 text-xs">
-                  {demoMessages!.length}
+                  {messageCount}
                 </Badge>
               )}
             </TabsTrigger>
@@ -196,7 +200,7 @@ export default function TalentInbox() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => refetchNotifications?.()}
+                onClick={handleRefresh}
                 disabled={notificationsLoading}
               >
                 <RefreshCw className={cn("h-4 w-4 mr-1", notificationsLoading && "animate-spin")} />
@@ -391,7 +395,7 @@ export default function TalentInbox() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => refetchBorrowOffers?.()}
+                onClick={handleRefreshRequests}
                 disabled={borrowOffersLoading}
               >
                 <RefreshCw className={cn("h-4 w-4 mr-1", borrowOffersLoading && "animate-spin")} />
@@ -481,7 +485,7 @@ function DemoNotificationCard({ item }: { item: DemoInboxItem }) {
           )} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
             <DemoBadge />
           </div>
@@ -513,7 +517,7 @@ function DemoMatchCard({ item }: { item: DemoInboxItem }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-medium text-foreground truncate">{item.org_name}</p>
             <DemoBadge />
           </div>
@@ -539,7 +543,7 @@ function DemoOfferCard({ item }: { item: DemoInboxItem }) {
           <FileText className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="text-sm font-medium text-foreground truncate">{item.title}</h4>
             <Badge variant="default" size="sm">Väntar på svar</Badge>
             <DemoBadge />
@@ -568,7 +572,7 @@ function DemoMessageCard({ item }: { item: DemoInboxItem }) {
           <MessageSquare className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-medium text-foreground truncate">{item.title}</p>
             <DemoBadge />
           </div>
@@ -599,7 +603,7 @@ function DemoRequestCard({ item }: { item: DemoInboxItem }) {
           <Calendar className="h-5 w-5 text-delight" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-medium text-foreground">{item.org_name}</p>
             <DemoBadge />
           </div>
