@@ -159,9 +159,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await loadProfile();
   }, [loadProfile]);
 
-  // Compute isDemoMode based on profile or email pattern
-  // Removed demoOrgIds check - now computed lazily in routes if needed
+  // Compute isDemoMode based on env, profile, or email pattern
   const isDemoMode = React.useMemo(() => {
+    // Entire app is in demo env (anonymous demo session)
+    if (IS_DEMO_ENV) return true;
     // Profile has is_demo flag
     if ((profile as Profile & { is_demo?: boolean })?.is_demo) {
       return true;
