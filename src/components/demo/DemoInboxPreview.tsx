@@ -314,25 +314,25 @@ function MessagePreview({ item }: { item: DemoInboxItem }) {
       {/* Chat messages */}
       <div className="space-y-3">
         {messages.map((msg, i) => {
-          const isTalent = msg.sender_type === "talent";
+          const isSelf = msg.sender_type === "talent";
           return (
             <div
               key={i}
               className={cn(
                 "flex",
-                isTalent ? "justify-end" : "justify-start"
+                isSelf ? "justify-end" : "justify-start"
               )}
             >
               <div
                 className={cn(
                   "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
-                  isTalent
+                  isSelf
                     ? "bg-primary text-primary-foreground rounded-br-md"
                     : "bg-secondary text-foreground rounded-bl-md"
                 )}
               >
                 <p className="text-[10px] font-medium mb-0.5 opacity-70">
-                  {isTalent ? "Du" : item.org_name || "Arbetsgivare"}
+                  {isSelf ? "Du" : item.org_name || "Arbetsgivare"}
                 </p>
                 {msg.body}
               </div>

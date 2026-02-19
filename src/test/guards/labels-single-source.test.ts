@@ -21,6 +21,9 @@ const TERM_RULES: TermRule[] = [
   { pattern: /["'`]Kandidater["'`]/, labelKey: "LABELS.candidates" },
   { pattern: /["'`]Kandidat["'`]/, labelKey: "LABELS.candidate" },
   { pattern: /["'`]Hitta kandidater["'`]/i, labelKey: "LABELS.findCandidates" },
+  { pattern: /["'`]Sparade jobb["'`]/i, labelKey: "LABELS.savedJobsTitle" },
+  { pattern: /["'`]Ansökningar["'`]/, labelKey: "LABELS.employerTabApplications" },
+  { pattern: /["'`]Kandidatpool["'`]/, labelKey: "LABELS.employerTabPool" },
 ];
 
 // Only scan UI-layer directories
@@ -90,6 +93,9 @@ describe("Labels single-source guard", () => {
     expect(TERM_RULES[1].pattern.test('"Kandidater"')).toBe(true);
     expect(TERM_RULES[2].pattern.test("'Kandidat'")).toBe(true);
     expect(TERM_RULES[3].pattern.test('"Hitta kandidater"')).toBe(true);
+    expect(TERM_RULES[4].pattern.test('"Sparade jobb"')).toBe(true);
+    expect(TERM_RULES[5].pattern.test('"Ansökningar"')).toBe(true);
+    expect(TERM_RULES[6].pattern.test('"Kandidatpool"')).toBe(true);
   });
 
   it("does not flag non-quoted occurrences", () => {
