@@ -107,6 +107,9 @@ export const queryKeys = {
     detail: (jobId?: string) => ["job", jobId] as const,
     org: (orgId?: string, status?: string) => ["jobs", "org", orgId, status] as const,
     demoHard: () => ["jobs", "demo-hard"] as const,
+    saved: () => ["jobs", "saved"] as const,
+    state: (jobId?: string) => ["jobs", "state", jobId] as const,
+    applications: () => ["jobs", "applications"] as const,
   },
 
   // --- Listings (unified) ---
