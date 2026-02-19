@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/classnames";
 import { HOUSING_STATUS, type HousingStatus } from "@/lib/constants/status";
 import { MatchScoreBadge } from "@/components/matching/MatchScoreBadge";
+import { LABELS } from "@/config/labels";
 import type { MatchReason } from "@/lib/api/ranking";
 
 export interface JobCardProps {
@@ -21,9 +22,11 @@ export interface JobCardProps {
   matchReasons?: MatchReason[];
   onSwipeYes?: (id: string) => void;
   onSwipeNo?: (id: string) => void;
+  onApply?: (id: string) => void;
   onViewDetails?: (id: string) => void;
   disabled?: boolean;
   pendingDirection?: "yes" | "no" | null;
+  pendingApply?: boolean;
   className?: string;
 }
 
@@ -54,9 +57,11 @@ export function JobCard({
   matchReasons,
   onSwipeYes,
   onSwipeNo,
+  onApply,
   onViewDetails,
   disabled = false,
   pendingDirection = null,
+  pendingApply = false,
   className,
 }: JobCardProps) {
   const [showHousingDetails, setShowHousingDetails] = React.useState(false);
@@ -163,29 +168,45 @@ export function JobCard({
           size="md"
           onClick={() => onSwipeNo?.(id)}
           className="flex-1"
-          aria-label="Skippa jobb"
+          aria-label={LABELS.actionSkip}
           disabled={disabled}
         >
           {pendingDirection === "no" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            "Skippa"
+            LABELS.actionSkip
           )}
         </Button>
         <Button
-          variant="primary"
+          variant="outline"
           size="md"
           onClick={() => onSwipeYes?.(id)}
           className="flex-1"
-          aria-label="Intresserad av jobb"
+          aria-label={LABELS.actionSave}
           disabled={disabled}
         >
           {pendingDirection === "yes" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            "Intresserad"
+            LABELS.actionSave
           )}
         </Button>
+        {onApply && (
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => onApply(id)}
+            className="flex-1"
+            aria-label={LABELS.actionApply}
+            disabled={disabled || pendingApply}
+          >
+            {pendingApply ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              LABELS.actionApply
+            )}
+          </Button>
+        )}
       </div>
     </Card>
   );

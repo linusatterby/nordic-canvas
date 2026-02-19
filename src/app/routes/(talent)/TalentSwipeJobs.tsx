@@ -209,8 +209,8 @@ export function TalentSwipeJobs() {
         } else {
           addToast({
             type: "info",
-            title: "Intresse skickat",
-            message: `Ditt intresse för ${currentListing.org_name} har skickats.`,
+            title: "Jobb sparat",
+            message: `${currentListing.org_name} har lagts till i dina sparade jobb.`,
           });
         }
       }

@@ -154,6 +154,7 @@ const ALLOWED_FILES = new Set([
   "src/components/demo/DemoGuideModal.tsx",
   "src/components/demo/DemoBanner.tsx",
   "src/components/demo/DemoAvailabilityBypassNotice.tsx",
+  "src/components/demo/DemoInboxPreview.tsx", // sender_type === "talent" DB identifier
   "src/components/delight/EmptyStates.tsx",
   "src/components/auth/ProtectedRoute.tsx",
   "src/components/auth/RoleGate.tsx",
