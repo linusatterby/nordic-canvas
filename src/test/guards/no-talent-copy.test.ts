@@ -66,6 +66,7 @@ const ALLOWED_FILES = new Set([
   "src/lib/api/ranking.ts",
   "src/lib/api/scheduler.ts",
   "src/lib/api/visibility.ts",
+  "src/lib/api/employerViews.ts", // talent_user_id, type="talent" DB refs
 
   // ── Hooks: reference DB/API types with "talent" in names ──
   "src/hooks/useCandidateJobState.ts", // imports from candidateJobState API

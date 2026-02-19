@@ -31,6 +31,8 @@ import EmployerScheduler from "@/app/routes/(employer)/EmployerScheduler";
 import EmployerBorrow from "@/app/routes/(employer)/EmployerBorrow";
 import EmployerActivity from "@/app/routes/(employer)/EmployerActivity";
 import EmployerInbox from "@/app/routes/(employer)/EmployerInbox";
+import EmployerApplications from "@/app/routes/(employer)/EmployerApplications";
+import EmployerCandidatePool from "@/app/routes/(employer)/EmployerCandidatePool";
 
 import HostHousing from "@/app/routes/(host)/HostHousing";
 import HostInbox from "@/app/routes/(host)/HostInbox";
@@ -120,6 +122,8 @@ export const routes: RouteDef[] = [
   { id: "employer-borrow", path: "/employer/borrow", kind: "app", element: EmployerBorrow, guard: "protected", allow: ["employer"] },
   { id: "employer-activity", path: "/employer/activity", kind: "app", element: EmployerActivity, guard: "protected", allow: ["employer"] },
   { id: "employer-inbox", path: "/employer/inbox", kind: "app", element: EmployerInbox, guard: "protected", allow: ["employer"] },
+  { id: "employer-applications", path: "/employer/applications", kind: "app", element: EmployerApplications, guard: "protected", allow: ["employer"] },
+  { id: "employer-pool", path: "/employer/pool", kind: "app", element: EmployerCandidatePool, guard: "protected", allow: ["employer"] },
 
   // Host
   { id: "host-housing", path: "/host/housing", kind: "app", element: HostHousing, guard: "protected", allow: ["host"] },

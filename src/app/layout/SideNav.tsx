@@ -13,6 +13,8 @@ import {
   Activity,
   Inbox,
   Home,
+  FileText,
+  UserSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { MatildusLogo } from "@/components/brand/MatildusLogo";
@@ -70,7 +72,9 @@ const employerSections: NavSection[] = [
     heading: "Rekrytering",
     items: [
       { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
-      { icon: <Users className="h-5 w-5" />, label: "Hitta kandidater", href: "/employer/jobs" },
+      { icon: <FileText className="h-5 w-5" />, label: "Ansökningar", href: "/employer/applications" },
+      { icon: <UserSearch className="h-5 w-5" />, label: "Kandidatpool", href: "/employer/pool" },
+      { icon: <Users className="h-5 w-5" />, label: "Matchningar", href: "/employer/matches" },
       { icon: <Calendar className="h-5 w-5" />, label: "Schema", href: "/employer/scheduler" },
       { icon: <ArrowLeftRight className="h-5 w-5" />, label: "Låna personal", href: "/employer/borrow" },
     ],
