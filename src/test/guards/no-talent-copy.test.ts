@@ -38,6 +38,7 @@ const ALLOWED_FILES = new Set([
   "src/config/labels.ts",
 
   // ── API layer: DB table/column refs like talent_user_id ──
+  "src/lib/api/candidateJobState.ts", // candidate_id, talent refs in joins
   "src/lib/api/talent.ts",
   "src/lib/api/talent/credentialCatalog.ts",
   "src/lib/api/talent/credentials.ts",
@@ -67,6 +68,7 @@ const ALLOWED_FILES = new Set([
   "src/lib/api/visibility.ts",
 
   // ── Hooks: reference DB/API types with "talent" in names ──
+  "src/hooks/useCandidateJobState.ts", // imports from candidateJobState API
   "src/hooks/useActivity.ts",
   "src/hooks/useBorrow.ts",
   "src/hooks/useChat.ts",

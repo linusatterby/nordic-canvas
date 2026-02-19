@@ -15,6 +15,7 @@ import { HOUSING_STATUS } from "@/lib/constants/status";
 import { useListings } from "@/hooks/useListings";
 import { useResetTalentDemoSwipes, useDemoJobsHard } from "@/hooks/useJobsFeed";
 import { useSwipeTalentJob } from "@/hooks/useSwipes";
+import { useSaveJob, useDismissJob } from "@/hooks/useCandidateJobState";
 import { useListingScores } from "@/hooks/useRanking";
 import { useStableRankedStack, hashFilters } from "@/hooks/useStableRankedStack";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
@@ -73,6 +74,8 @@ export function TalentSwipeJobs() {
 
   const { data: listings, isLoading, error: feedError, refetch: refetchFeed } = useListings(apiFilters);
   const swipeMutation = useSwipeTalentJob();
+  const saveJobMutation = useSaveJob();
+  const dismissJobMutation = useDismissJob();
   const resetSwipesMutation = useResetTalentDemoSwipes();
   const [showConfetti, setShowConfetti] = React.useState(false);
 
@@ -191,9 +194,12 @@ export function TalentSwipeJobs() {
     }, SWIPE_MAX_LOCKOUT_MS);
 
     try {
+      // Record swipe in legacy table (keeps feed exclusion working)
       await swipeMutation.mutateAsync({ jobId: currentListing.id, direction });
 
+      // State machine: save or dismiss
       if (direction === "yes") {
+        await saveJobMutation.mutateAsync(currentListing.id);
         const { match } = await getMatchByJobAndTalent(currentListing.id, user.id);
         if (match) {
           setShowConfetti(true);
@@ -213,6 +219,8 @@ export function TalentSwipeJobs() {
             message: `${currentListing.org_name} har lagts till i dina sparade jobb.`,
           });
         }
+      } else {
+        await dismissJobMutation.mutateAsync(currentListing.id);
       }
     } catch (err) {
       resetStack();

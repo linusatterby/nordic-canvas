@@ -122,6 +122,47 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          demo_session_id: string | null
+          id: string
+          job_id: string
+          payload: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          demo_session_id?: string | null
+          id?: string
+          job_id: string
+          payload?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          demo_session_id?: string | null
+          id?: string
+          job_id?: string
+          payload?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       availability_blocks: {
         Row: {
           end_date: string
@@ -1040,6 +1081,38 @@ export type Database = {
         }
         Relationships: []
       }
+      job_dismissals: {
+        Row: {
+          candidate_id: string
+          demo_session_id: string | null
+          dismissed_at: string
+          id: string
+          job_id: string
+        }
+        Insert: {
+          candidate_id: string
+          demo_session_id?: string | null
+          dismissed_at?: string
+          id?: string
+          job_id: string
+        }
+        Update: {
+          candidate_id?: string
+          demo_session_id?: string | null
+          dismissed_at?: string
+          id?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_dismissals_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_posts: {
         Row: {
           approx_area: string | null
@@ -1696,6 +1769,38 @@ export type Database = {
             columns: ["taken_by_org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_jobs: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          demo_session_id: string | null
+          id: string
+          job_id: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          demo_session_id?: string | null
+          id?: string
+          job_id: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          demo_session_id?: string | null
+          id?: string
+          job_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_jobs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
             referencedColumns: ["id"]
           },
         ]
