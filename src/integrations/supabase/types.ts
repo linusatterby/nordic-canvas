@@ -915,6 +915,45 @@ export type Database = {
         }
         Relationships: []
       }
+      employer_outreach: {
+        Row: {
+          created_at: string
+          demo_session_id: string | null
+          id: string
+          location: string | null
+          message: string | null
+          org_id: string
+          role_title: string | null
+          sent_by: string
+          status: string
+          talent_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          demo_session_id?: string | null
+          id?: string
+          location?: string | null
+          message?: string | null
+          org_id: string
+          role_title?: string | null
+          sent_by: string
+          status?: string
+          talent_user_id: string
+        }
+        Update: {
+          created_at?: string
+          demo_session_id?: string | null
+          id?: string
+          location?: string | null
+          message?: string | null
+          org_id?: string
+          role_title?: string | null
+          sent_by?: string
+          status?: string
+          talent_user_id?: string
+        }
+        Relationships: []
+      }
       employer_talent_swipes: {
         Row: {
           created_at: string

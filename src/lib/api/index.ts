@@ -224,3 +224,32 @@ export {
   updateVisibility,
   type VisibilitySummary,
 } from "./visibility";
+
+// --- Employer Views ---
+export {
+  listEmployerApplications,
+  listCandidatePool,
+  sendOutreach,
+  listReceivedOutreach,
+  listOrgOutreach,
+  type EmployerApplication,
+  type PoolCandidate,
+  type OutreachRecord,
+} from "./employerViews";
+
+// --- Candidate Job State ---
+export {
+  getCandidateJobState,
+  listSavedJobs,
+  listCandidateApplications,
+  listJobApplications,
+  saveJob,
+  unsaveJob,
+  dismissJob,
+  submitApplication,
+  saveInsteadOfApply,
+  startApplication,
+  type CandidateJobState,
+  type CandidateJobStatus,
+  type ApplicationPayload,
+} from "./candidateJobState";

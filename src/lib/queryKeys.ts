@@ -180,6 +180,15 @@ export const queryKeys = {
     summary: () => ["visibilitySummary"] as const,
   },
 
+  // --- Employer Views ---
+  employer: {
+    all: ["employer"] as const,
+    applications: (orgId?: string) => ["employer", "applications", orgId] as const,
+    pool: (location?: string, role?: string) => ["employer", "pool", location, role] as const,
+    outreachSent: (orgId?: string) => ["employer", "outreach", "sent", orgId] as const,
+    outreachReceived: () => ["employer", "outreach", "received"] as const,
+  },
+
   // --- Credentials ---
   credentials: {
     all: ["credentials"] as const,

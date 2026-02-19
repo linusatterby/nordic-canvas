@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Briefcase, Users, Inbox, Home } from "lucide-react";
+import { LayoutDashboard, Briefcase, Users, Inbox, Home, FileText, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import type { Role } from "@/lib/constants/roles";
 
@@ -20,8 +20,8 @@ const talentNavItems: NavItem[] = [
 
 const employerNavItems: NavItem[] = [
   { icon: <LayoutDashboard className="h-5 w-5" />, label: "Översikt", href: "/employer/dashboard" },
-  { icon: <Briefcase className="h-5 w-5" />, label: "Annonser", href: "/employer/jobs" },
-  { icon: <Users className="h-5 w-5" />, label: "Kandidater", href: "/employer/swipe-talent" },
+  { icon: <FileText className="h-5 w-5" />, label: "Ansökningar", href: "/employer/applications" },
+  { icon: <UserSearch className="h-5 w-5" />, label: "Pool", href: "/employer/pool" },
   { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/employer/inbox" },
 ];
 
