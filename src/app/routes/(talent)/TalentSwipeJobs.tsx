@@ -16,6 +16,7 @@ import { useListings } from "@/hooks/useListings";
 import { useResetTalentDemoSwipes, useDemoJobsHard } from "@/hooks/useJobsFeed";
 import { useSwipeTalentJob } from "@/hooks/useSwipes";
 import { useSaveJob, useDismissJob } from "@/hooks/useCandidateJobState";
+import { ApplyDialog } from "@/components/apply/ApplyDialog";
 import { useListingScores } from "@/hooks/useRanking";
 import { useStableRankedStack, hashFilters } from "@/hooks/useStableRankedStack";
 import { getMatchByJobAndTalent } from "@/lib/api/matches";
@@ -78,6 +79,7 @@ export function TalentSwipeJobs() {
   const dismissJobMutation = useDismissJob();
   const resetSwipesMutation = useResetTalentDemoSwipes();
   const [showConfetti, setShowConfetti] = React.useState(false);
+  const [applyJobId, setApplyJobId] = React.useState<string | null>(null);
 
   // Use hard demo fetch as fallback when normal feed is empty in demo mode
   const shouldUseHardFetch = isDemoMode && !isLoading && (!listings || listings.length === 0);
@@ -515,6 +517,7 @@ export function TalentSwipeJobs() {
                   matchReasons={currentListing.match_reasons}
                   onSwipeYes={() => handleSwipe("yes")}
                   onSwipeNo={() => handleSwipe("no")}
+                  onApply={() => setApplyJobId(currentListing.id)}
                   disabled={isLocked}
                   pendingDirection={pendingDirection}
                 />
@@ -532,6 +535,16 @@ export function TalentSwipeJobs() {
           </div>
         )}
       </div>
+      {/* Apply Dialog */}
+      {applyJobId && currentListing && (
+        <ApplyDialog
+          open={!!applyJobId}
+          onClose={() => setApplyJobId(null)}
+          jobId={applyJobId}
+          jobTitle={currentListing.title}
+          orgName={currentListing.org_name}
+        />
+      )}
     </AppShell>
   );
 }
