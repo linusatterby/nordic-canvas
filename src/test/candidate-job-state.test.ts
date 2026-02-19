@@ -93,4 +93,14 @@ describe("Candidate Job State Machine contracts", () => {
     // vs listCandidateApplications which queries by candidate
     expect(api.listJobApplications.length).toBe(1); // 1 param: jobId
   });
+
+  it("ApplyDialog stepper exports are present", async () => {
+    const { useApplyStepper } = await import("@/features/apply/useApplyStepper");
+    expect(typeof useApplyStepper).toBe("function");
+  });
+
+  it("ApplyDialog component exports are present", async () => {
+    const { ApplyDialog } = await import("@/components/apply/ApplyDialog");
+    expect(typeof ApplyDialog).toBe("function");
+  });
 });
