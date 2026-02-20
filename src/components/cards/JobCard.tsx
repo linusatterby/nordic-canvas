@@ -9,6 +9,8 @@ import { MatchScoreBadge } from "@/components/matching/MatchScoreBadge";
 import { LABELS } from "@/config/labels";
 import type { MatchReason } from "@/lib/api/ranking";
 
+export type JobCardStatus = "none" | "saved" | "applied";
+
 export interface JobCardProps {
   id: string;
   title: string;
@@ -20,9 +22,12 @@ export interface JobCardProps {
   matchHint?: string;
   matchScore?: number;
   matchReasons?: MatchReason[];
+  /** Current candidate state for this job */
+  jobStatus?: JobCardStatus;
   onSwipeYes?: (id: string) => void;
   onSwipeNo?: (id: string) => void;
   onApply?: (id: string) => void;
+  onViewApplication?: (id: string) => void;
   onViewDetails?: (id: string) => void;
   disabled?: boolean;
   pendingDirection?: "yes" | "no" | null;
@@ -55,9 +60,11 @@ export function JobCard({
   matchHint,
   matchScore,
   matchReasons,
+  jobStatus = "none",
   onSwipeYes,
   onSwipeNo,
   onApply,
+  onViewApplication,
   onViewDetails,
   disabled = false,
   pendingDirection = null,
@@ -93,7 +100,15 @@ export function JobCard({
     >
       {/* Header */}
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          {jobStatus === "saved" && (
+            <Badge variant="default" size="sm">{LABELS.chipSaved}</Badge>
+          )}
+          {jobStatus === "applied" && (
+            <Badge variant="primary" size="sm">{LABELS.chipApplied}</Badge>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground">{company}</p>
       </div>
 
@@ -177,35 +192,54 @@ export function JobCard({
             LABELS.actionSkip
           )}
         </Button>
-        <Button
-          variant="outline"
-          size="md"
-          onClick={() => onSwipeYes?.(id)}
-          className="flex-1"
-          aria-label={LABELS.actionSave}
-          disabled={disabled}
-        >
-          {pendingDirection === "yes" ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            LABELS.actionSave
-          )}
-        </Button>
-        {onApply && (
+
+        {jobStatus === "applied" ? (
+          /* APPLIED → show "Visa ansökan" instead of Save + Apply */
           <Button
-            variant="primary"
+            variant="outline"
             size="md"
-            onClick={() => onApply(id)}
+            onClick={() => onViewApplication?.(id)}
             className="flex-1"
-            aria-label={LABELS.actionApply}
-            disabled={disabled || pendingApply}
+            aria-label={LABELS.ctaViewApplication}
+            disabled={disabled}
           >
-            {pendingApply ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              LABELS.actionApply
-            )}
+            {LABELS.ctaViewApplication}
           </Button>
+        ) : (
+          <>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => onSwipeYes?.(id)}
+              className="flex-1"
+              aria-label={jobStatus === "saved" ? LABELS.ctaSavedDisabled : LABELS.actionSave}
+              disabled={disabled || jobStatus === "saved"}
+            >
+              {pendingDirection === "yes" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : jobStatus === "saved" ? (
+                LABELS.ctaSavedDisabled
+              ) : (
+                LABELS.actionSave
+              )}
+            </Button>
+            {onApply && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => onApply(id)}
+                className="flex-1"
+                aria-label={LABELS.actionApply}
+                disabled={disabled || pendingApply}
+              >
+                {pendingApply ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  LABELS.actionApply
+                )}
+              </Button>
+            )}
+          </>
         )}
       </div>
     </Card>

@@ -40,7 +40,7 @@ export function EmployerApplications() {
         <div className="mb-6">
           <h1 className="text-xl font-bold text-foreground">{LABELS.employerTabApplications}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kandidater som aktivt ansökt till dina jobb
+            {LABELS.employerApplicationsExplainer}
           </p>
         </div>
 

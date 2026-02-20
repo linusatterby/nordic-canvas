@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
+import { LABELS } from "@/config/labels";
 import { ChevronDown, ChevronUp, RefreshCw, Bug, Briefcase, Clock, Loader2 } from "lucide-react";
 import { DemoAvailabilityBypassNotice } from "@/components/demo/DemoAvailabilityBypassNotice";
 import { AppShell } from "@/app/layout/AppShell";
@@ -217,8 +218,8 @@ export function TalentSwipeJobs() {
         } else {
           addToast({
             type: "info",
-            title: "Jobb sparat",
-            message: `${currentListing.org_name} har lagts till i dina sparade jobb.`,
+            title: LABELS.toastJobSaved,
+            message: `${currentListing.org_name} – ${currentListing.title}`,
           });
         }
       } else {
