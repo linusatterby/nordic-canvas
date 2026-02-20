@@ -78,7 +78,7 @@ export function ApplyDialog({ open, onClose, jobId, jobTitle, orgName }: ApplyDi
     };
     try {
       await submitMutation.mutateAsync({ jobId, payload });
-      addToast({ type: "success", title: LABELS.chipApplied, message: `Din ansökan till ${orgName} har skickats.` });
+      addToast({ type: "success", title: LABELS.toastApplicationSent, message: `${orgName} – ${jobTitle}` });
       onClose();
     } catch {
       addToast({ type: "error", title: "Fel", message: "Kunde inte skicka ansökan." });

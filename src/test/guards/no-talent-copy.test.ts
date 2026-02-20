@@ -124,6 +124,8 @@ const ALLOWED_FILES = new Set([
   "src/app/routes/(employer)/EmployerJobs.tsx",
   "src/app/routes/(employer)/EmployerDashboard.tsx",
   "src/app/routes/(employer)/EmployerMatchChat.tsx",
+  "src/app/routes/(employer)/EmployerApplications.tsx",
+  "src/app/routes/(employer)/EmployerCandidatePool.tsx",
   "src/app/routes/(employer)/EmployerActivity.tsx",
 
   // ── Host routes: talent_name field refs ──

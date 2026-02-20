@@ -47,6 +47,17 @@ export const LABELS = {
   savedJobsTitle: "Sparade jobb",
   savedJobsEmpty: "Inga sparade jobb ännu",
   savedJobsEmptyHint: "Spara jobb du gillar så hamnar de här.",
+  savedJobsSavedPrefix: "Sparad",
+
+  /* ── Toast copy ────────────────────────────────── */
+  toastJobSaved: "Sparat i Sparade jobb.",
+  toastApplicationSent: "Ansökan skickad.",
+  toastApplicationSentCta: "Se i Inkorgen",
+  toastJobUnsaved: "Borttaget från Sparade jobb.",
+
+  /* ── CTA labels ────────────────────────────────── */
+  ctaViewApplication: "Visa ansökan",
+  ctaSavedDisabled: "Sparad",
 
   /* ── Apply dialog ──────────────────────────────── */
   applyDialogTitle: "Ansök till tjänsten",
@@ -61,10 +72,15 @@ export const LABELS = {
   employerNoApplicationsHint: "När kandidater ansöker till dina jobb ser du dem här.",
   employerNoPool: "Kandidatpoolen är tom",
   employerNoPoolHint: "Kandidater du sparar hamnar här.",
+  employerApplicationsExplainer: "Här visas endast kandidater som skickat en ansökan.",
+  employerPoolExplainer: "Här kan du kontakta kandidater – det räknas inte som en ansökan.",
 
   /* ── Request dialog ────────────────────────────── */
   requestDialogTitle: "Förfrågan",
   requestActionAccept: "Kan",
   requestActionDecline: "Kan inte",
   requestActionSuggestTime: "Föreslå tid",
+
+  /* ── Demo ───────────────────────────────────────── */
+  demoBannerNotice: "Demo: Exempeldata – inga åtgärder sparas i live.",
 } as const;

@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { canSeedDemo, DEMO_ENABLED } from "@/lib/config/env";
 import { invalidateForRoleSwitch } from "@/lib/query/invalidate";
+import { LABELS } from "@/config/labels";
 
 interface DemoBannerProps {
   onOpenGuide: () => void;
@@ -85,10 +86,8 @@ export function DemoBanner({ onOpenGuide }: DemoBannerProps) {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-sm text-accent-foreground">
           <FlaskConical className="h-4 w-4 text-primary" />
-          <span className="font-medium">DEMO-LÄGE</span>
-          <span className="text-muted-foreground hidden sm:inline">
-            – Du arbetar med exempeldata
-          </span>
+          <span className="font-medium hidden sm:inline">{LABELS.demoBannerNotice}</span>
+          <span className="font-medium sm:hidden">DEMO</span>
         </div>
         
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
