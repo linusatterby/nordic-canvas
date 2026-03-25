@@ -80,7 +80,15 @@ export function ApplyDialog({ open, onClose, jobId, jobTitle, orgName }: ApplyDi
     };
     try {
       await submitMutation.mutateAsync({ jobId, payload });
-      addToast({ type: "success", title: LABELS.toastApplicationSent, message: `${orgName} – ${jobTitle}` });
+      addToast({
+        type: "success",
+        title: LABELS.toastApplicationSent,
+        message: `${orgName} – ${jobTitle}`,
+        action: {
+          label: LABELS.toastApplicationSentCta,
+          onClick: () => navigate("/talent/inbox"),
+        },
+      });
       onClose();
     } catch {
       addToast({ type: "error", title: "Fel", message: "Kunde inte skicka ansökan." });

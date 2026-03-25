@@ -3,10 +3,13 @@ import { MapPin, Calendar, Home, ChevronDown, ChevronUp, Sparkles, Loader2 } fro
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StatusChip } from "@/components/ui/StatusChip";
 import { cn } from "@/lib/utils/classnames";
 import { HOUSING_STATUS, type HousingStatus } from "@/lib/constants/status";
 import { MatchScoreBadge } from "@/components/matching/MatchScoreBadge";
 import { LABELS } from "@/config/labels";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { MatchReason } from "@/lib/api/ranking";
 
 export type JobCardStatus = "none" | "saved" | "applied";
