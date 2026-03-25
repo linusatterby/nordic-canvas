@@ -1,6 +1,5 @@
 /**
  * Employer internal communications page.
- * List sent messages + create new message dialog.
  */
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
@@ -9,12 +8,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { LABELS } from "@/config/labels";
 import { useInternalMessages, useGroups, useCreateMessage } from "@/hooks/useInternalComms";
-import { useOrgs } from "@/hooks/useOrgs";
+import { useMyOrgs } from "@/hooks/useOrgs";
 import { CreateMessageDialog } from "@/components/comms/CreateMessageDialog";
-import { MessagePlus, Megaphone, Users } from "lucide-react";
+import { Plus, Megaphone, Users } from "lucide-react";
 
 export default function EmployerComms() {
-  const { data: orgs } = useOrgs();
+  const { data: orgs } = useMyOrgs();
   const orgId = orgs?.[0]?.id;
   const { data: messages, isLoading } = useInternalMessages(orgId);
   const { data: groups } = useGroups(orgId);
@@ -29,7 +28,7 @@ export default function EmployerComms() {
           <p className="text-sm text-muted-foreground mt-1">{LABELS.commsSubtitle}</p>
         </div>
         <Button onClick={() => setShowCreate(true)} className="gap-2">
-          <MessagePlus className="h-4 w-4" />
+          <Plus className="h-4 w-4" />
           {LABELS.commsNewMessage}
         </Button>
       </div>
@@ -55,7 +54,7 @@ export default function EmployerComms() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-foreground truncate">{msg.title}</h3>
                     {msg.is_important && (
-                      <Badge variant="destructive" className="text-[10px] shrink-0">
+                      <Badge variant="warn" size="sm">
                         {LABELS.commsImportant}
                       </Badge>
                     )}

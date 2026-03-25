@@ -1,17 +1,16 @@
 /**
- * Employee/talent internal information feed.
- * Shows messages targeted to "all" or groups the user belongs to.
+ * Employee internal information feed.
  */
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { LABELS } from "@/config/labels";
 import { useInternalMessagesForUser } from "@/hooks/useInternalComms";
-import { useOrgs } from "@/hooks/useOrgs";
+import { useMyOrgs } from "@/hooks/useOrgs";
 import { Megaphone, Users } from "lucide-react";
 
 export default function TalentComms() {
-  const { data: orgs } = useOrgs();
+  const { data: orgs } = useMyOrgs();
   const orgId = orgs?.[0]?.id;
   const { data: messages, isLoading } = useInternalMessagesForUser(orgId);
 
@@ -42,7 +41,7 @@ export default function TalentComms() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-foreground">{msg.title}</h3>
                     {msg.is_important && (
-                      <Badge variant="destructive" className="text-[10px] shrink-0">
+                      <Badge variant="warn" size="sm">
                         {LABELS.commsImportant}
                       </Badge>
                     )}

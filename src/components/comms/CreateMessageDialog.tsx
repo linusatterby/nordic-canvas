@@ -1,6 +1,5 @@
 /**
  * Dialog for creating an internal message.
- * Desktop: dialog. Mobile: drawer/sheet.
  */
 import { useState } from "react";
 import {
@@ -68,7 +67,6 @@ export function CreateMessageDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Title */}
           <div className="space-y-1.5">
             <Label htmlFor="msg-title">{LABELS.commsFieldTitle}</Label>
             <Input
@@ -79,7 +77,6 @@ export function CreateMessageDialog({
             />
           </div>
 
-          {/* Body */}
           <div className="space-y-1.5">
             <Label htmlFor="msg-body">{LABELS.commsFieldBody}</Label>
             <Textarea
@@ -91,7 +88,6 @@ export function CreateMessageDialog({
             />
           </div>
 
-          {/* Target */}
           <div className="space-y-2">
             <Label>{LABELS.commsFieldTarget}</Label>
             <div className="flex gap-4">
