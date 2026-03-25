@@ -127,6 +127,7 @@ export const routes: RouteDef[] = [
   { id: "employer-inbox", path: "/employer/inbox", kind: "app", element: EmployerInbox, guard: "protected", allow: ["employer"] },
   { id: "employer-applications", path: "/employer/applications", kind: "app", element: EmployerApplications, guard: "protected", allow: ["employer"] },
   { id: "employer-pool", path: "/employer/pool", kind: "app", element: EmployerCandidatePool, guard: "protected", allow: ["employer"] },
+  { id: "employer-comms", path: "/employer/comms", kind: "app", element: EmployerComms, guard: "protected", allow: ["employer"] },
 
   // Host
   { id: "host-housing", path: "/host/housing", kind: "app", element: HostHousing, guard: "protected", allow: ["host"] },
