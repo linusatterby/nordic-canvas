@@ -75,7 +75,8 @@ export function JobCard({
   className,
 }: JobCardProps) {
   const [showHousingDetails, setShowHousingDetails] = React.useState(false);
-  
+  const isMobile = useIsMobile();
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (disabled) return;
     if (e.key === "ArrowRight" || e.key === "j") {
