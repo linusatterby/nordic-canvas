@@ -206,22 +206,43 @@ export function JobCard({
           </Button>
         ) : (
           <>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => onSwipeYes?.(id)}
-              className="flex-1"
-              aria-label={jobStatus === "saved" ? LABELS.ctaSavedDisabled : LABELS.actionSave}
-              disabled={disabled || jobStatus === "saved"}
-            >
-              {pendingDirection === "yes" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : jobStatus === "saved" ? (
-                LABELS.ctaSavedDisabled
-              ) : (
-                LABELS.actionSave
-              )}
-            </Button>
+            {jobStatus === "saved" ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      className="flex-1"
+                      aria-label={LABELS.ctaSavedDisabled}
+                      disabled
+                    >
+                      {LABELS.ctaSavedDisabled}
+                    </Button>
+                  </TooltipTrigger>
+                  {!isMobile && (
+                    <TooltipContent>
+                      <p>{LABELS.savedTooltip}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => onSwipeYes?.(id)}
+                className="flex-1"
+                aria-label={LABELS.actionSave}
+                disabled={disabled}
+              >
+                {pendingDirection === "yes" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  LABELS.actionSave
+                )}
+              </Button>
+            )}
             {onApply && (
               <Button
                 variant="primary"
