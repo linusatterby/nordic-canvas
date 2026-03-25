@@ -3,10 +3,13 @@ import { MapPin, Calendar, Home, ChevronDown, ChevronUp, Sparkles, Loader2 } fro
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StatusChip } from "@/components/ui/StatusChip";
 import { cn } from "@/lib/utils/classnames";
 import { HOUSING_STATUS, type HousingStatus } from "@/lib/constants/status";
 import { MatchScoreBadge } from "@/components/matching/MatchScoreBadge";
 import { LABELS } from "@/config/labels";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { MatchReason } from "@/lib/api/ranking";
 
 export type JobCardStatus = "none" | "saved" | "applied";
@@ -72,7 +75,8 @@ export function JobCard({
   className,
 }: JobCardProps) {
   const [showHousingDetails, setShowHousingDetails] = React.useState(false);
-  
+  const isMobile = useIsMobile();
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (disabled) return;
     if (e.key === "ArrowRight" || e.key === "j") {
@@ -102,12 +106,7 @@ export function JobCard({
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-          {jobStatus === "saved" && (
-            <Badge variant="default" size="sm">{LABELS.chipSaved}</Badge>
-          )}
-          {jobStatus === "applied" && (
-            <Badge variant="primary" size="sm">{LABELS.chipApplied}</Badge>
-          )}
+          <StatusChip status={jobStatus} />
         </div>
         <p className="text-sm text-muted-foreground">{company}</p>
       </div>
@@ -207,22 +206,43 @@ export function JobCard({
           </Button>
         ) : (
           <>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => onSwipeYes?.(id)}
-              className="flex-1"
-              aria-label={jobStatus === "saved" ? LABELS.ctaSavedDisabled : LABELS.actionSave}
-              disabled={disabled || jobStatus === "saved"}
-            >
-              {pendingDirection === "yes" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : jobStatus === "saved" ? (
-                LABELS.ctaSavedDisabled
-              ) : (
-                LABELS.actionSave
-              )}
-            </Button>
+            {jobStatus === "saved" ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      className="flex-1"
+                      aria-label={LABELS.ctaSavedDisabled}
+                      disabled
+                    >
+                      {LABELS.ctaSavedDisabled}
+                    </Button>
+                  </TooltipTrigger>
+                  {!isMobile && (
+                    <TooltipContent>
+                      <p>{LABELS.savedTooltip}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => onSwipeYes?.(id)}
+                className="flex-1"
+                aria-label={LABELS.actionSave}
+                disabled={disabled}
+              >
+                {pendingDirection === "yes" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  LABELS.actionSave
+                )}
+              </Button>
+            )}
             {onApply && (
               <Button
                 variant="primary"
@@ -242,6 +262,16 @@ export function JobCard({
           </>
         )}
       </div>
+
+      {/* Mobile hint for saved state (tooltip not available on touch) */}
+      {jobStatus === "saved" && isMobile && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">{LABELS.savedTooltip}</p>
+      )}
+
+      {/* Read-only notice for applied state */}
+      {jobStatus === "applied" && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">{LABELS.appliedReadOnlyNotice}</p>
+      )}
     </Card>
   );
 }

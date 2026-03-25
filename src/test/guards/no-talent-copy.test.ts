@@ -143,6 +143,7 @@ const ALLOWED_FILES = new Set([
   "src/app/routes/(settings)/SettingsProfile.tsx",
 
   // ── Components with internal type references ──
+  "src/components/apply/ApplyDialog.tsx", // route path /talent/inbox
   "src/components/borrow/TalentBorrowOffers.tsx",
   "src/components/cards/CandidateCard.tsx",
   "src/components/circles/TalentCircleVisibilityCard.tsx",

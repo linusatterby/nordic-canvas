@@ -6,6 +6,7 @@
  */
 
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { X, ChevronLeft, FileText, CheckCircle2, MessageSquare, Send, Bookmark } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/Button";
@@ -37,6 +38,7 @@ export interface ApplyDialogProps {
 // ---------------------------------------------------------------------------
 
 export function ApplyDialog({ open, onClose, jobId, jobTitle, orgName }: ApplyDialogProps) {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const stepper = useApplyStepper();
   const { data: credentials } = useCredentials();
@@ -78,7 +80,15 @@ export function ApplyDialog({ open, onClose, jobId, jobTitle, orgName }: ApplyDi
     };
     try {
       await submitMutation.mutateAsync({ jobId, payload });
-      addToast({ type: "success", title: LABELS.toastApplicationSent, message: `${orgName} – ${jobTitle}` });
+      addToast({
+        type: "success",
+        title: LABELS.toastApplicationSent,
+        message: `${orgName} – ${jobTitle}`,
+        action: {
+          label: LABELS.toastApplicationSentCta,
+          onClick: () => navigate("/talent/inbox"),
+        },
+      });
       onClose();
     } catch {
       addToast({ type: "error", title: "Fel", message: "Kunde inte skicka ansökan." });
