@@ -262,6 +262,16 @@ export function JobCard({
           </>
         )}
       </div>
+
+      {/* Mobile hint for saved state (tooltip not available on touch) */}
+      {jobStatus === "saved" && isMobile && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">{LABELS.savedTooltip}</p>
+      )}
+
+      {/* Read-only notice for applied state */}
+      {jobStatus === "applied" && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">{LABELS.appliedReadOnlyNotice}</p>
+      )}
     </Card>
   );
 }
