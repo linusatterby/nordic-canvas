@@ -52,6 +52,7 @@ const talentSections: NavSection[] = [
     heading: "Kommunikation",
     items: [
       { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/talent/inbox" },
+      { icon: <Megaphone className="h-5 w-5" />, label: "Intern info", href: "/talent/comms" },
       { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/talent/activity" },
     ],
   },
