@@ -6,6 +6,7 @@
  */
 
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { X, ChevronLeft, FileText, CheckCircle2, MessageSquare, Send, Bookmark } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/Button";

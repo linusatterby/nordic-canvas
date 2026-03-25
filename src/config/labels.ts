@@ -55,6 +55,12 @@ export const LABELS = {
   toastApplicationSentCta: "Se i Inkorgen",
   toastJobUnsaved: "Borttaget från Sparade jobb.",
 
+  /* ── Saved state feedback ──────────────────────── */
+  savedTooltip: "Jobbet finns i Sparade jobb.",
+
+  /* ── Applied read-only ─────────────────────────── */
+  appliedReadOnlyNotice: "Den här ansökan är redan skickad.",
+
   /* ── CTA labels ────────────────────────────────── */
   ctaViewApplication: "Visa ansökan",
   ctaSavedDisabled: "Sparad",
