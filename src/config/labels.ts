@@ -89,4 +89,29 @@ export const LABELS = {
 
   /* ── Demo ───────────────────────────────────────── */
   demoBannerNotice: "Demo: Exempeldata – inga åtgärder sparas i live.",
+
+  /* ── Internal comms ────────────────────────────── */
+  commsTitle: "Kommunikation",
+  commsSubtitle: "Skicka meddelanden till personalen.",
+  commsNewMessage: "Nytt meddelande",
+  commsEmpty: "Inga meddelanden ännu",
+  commsEmptyHint: "Skapa ditt första meddelande till personalen.",
+  commsImportant: "Viktigt",
+  commsTargetAll: "Alla anställda",
+  commsTargetGroups: "Grupper",
+  commsNoGroups: "Inga grupper skapade ännu.",
+  commsFieldTitle: "Titel",
+  commsFieldTitlePlaceholder: "T.ex. Ny rutin för helgschema",
+  commsFieldBody: "Meddelande",
+  commsFieldBodyPlaceholder: "Skriv ditt meddelande här…",
+  commsFieldTarget: "Målgrupp",
+  commsCancel: "Avbryt",
+  commsSend: "Skicka",
+  commsSending: "Skickar…",
+  commsFeedTitle: "Intern information",
+  commsFeedSubtitle: "Meddelanden från din arbetsgivare.",
+  commsFeedEmpty: "Inga meddelanden att visa.",
+  commsGroupsTitle: "Grupper",
+  commsCreateGroup: "Skapa grupp",
+  commsGroupNamePlaceholder: "T.ex. Restaurangen",
 } as const;
