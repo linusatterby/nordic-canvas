@@ -38,6 +38,7 @@ export interface ApplyDialogProps {
 // ---------------------------------------------------------------------------
 
 export function ApplyDialog({ open, onClose, jobId, jobTitle, orgName }: ApplyDialogProps) {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const stepper = useApplyStepper();
   const { data: credentials } = useCredentials();
