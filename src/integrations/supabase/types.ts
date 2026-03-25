@@ -1102,6 +1102,149 @@ export type Database = {
           },
         ]
       }
+      internal_group_members: {
+        Row: {
+          added_at: string
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "internal_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_groups: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          org_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          org_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_groups_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_groups_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_message_groups: {
+        Row: {
+          group_id: string
+          message_id: string
+        }
+        Insert: {
+          group_id: string
+          message_id: string
+        }
+        Update: {
+          group_id?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_message_groups_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "internal_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_message_groups_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "internal_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_important: boolean
+          org_id: string
+          sender_user_id: string
+          target: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_important?: boolean
+          org_id: string
+          sender_user_id: string
+          target?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_important?: boolean
+          org_id?: string
+          sender_user_id?: string
+          target?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_messages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_category_catalog: {
         Row: {
           code: string
