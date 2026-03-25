@@ -253,3 +253,19 @@ export {
   type CandidateJobStatus,
   type ApplicationPayload,
 } from "./candidateJobState";
+
+// --- Internal Comms ---
+export {
+  createMessage,
+  listMessagesForOrg,
+  listMessagesForUser,
+  createGroup,
+  listGroupsForOrg,
+  assignUserToGroup,
+  removeUserFromGroup,
+  listGroupMembers,
+  type InternalGroup,
+  type InternalGroupMember,
+  type InternalMessage,
+  type CreateMessagePayload,
+} from "./internalComms";
