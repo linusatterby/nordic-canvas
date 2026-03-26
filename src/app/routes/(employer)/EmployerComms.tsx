@@ -35,8 +35,6 @@ export default function EmployerComms() {
   const { data: groups } = useGroups(effectiveOrgId);
   const createMsgMutation = useCreateMessage(effectiveOrgId);
   const createGroupMutation = useCreateGroup(effectiveOrgId);
-  const createMsgMutation = useCreateMessage(orgId);
-  const createGroupMutation = useCreateGroup(orgId);
 
   const [showCreateMsg, setShowCreateMsg] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
