@@ -133,7 +133,7 @@ export function CreateOnboardingDialog({ open, onOpenChange, groups, orgId, onSu
               </Button>
               <Button
                 type="button"
-                variant={target === "groups" ? "default" : "outline"}
+                variant={target === "groups" ? "primary" : "outline"}
                 size="sm"
                 onClick={() => setTarget("groups")}
               >

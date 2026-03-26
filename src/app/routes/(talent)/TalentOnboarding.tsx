@@ -121,7 +121,7 @@ export default function TalentOnboarding() {
                       )}
                       {!done && (
                         <Button
-                          variant="default"
+                          variant="primary"
                           size="sm"
                           onClick={() => handleComplete(item.id)}
                           disabled={completeMutation.isPending}

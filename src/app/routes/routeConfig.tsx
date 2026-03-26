@@ -22,6 +22,7 @@ import TalentActivity from "@/app/routes/(talent)/TalentActivity";
 import TalentInbox from "@/app/routes/(talent)/TalentInbox";
 import TalentHousing from "@/app/routes/(talent)/TalentHousing";
 import TalentComms from "@/app/routes/(talent)/TalentComms";
+import TalentOnboarding from "@/app/routes/(talent)/TalentOnboarding";
 
 import EmployerDashboard from "@/app/routes/(employer)/EmployerDashboard";
 import EmployerJobs from "@/app/routes/(employer)/EmployerJobs";
