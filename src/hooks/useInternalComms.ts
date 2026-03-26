@@ -66,6 +66,15 @@ export function useRemoveUserFromGroup() {
   });
 }
 
+// ── Org Members ───────────────────────────────────────────────
+export function useOrgMembers(orgId?: string) {
+  return useQuery({
+    queryKey: queryKeys.internalComms.orgMembers(orgId),
+    queryFn: () => listOrgMembersWithProfile(orgId!),
+    enabled: !!orgId,
+  });
+}
+
 // ── Messages ───────────────────────────────────────────────────
 export function useInternalMessages(orgId?: string) {
   return useQuery({

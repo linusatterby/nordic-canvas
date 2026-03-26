@@ -87,6 +87,26 @@ export async function removeUserFromGroup(groupId: string, userId: string): Prom
   if (error) throw error;
 }
 
+// ── Org Members (for member picker) ───────────────────────────
+export interface OrgMemberProfile {
+  user_id: string;
+  full_name: string | null;
+  role: string;
+}
+
+export async function listOrgMembersWithProfile(orgId: string): Promise<OrgMemberProfile[]> {
+  const { data, error } = await supabase
+    .from("org_members")
+    .select("user_id, role, profiles!org_members_user_id_fkey ( full_name )")
+    .eq("org_id", orgId);
+  if (error) throw error;
+  return (data ?? []).map((m: any) => ({
+    user_id: m.user_id,
+    full_name: m.profiles?.full_name ?? null,
+    role: m.role,
+  }));
+}
+
 // ── Messages ───────────────────────────────────────────────────
 export async function createMessage(payload: CreateMessagePayload): Promise<InternalMessage> {
   const { data: session } = await supabase.auth.getSession();
