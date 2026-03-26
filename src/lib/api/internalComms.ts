@@ -95,14 +95,24 @@ export interface OrgMemberProfile {
 }
 
 export async function listOrgMembersWithProfile(orgId: string): Promise<OrgMemberProfile[]> {
-  const { data, error } = await supabase
+  const { data: members, error } = await supabase
     .from("org_members")
-    .select("user_id, role, profiles!org_members_user_id_fkey ( full_name )")
+    .select("user_id, role")
     .eq("org_id", orgId);
   if (error) throw error;
-  return (data ?? []).map((m: any) => ({
+  if (!members?.length) return [];
+
+  const userIds = members.map((m) => m.user_id);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("user_id, full_name")
+    .in("user_id", userIds);
+
+  const nameMap = new Map((profiles ?? []).map((p: { user_id: string; full_name: string | null }) => [p.user_id, p.full_name]));
+
+  return members.map((m) => ({
     user_id: m.user_id,
-    full_name: m.profiles?.full_name ?? null,
+    full_name: nameMap.get(m.user_id) ?? null,
     role: m.role,
   }));
 }
