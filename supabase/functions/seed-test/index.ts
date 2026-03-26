@@ -794,6 +794,86 @@ Deno.serve(async (req) => {
       results.comms_skipped = "no Visby org found";
     }
 
+    // ── 6. Onboarding items ──
+    if (commsOrgId) {
+      const ONBOARDING_ITEMS = [
+        {
+          title: "Välkommen till teamet",
+          description: "En kort introduktion till hur vi arbetar och vad du kan förvänta dig.",
+          content_type: "document",
+          content_url: null,
+          target: "all",
+        },
+        {
+          title: "Arbetsrutiner i restaurangen",
+          description: "Genomgång av öppning, stängning och dagliga rutiner i restaurangen.",
+          content_type: "checklist",
+          content_url: null,
+          target: "groups", // targeted to Restaurangen group
+        },
+        {
+          title: "Introduktion för receptionen",
+          description: "Bokningssystem, incheckning och vanliga frågor från gäster.",
+          content_type: "link",
+          content_url: "https://example.com/reception-guide",
+          target: "all",
+        },
+      ];
+
+      const senderForOnboarding = staffUserIds[0] || (await sb
+        .from("org_members")
+        .select("user_id")
+        .eq("org_id", commsOrgId)
+        .limit(1)
+        .maybeSingle()
+      ).data?.user_id;
+
+      if (senderForOnboarding) {
+        for (const obItem of ONBOARDING_ITEMS) {
+          const { data: existingOb } = await sb
+            .from("onboarding_items")
+            .select("id")
+            .eq("org_id", commsOrgId)
+            .eq("title", obItem.title)
+            .maybeSingle();
+
+          if (existingOb) {
+            results[`onboarding_${obItem.title}`] = "already_exists";
+          } else {
+            const { data: newOb, error: obErr } = await sb
+              .from("onboarding_items")
+              .insert({
+                org_id: commsOrgId,
+                title: obItem.title,
+                description: obItem.description,
+                content_type: obItem.content_type,
+                content_url: obItem.content_url,
+                target: obItem.target,
+                created_by: senderForOnboarding,
+                is_demo: true,
+              })
+              .select("id")
+              .single();
+            if (obErr) {
+              errors.push(`onboarding "${obItem.title}": ${obErr.message}`);
+            } else {
+              results[`onboarding_${obItem.title}`] = "created";
+
+              // Link group-targeted item to Restaurangen group
+              if (obItem.target === "groups" && groupId && newOb) {
+                await sb.from("onboarding_item_groups").insert({
+                  item_id: newOb.id,
+                  group_id: groupId,
+                });
+              }
+            }
+          }
+        }
+      } else {
+        results.onboarding_skipped = "no sender found";
+      }
+    }
+
     results._summary = {
       orgs: orgIds.filter(Boolean).length,
       jobs_created: jobsCreated,
