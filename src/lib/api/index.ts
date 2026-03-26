@@ -264,8 +264,10 @@ export {
   assignUserToGroup,
   removeUserFromGroup,
   listGroupMembers,
+  listOrgMembersWithProfile,
   type InternalGroup,
   type InternalGroupMember,
   type InternalMessage,
   type CreateMessagePayload,
+  type OrgMemberProfile,
 } from "./internalComms";

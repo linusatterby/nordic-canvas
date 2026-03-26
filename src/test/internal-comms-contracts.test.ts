@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 /**
  * Contract tests for internal communications.
- * Verifies API function signatures and label consistency.
+ * Verifies API function signatures, label consistency, and behavioral contracts.
  */
 
 describe("Internal comms contracts", () => {
@@ -16,15 +16,20 @@ describe("Internal comms contracts", () => {
     expect(typeof api.assignUserToGroup).toBe("function");
     expect(typeof api.removeUserFromGroup).toBe("function");
     expect(typeof api.listGroupMembers).toBe("function");
+    expect(typeof api.listOrgMembersWithProfile).toBe("function");
   });
 
   it("hooks module exports expected hooks", async () => {
     const hooks = await import("@/hooks/useInternalComms");
     expect(typeof hooks.useGroups).toBe("function");
+    expect(typeof hooks.useGroupMembers).toBe("function");
+    expect(typeof hooks.useOrgMembers).toBe("function");
     expect(typeof hooks.useInternalMessages).toBe("function");
     expect(typeof hooks.useInternalMessagesForUser).toBe("function");
     expect(typeof hooks.useCreateMessage).toBe("function");
     expect(typeof hooks.useCreateGroup).toBe("function");
+    expect(typeof hooks.useAssignUserToGroup).toBe("function");
+    expect(typeof hooks.useRemoveUserFromGroup).toBe("function");
   });
 
   it("labels contain all comms keys", async () => {
@@ -37,6 +42,17 @@ describe("Internal comms contracts", () => {
       "commsFeedTitle",
       "commsFeedEmpty",
       "commsSend",
+      "commsGroupsTitle",
+      "commsGroupsSubtitle",
+      "commsCreateGroup",
+      "commsGroupName",
+      "commsGroupMembers",
+      "commsAddMember",
+      "commsRemoveMember",
+      "commsNoGroupsYet",
+      "commsNoMembersYet",
+      "commsCreateGroupFirst",
+      "commsManageMembers",
     ];
     for (const key of required) {
       expect((LABELS as Record<string, string>)[key]).toBeTruthy();
@@ -44,9 +60,6 @@ describe("Internal comms contracts", () => {
   });
 
   it("message to 'all' should be visible to all staff (design contract)", () => {
-    // A message with target='all' must not require group membership.
-    // This is enforced by RLS: the policy checks target='all' OR group membership.
-    // We verify the API types reflect this.
     const payload = {
       org_id: "test",
       title: "Info",
@@ -67,5 +80,14 @@ describe("Internal comms contracts", () => {
     };
     expect(payload.target).toBe("groups");
     expect(payload.group_ids.length).toBeGreaterThan(0);
+  });
+
+  it("queryKeys include orgMembers factory", async () => {
+    const { queryKeys } = await import("@/lib/queryKeys");
+    expect(queryKeys.internalComms.orgMembers("org-1")).toEqual([
+      "internalComms",
+      "orgMembers",
+      "org-1",
+    ]);
   });
 });
