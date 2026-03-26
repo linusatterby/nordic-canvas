@@ -30,11 +30,14 @@ export function useDemoMembership(orgId: string | undefined, isDemoMode: boolean
     ensureDemoMembership(orgId).then(({ ok }) => {
       ensuredRef.current = orgId;
       if (ok) {
-        // Invalidate comms queries so they refetch with new membership
-        queryClient.invalidateQueries({ queryKey: queryKeys.internalComms.messages(orgId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.internalComms.groups(orgId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.orgs.my() });
+        // Force refetch (not just invalidate) so data loads immediately
+        queryClient.refetchQueries({ queryKey: queryKeys.internalComms.messages(orgId) });
+        queryClient.refetchQueries({ queryKey: queryKeys.internalComms.groups(orgId) });
+        queryClient.refetchQueries({ queryKey: queryKeys.orgs.my() });
       }
+      setReady(true);
+    }).catch(() => {
+      ensuredRef.current = orgId;
       setReady(true);
     });
   }, [isDemoMode, orgId, queryClient]);
