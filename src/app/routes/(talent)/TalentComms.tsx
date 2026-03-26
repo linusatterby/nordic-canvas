@@ -13,14 +13,17 @@ import { Megaphone, Users } from "lucide-react";
 
 export default function TalentComms() {
   const { isDemoMode } = useAuth();
-  const { data: orgs } = useMyOrgs();
-  const { data: demoOrgId } = useDemoOrgId();
+  const { data: orgs, isLoading: orgsLoading } = useMyOrgs();
+  const { data: demoOrgId, isLoading: demoOrgLoading } = useDemoOrgId();
   const orgId = orgs?.[0]?.id ?? (isDemoMode ? demoOrgId : undefined) ?? undefined;
   const demoReady = useDemoMembership(orgId, isDemoMode);
   const effectiveOrgId = demoReady ? orgId : undefined;
   const { data: messages, isLoading } = useInternalMessagesForUser(effectiveOrgId);
 
-  if (!orgId) {
+  // Show loading while demo org is being resolved
+  const stillInitializing = isDemoMode && (orgsLoading || demoOrgLoading || !demoReady);
+
+  if (!orgId && !stillInitializing) {
     return (
       <div className="space-y-6">
         <div>
