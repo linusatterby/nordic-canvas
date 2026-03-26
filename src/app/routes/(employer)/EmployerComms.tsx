@@ -16,6 +16,7 @@ import {
 } from "@/hooks/useInternalComms";
 import { useMyOrgs, useDemoOrgId } from "@/hooks/useOrgs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMembership } from "@/hooks/useDemoMembership";
 import { CreateMessageDialog } from "@/components/comms/CreateMessageDialog";
 import { CreateGroupDialog } from "@/components/comms/CreateGroupDialog";
 import { GroupMembersManager } from "@/components/comms/GroupMembersManager";
@@ -28,6 +29,7 @@ export default function EmployerComms() {
   const { data: orgs } = useMyOrgs();
   const { data: demoOrgId } = useDemoOrgId();
   const orgId = orgs?.[0]?.id ?? (isDemoMode ? demoOrgId : undefined) ?? undefined;
+  useDemoMembership(orgId, isDemoMode);
   const { data: messages, isLoading } = useInternalMessages(orgId);
   const { data: groups } = useGroups(orgId);
   const createMsgMutation = useCreateMessage(orgId);
