@@ -24,8 +24,10 @@ import { toast } from "sonner";
 import type { InternalGroup } from "@/lib/api/internalComms";
 
 export default function EmployerComms() {
+  const { isDemoMode } = useAuth();
   const { data: orgs } = useMyOrgs();
-  const orgId = orgs?.[0]?.id;
+  const { data: demoOrgId } = useDemoOrgId();
+  const orgId = orgs?.[0]?.id ?? (isDemoMode ? demoOrgId : undefined) ?? undefined;
   const { data: messages, isLoading } = useInternalMessages(orgId);
   const { data: groups } = useGroups(orgId);
   const createMsgMutation = useCreateMessage(orgId);
