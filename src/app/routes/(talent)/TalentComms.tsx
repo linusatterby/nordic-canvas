@@ -8,6 +8,7 @@ import { LABELS } from "@/config/labels";
 import { useInternalMessagesForUser } from "@/hooks/useInternalComms";
 import { useMyOrgs, useDemoOrgId } from "@/hooks/useOrgs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMembership } from "@/hooks/useDemoMembership";
 import { Megaphone, Users } from "lucide-react";
 
 export default function TalentComms() {
