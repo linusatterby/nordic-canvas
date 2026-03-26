@@ -1,5 +1,5 @@
 /**
- * Talent/Staff onboarding view.
+ * Staff onboarding view (kandidat/personal).
  */
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
