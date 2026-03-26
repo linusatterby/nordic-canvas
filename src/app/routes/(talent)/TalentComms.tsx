@@ -16,6 +16,7 @@ export default function TalentComms() {
   const { data: orgs } = useMyOrgs();
   const { data: demoOrgId } = useDemoOrgId();
   const orgId = orgs?.[0]?.id ?? (isDemoMode ? demoOrgId : undefined) ?? undefined;
+  useDemoMembership(orgId, isDemoMode);
   const { data: messages, isLoading } = useInternalMessagesForUser(orgId);
 
   if (!orgId) {
