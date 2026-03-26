@@ -221,6 +221,7 @@ const ALLOWED_FILES = new Set([
   "src/test/guards/postgrest-joins.test.ts",
   "src/test/lazy-routes.test.ts",
   "src/test/seed-guards.test.ts",
+  "src/test/onboarding-contracts.test.ts",
 ]);
 
 // ── Helpers ──────────────────────────────────────────────────
