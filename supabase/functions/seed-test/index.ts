@@ -609,9 +609,9 @@ Deno.serve(async (req) => {
     // Add demo staff profiles + org_members to Visby Strandhotell so comms can be tested
     const commsOrgId = orgIds[1]; // Visby Strandhotell (index 1)
     const DEMO_STAFF = [
-      { name: "Anna Bergström", role: "staff" },
-      { name: "Erik Lindgren", role: "staff" },
-      { name: "Lisa Nyström", role: "staff" },
+      { name: "Anna Bergström", role: "manager" },
+      { name: "Erik Lindgren", role: "manager" },
+      { name: "Lisa Nyström", role: "manager" },
     ];
 
     if (commsOrgId) {
