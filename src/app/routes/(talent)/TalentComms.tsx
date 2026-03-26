@@ -45,7 +45,7 @@ export default function TalentComms() {
         <p className="text-sm text-muted-foreground mt-1">{LABELS.commsFeedSubtitle}</p>
       </div>
 
-      {isLoading ? (
+      {isLoading || stillInitializing ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-24 w-full rounded-xl" />
