@@ -48,16 +48,15 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+    if (userError || !user) {
       return new Response(
         JSON.stringify({ error: "Invalid token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userId = claimsData.claims.sub as string;
+    const userId = user.id;
 
     // Parse body
     const { org_id, role } = await req.json();
@@ -94,6 +93,7 @@ Deno.serve(async (req) => {
 
     // Idempotent upsert into org_members
     const memberRole = role ?? "admin";
+    console.log(`Ensuring membership: user=${userId}, org=${org_id}, role=${memberRole}`);
     const { error: upsertError } = await admin
       .from("org_members")
       .upsert(
@@ -102,11 +102,14 @@ Deno.serve(async (req) => {
       );
 
     if (upsertError) {
+      console.error("Upsert error:", upsertError.message);
       return new Response(
         JSON.stringify({ error: upsertError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("Membership ensured successfully");
 
     return new Response(
       JSON.stringify({ ok: true, org_id, user_id: userId, role: memberRole }),
