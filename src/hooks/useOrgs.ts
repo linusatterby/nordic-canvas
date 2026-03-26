@@ -51,3 +51,18 @@ export function useCreateOrg() {
     },
   });
 }
+
+/**
+ * Hook to get first demo org ID (fallback for anonymous demo sessions)
+ */
+export function useDemoOrgId() {
+  return useQuery({
+    queryKey: queryKeys.orgs.demoDefault(),
+    queryFn: async () => {
+      const { orgs, error } = await listDemoOrgs();
+      if (error) throw error;
+      return orgs[0]?.id ?? null;
+    },
+    staleTime: 1000 * 300,
+  });
+}
