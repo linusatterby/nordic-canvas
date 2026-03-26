@@ -2590,6 +2590,10 @@ export type Database = {
       }
       healthcheck_events: { Args: { p_minutes?: number }; Returns: Json }
       is_demo_allowlisted: { Args: { p_email: string }; Returns: boolean }
+      is_internal_group_member: {
+        Args: { _message_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_listing_owner: {
         Args: { _listing_id: string; _user_id: string }
         Returns: boolean
@@ -2599,6 +2603,10 @@ export type Database = {
         Returns: boolean
       }
       is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member_norecurse: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
