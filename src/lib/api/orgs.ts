@@ -121,3 +121,25 @@ export async function createOrg(params: {
 
   return { org, error: null };
 }
+
+/**
+ * List demo orgs (is_demo = true).
+ * Used as fallback when anonymous demo users have no org_members rows.
+ */
+export async function listDemoOrgs(): Promise<{
+  orgs: Org[];
+  error: Error | null;
+}> {
+  const { data, error } = await supabase
+    .from("orgs")
+    .select("*")
+    .eq("is_demo", true)
+    .order("name")
+    .limit(10);
+
+  if (error) {
+    return { orgs: [], error: new Error(error.message) };
+  }
+
+  return { orgs: data ?? [], error: null };
+}
