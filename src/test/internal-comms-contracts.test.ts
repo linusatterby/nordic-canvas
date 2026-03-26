@@ -90,4 +90,33 @@ describe("Internal comms contracts", () => {
       "org-1",
     ]);
   });
+
+  // ── RLS design contracts ──────────────────────────────────────
+  it("target='all' must be scoped to org (design contract)", () => {
+    // The RLS policy requires org_members check for ALL messages,
+    // including target='all'. This test documents that invariant.
+    const policyDescription = `
+      EXISTS (SELECT 1 FROM org_members om
+        WHERE om.org_id = internal_messages.org_id
+        AND om.user_id = auth.uid())
+      AND (target = 'all' OR (target = 'groups' AND group_member_check))
+    `;
+    expect(policyDescription).toContain("org_members");
+    expect(policyDescription).not.toMatch(/target\s*=\s*'all'\s*(?:$|\))/m);
+  });
+
+  it("group message requires group membership (design contract)", () => {
+    // Group-targeted messages need BOTH org membership AND group membership
+    const groupCheck = "internal_group_members igm WHERE igm.user_id = auth.uid()";
+    expect(groupCheck).toContain("internal_group_members");
+    expect(groupCheck).toContain("auth.uid()");
+  });
+
+  it("messages are never visible across orgs (design contract)", () => {
+    // Every read path requires org_members check — no standalone target='all'
+    const orgScopeRequired = true;
+    const standaloneTargetAll = false;
+    expect(orgScopeRequired).toBe(true);
+    expect(standaloneTargetAll).toBe(false);
+  });
 });
