@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listMyOrgs, getDefaultOrgId, createOrg, type OrgWithRole } from "@/lib/api/orgs";
+import { listMyOrgs, getDefaultOrgId, createOrg, listDemoOrgs, type OrgWithRole } from "@/lib/api/orgs";
+import { queryKeys } from "@/lib/queryKeys";
 import { queryKeys } from "@/lib/queryKeys";
 
 /**
