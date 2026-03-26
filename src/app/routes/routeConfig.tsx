@@ -22,6 +22,7 @@ import TalentActivity from "@/app/routes/(talent)/TalentActivity";
 import TalentInbox from "@/app/routes/(talent)/TalentInbox";
 import TalentHousing from "@/app/routes/(talent)/TalentHousing";
 import TalentComms from "@/app/routes/(talent)/TalentComms";
+import TalentOnboarding from "@/app/routes/(talent)/TalentOnboarding";
 
 import EmployerDashboard from "@/app/routes/(employer)/EmployerDashboard";
 import EmployerJobs from "@/app/routes/(employer)/EmployerJobs";
@@ -35,6 +36,7 @@ import EmployerInbox from "@/app/routes/(employer)/EmployerInbox";
 import EmployerApplications from "@/app/routes/(employer)/EmployerApplications";
 import EmployerCandidatePool from "@/app/routes/(employer)/EmployerCandidatePool";
 import EmployerComms from "@/app/routes/(employer)/EmployerComms";
+import EmployerOnboarding from "@/app/routes/(employer)/EmployerOnboarding";
 
 import HostHousing from "@/app/routes/(host)/HostHousing";
 import HostInbox from "@/app/routes/(host)/HostInbox";
@@ -114,6 +116,7 @@ export const routes: RouteDef[] = [
   { id: "talent-inbox", path: "/talent/inbox", kind: "app", element: TalentInbox, guard: "protected", allow: ["talent"] },
   { id: "talent-housing", path: "/talent/housing", kind: "app", element: TalentHousing, guard: "protected", allow: ["talent"] },
   { id: "talent-comms", path: "/talent/comms", kind: "app", element: TalentComms, guard: "protected", allow: ["talent"] },
+  { id: "talent-onboarding", path: "/talent/onboarding", kind: "app", element: TalentOnboarding, guard: "protected", allow: ["talent"] },
 
   // Employer
   { id: "employer-dashboard", path: "/employer/dashboard", kind: "app", element: EmployerDashboard, guard: "protected", allow: ["employer"] },
@@ -128,6 +131,7 @@ export const routes: RouteDef[] = [
   { id: "employer-applications", path: "/employer/applications", kind: "app", element: EmployerApplications, guard: "protected", allow: ["employer"] },
   { id: "employer-pool", path: "/employer/pool", kind: "app", element: EmployerCandidatePool, guard: "protected", allow: ["employer"] },
   { id: "employer-comms", path: "/employer/comms", kind: "app", element: EmployerComms, guard: "protected", allow: ["employer"] },
+  { id: "employer-onboarding", path: "/employer/onboarding", kind: "app", element: EmployerOnboarding, guard: "protected", allow: ["employer"] },
 
   // Host
   { id: "host-housing", path: "/host/housing", kind: "app", element: HostHousing, guard: "protected", allow: ["host"] },

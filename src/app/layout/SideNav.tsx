@@ -16,6 +16,7 @@ import {
   FileText,
   UserSearch,
   Megaphone,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { MatildusLogo } from "@/components/brand/MatildusLogo";
@@ -53,6 +54,7 @@ const talentSections: NavSection[] = [
     items: [
       { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/talent/inbox" },
       { icon: <Megaphone className="h-5 w-5" />, label: "Intern info", href: "/talent/comms" },
+      { icon: <BookOpen className="h-5 w-5" />, label: "Introduktion", href: "/talent/onboarding" },
       { icon: <Activity className="h-5 w-5" />, label: "Aktivitet", href: "/talent/activity" },
     ],
   },
@@ -85,6 +87,7 @@ const employerSections: NavSection[] = [
     heading: "Kommunikation",
     items: [
       { icon: <Megaphone className="h-5 w-5" />, label: "Kommunikation", href: "/employer/comms" },
+      { icon: <BookOpen className="h-5 w-5" />, label: "Introduktion", href: "/employer/onboarding" },
       { icon: <Inbox className="h-5 w-5" />, label: "Meddelanden", href: "/employer/inbox" },
       { icon: <Activity className="h-5 w-5" />, label: "Händelser", href: "/employer/activity" },
     ],

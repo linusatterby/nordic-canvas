@@ -213,6 +213,14 @@ export const queryKeys = {
     shiftAvailability: () => ["talent", "shiftAvailability"] as const,
   },
 
+  // --- Onboarding ---
+  onboarding: {
+    all: ["onboarding"] as const,
+    items: (orgId?: string) => ["onboarding", "items", orgId] as const,
+    userItems: (orgId?: string) => ["onboarding", "userItems", orgId] as const,
+    progress: (orgId?: string) => ["onboarding", "progress", orgId] as const,
+  },
+
   // --- Internal Comms ---
   internalComms: {
     all: ["internalComms"] as const,

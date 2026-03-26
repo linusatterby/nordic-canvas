@@ -1790,6 +1790,122 @@ export type Database = {
           },
         ]
       }
+      onboarding_item_groups: {
+        Row: {
+          group_id: string
+          item_id: string
+        }
+        Insert: {
+          group_id: string
+          item_id: string
+        }
+        Update: {
+          group_id?: string
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_item_groups_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "internal_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_item_groups_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_items: {
+        Row: {
+          content_type: string
+          content_url: string | null
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          is_demo: boolean
+          org_id: string
+          target: string
+          title: string
+        }
+        Insert: {
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string
+          id?: string
+          is_demo?: boolean
+          org_id: string
+          target?: string
+          title: string
+        }
+        Update: {
+          content_type?: string
+          content_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          is_demo?: boolean
+          org_id?: string
+          target?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_items_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "demo_orgs_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_items_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_progress: {
+        Row: {
+          completed_at: string | null
+          id: string
+          item_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          item_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          item_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_progress_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           demo_session_id: string | null
@@ -2596,6 +2712,10 @@ export type Database = {
       }
       is_listing_owner: {
         Args: { _listing_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_onboarding_item_visible: {
+        Args: { p_item_id: string; p_user_id: string }
         Returns: boolean
       }
       is_org_admin: {

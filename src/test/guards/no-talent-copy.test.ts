@@ -114,6 +114,7 @@ const ALLOWED_FILES = new Set([
   "src/app/routes/(talent)/TalentActivity.tsx",
   "src/app/routes/(talent)/TalentInbox.tsx",
   "src/app/routes/(talent)/TalentHousing.tsx",
+  "src/app/routes/(talent)/TalentOnboarding.tsx",
 
   // ── Employer routes: reference talent types/variables ──
   "src/app/routes/(employer)/EmployerSwipeTalent.tsx",
@@ -220,6 +221,7 @@ const ALLOWED_FILES = new Set([
   "src/test/guards/postgrest-joins.test.ts",
   "src/test/lazy-routes.test.ts",
   "src/test/seed-guards.test.ts",
+  "src/test/onboarding-contracts.test.ts",
 ]);
 
 // ── Helpers ──────────────────────────────────────────────────
