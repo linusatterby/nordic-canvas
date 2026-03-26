@@ -127,4 +127,6 @@ export const LABELS = {
   commsGroupCreated: "Grupp skapad.",
   commsMemberAdded: "Medlem tillagd.",
   commsMemberRemoved: "Medlem borttagen.",
+  commsNoOrg: "Skapa en organisation för att använda internkommunikation.",
+  commsNoOrgTalent: "Du behöver vara kopplad till en organisation för att se meddelanden.",
 } as const;

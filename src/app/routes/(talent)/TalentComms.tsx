@@ -14,6 +14,21 @@ export default function TalentComms() {
   const orgId = orgs?.[0]?.id;
   const { data: messages, isLoading } = useInternalMessagesForUser(orgId);
 
+  if (!orgId) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{LABELS.commsFeedTitle}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{LABELS.commsFeedSubtitle}</p>
+        </div>
+        <Card className="p-8 text-center">
+          <Megaphone className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <p className="text-muted-foreground">{LABELS.commsNoOrgTalent}</p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
