@@ -60,7 +60,9 @@ export function useDemoOrgId() {
     queryFn: async () => {
       const { orgs, error } = await listDemoOrgs();
       if (error) throw error;
-      return orgs[0]?.id ?? null;
+      // Prefer well-known seed org "Visby Strandhotell" (a1111111-...)
+      const preferred = orgs.find((o) => o.id === "a1111111-1111-1111-1111-111111111111");
+      return preferred?.id ?? orgs[0]?.id ?? null;
     },
     staleTime: 1000 * 300,
   });
