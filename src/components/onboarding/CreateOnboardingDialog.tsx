@@ -125,7 +125,7 @@ export function CreateOnboardingDialog({ open, onOpenChange, groups, orgId, onSu
             <div className="mt-1 flex gap-2">
               <Button
                 type="button"
-                variant={target === "all" ? "default" : "outline"}
+                variant={target === "all" ? "primary" : "outline"}
                 size="sm"
                 onClick={() => setTarget("all")}
               >
