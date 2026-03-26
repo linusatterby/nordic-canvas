@@ -12,6 +12,7 @@ import {
   assignUserToGroup,
   removeUserFromGroup,
   listGroupMembers,
+  listOrgMembersWithProfile,
   type CreateMessagePayload,
   type InternalGroupMember,
 } from "@/lib/api/internalComms";
