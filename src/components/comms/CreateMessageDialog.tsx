@@ -116,7 +116,9 @@ export function CreateMessageDialog({
             {target === "groups" && (
               <div className="space-y-2 pl-1 mt-2">
                 {groups.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">{LABELS.commsNoGroups}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {LABELS.commsCreateGroupFirst}
+                  </p>
                 ) : (
                   groups.map((g) => (
                     <label key={g.id} className="flex items-center gap-2 cursor-pointer">

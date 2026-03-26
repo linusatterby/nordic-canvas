@@ -12,6 +12,7 @@ import {
   assignUserToGroup,
   removeUserFromGroup,
   listGroupMembers,
+  listOrgMembersWithProfile,
   type CreateMessagePayload,
   type InternalGroupMember,
 } from "@/lib/api/internalComms";
@@ -62,6 +63,15 @@ export function useRemoveUserFromGroup() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: queryKeys.internalComms.groupMembers(vars.groupId) });
     },
+  });
+}
+
+// ── Org Members ───────────────────────────────────────────────
+export function useOrgMembers(orgId?: string) {
+  return useQuery({
+    queryKey: queryKeys.internalComms.orgMembers(orgId),
+    queryFn: () => listOrgMembersWithProfile(orgId!),
+    enabled: !!orgId,
   });
 }
 
