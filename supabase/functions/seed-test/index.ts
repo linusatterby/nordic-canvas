@@ -605,6 +605,195 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── 5. Demo org members for internal comms ──
+    // Add demo staff profiles + org_members to Visby Strandhotell so comms can be tested
+    const commsOrgId = orgIds[1]; // Visby Strandhotell (index 1)
+    const DEMO_STAFF = [
+      { name: "Anna Bergström", role: "staff" },
+      { name: "Erik Lindgren", role: "staff" },
+      { name: "Lisa Nyström", role: "staff" },
+    ];
+
+    if (commsOrgId) {
+      // Find existing profiles to use as staff (pick talent profiles without orgs)
+      const { data: availableProfiles } = await sb
+        .from("profiles")
+        .select("user_id, full_name")
+        .eq("type", "talent")
+        .limit(10);
+
+      // Filter to profiles not already in this org
+      const { data: existingMembers } = await sb
+        .from("org_members")
+        .select("user_id")
+        .eq("org_id", commsOrgId);
+      const existingMemberIds = new Set((existingMembers ?? []).map((m: { user_id: string }) => m.user_id));
+
+      const candidateProfiles = (availableProfiles ?? [])
+        .filter((p: { user_id: string }) => !existingMemberIds.has(p.user_id))
+        .slice(0, DEMO_STAFF.length);
+
+      let staffAdded = 0;
+      const staffUserIds: string[] = [];
+
+      for (let i = 0; i < Math.min(candidateProfiles.length, DEMO_STAFF.length); i++) {
+        const profile = candidateProfiles[i] as { user_id: string; full_name: string | null };
+        const staffDef = DEMO_STAFF[i];
+
+        // Update profile name if blank
+        if (!profile.full_name) {
+          await sb
+            .from("profiles")
+            .update({ full_name: staffDef.name })
+            .eq("user_id", profile.user_id);
+        }
+
+        // Add as org member
+        const { error: memberErr } = await sb
+          .from("org_members")
+          .upsert(
+            { org_id: commsOrgId, user_id: profile.user_id, role: staffDef.role },
+            { onConflict: "org_id,user_id" }
+          );
+        if (memberErr) {
+          errors.push(`org_member ${staffDef.name}: ${memberErr.message}`);
+        } else {
+          staffAdded++;
+          staffUserIds.push(profile.user_id);
+        }
+      }
+      results.comms_staff_added = staffAdded;
+      results.comms_staff_ids = staffUserIds;
+
+      // ── 5b. Create internal group "Restaurangen" ──
+      const groupName = "Restaurangen";
+      let groupId: string | null = null;
+
+      const { data: existingGroup } = await sb
+        .from("internal_groups")
+        .select("id")
+        .eq("org_id", commsOrgId)
+        .eq("name", groupName)
+        .maybeSingle();
+
+      if (existingGroup) {
+        groupId = existingGroup.id;
+        results.comms_group = "already_exists";
+      } else {
+        const { data: newGroup, error: groupErr } = await sb
+          .from("internal_groups")
+          .insert({ org_id: commsOrgId, name: groupName })
+          .select("id")
+          .single();
+        if (groupErr) {
+          errors.push(`internal_group: ${groupErr.message}`);
+        } else {
+          groupId = newGroup.id;
+          results.comms_group = "created";
+        }
+      }
+
+      // Add first 2 staff to the group (leave last one out for filtering test)
+      if (groupId && staffUserIds.length >= 2) {
+        for (const uid of staffUserIds.slice(0, 2)) {
+          const { data: existingMember } = await sb
+            .from("internal_group_members")
+            .select("id")
+            .eq("group_id", groupId)
+            .eq("user_id", uid)
+            .maybeSingle();
+          if (!existingMember) {
+            const { error: gmErr } = await sb
+              .from("internal_group_members")
+              .insert({ group_id: groupId, user_id: uid });
+            if (gmErr) errors.push(`group_member: ${gmErr.message}`);
+          }
+        }
+        results.comms_group_members = Math.min(staffUserIds.length, 2);
+      }
+
+      // ── 5c. Seed a sample internal message ──
+      const msgTitle = "Välkommen till säsongen!";
+      const { data: existingMsg } = await sb
+        .from("internal_messages")
+        .select("id")
+        .eq("org_id", commsOrgId)
+        .eq("title", msgTitle)
+        .maybeSingle();
+
+      if (existingMsg) {
+        results.comms_message = "already_exists";
+      } else {
+        // Find the employer admin user for this org
+        const { data: adminMember } = await sb
+          .from("org_members")
+          .select("user_id")
+          .eq("org_id", commsOrgId)
+          .eq("role", "admin")
+          .limit(1)
+          .maybeSingle();
+
+        const senderUserId = adminMember?.user_id ?? staffUserIds[0];
+        if (senderUserId) {
+          const { data: newMsg, error: msgErr } = await sb
+            .from("internal_messages")
+            .insert({
+              org_id: commsOrgId,
+              sender_user_id: senderUserId,
+              title: msgTitle,
+              body: "Hej alla! Vi ser fram emot en fantastisk säsong tillsammans. Kolla schemat och hör av er om ni har frågor.",
+              target: "all",
+              is_important: false,
+            })
+            .select("id")
+            .single();
+          if (msgErr) {
+            errors.push(`internal_message: ${msgErr.message}`);
+          } else {
+            results.comms_message = "created";
+
+            // Also create a group-targeted message
+            const groupMsgTitle = "Restaurangmöte tisdag 10:00";
+            const { data: existingGroupMsg } = await sb
+              .from("internal_messages")
+              .select("id")
+              .eq("org_id", commsOrgId)
+              .eq("title", groupMsgTitle)
+              .maybeSingle();
+
+            if (!existingGroupMsg && groupId) {
+              const { data: gMsg, error: gMsgErr } = await sb
+                .from("internal_messages")
+                .insert({
+                  org_id: commsOrgId,
+                  sender_user_id: senderUserId,
+                  title: groupMsgTitle,
+                  body: "Restaurangmöte tisdag kl 10. Vi går igenom menyn och förbereder inför helgen.",
+                  target: "groups",
+                  is_important: true,
+                })
+                .select("id")
+                .single();
+              if (gMsgErr) {
+                errors.push(`group_message: ${gMsgErr.message}`);
+              } else if (gMsg) {
+                // Link message to group
+                await sb.from("internal_message_groups").insert({
+                  message_id: gMsg.id,
+                  group_id: groupId,
+                });
+                results.comms_group_message = "created";
+              }
+            } else {
+              results.comms_group_message = "already_exists";
+            }
+          }
+        }
+      }
+    } else {
+      results.comms_skipped = "no Visby org found";
+    }
+
     results._summary = {
       orgs: orgIds.filter(Boolean).length,
       jobs_created: jobsCreated,
