@@ -116,11 +116,49 @@ export async function listOnboardingForOrg(orgId: string): Promise<OnboardingIte
 
 /**
  * List onboarding items visible to the current user.
- * RLS ensures org membership; we additionally filter by target/group.
+ * Filters by target: 'all' items always visible, 'groups' items only if user is in a targeted group.
  */
 export async function listOnboardingForUser(orgId: string): Promise<OnboardingItem[]> {
-  // RLS already limits to org members; for staff we get all items they can see
-  return listOnboardingForOrg(orgId);
+  const { data: session } = await supabase.auth.getSession();
+  const userId = session?.session?.user?.id;
+  if (!userId) return [];
+
+  // Get all org items first (RLS already scopes to org)
+  const allItems = await listOnboardingForOrg(orgId);
+
+  // Filter: 'all' items pass; 'groups' items only if user is member of a targeted group
+  const groupTargeted = allItems.filter((i) => i.target === "groups");
+  if (!groupTargeted.length) return allItems.filter((i) => i.target === "all");
+
+  const groupItemIds = groupTargeted.map((i) => i.id);
+  const { data: junctions } = await supabase
+    .from("onboarding_item_groups")
+    .select("item_id, group_id")
+    .in("item_id", groupItemIds);
+
+  if (!junctions?.length) return allItems.filter((i) => i.target === "all");
+
+  const groupIds = [...new Set(junctions.map((j: { group_id: string }) => j.group_id))];
+  const { data: memberships } = await supabase
+    .from("internal_group_members")
+    .select("group_id")
+    .eq("user_id", userId)
+    .in("group_id", groupIds);
+
+  const memberGroupIds = new Set((memberships ?? []).map((m: { group_id: string }) => m.group_id));
+
+  // An item is visible if target='all' OR user is in at least one of its targeted groups
+  const visibleGroupItemIds = new Set<string>();
+  for (const j of junctions) {
+    const junction = j as { item_id: string; group_id: string };
+    if (memberGroupIds.has(junction.group_id)) {
+      visibleGroupItemIds.add(junction.item_id);
+    }
+  }
+
+  return allItems.filter(
+    (item) => item.target === "all" || visibleGroupItemIds.has(item.id)
+  );
 }
 
 // ── Progress ───────────────────────────────────────────────────
