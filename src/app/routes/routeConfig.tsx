@@ -116,6 +116,7 @@ export const routes: RouteDef[] = [
   { id: "talent-inbox", path: "/talent/inbox", kind: "app", element: TalentInbox, guard: "protected", allow: ["talent"] },
   { id: "talent-housing", path: "/talent/housing", kind: "app", element: TalentHousing, guard: "protected", allow: ["talent"] },
   { id: "talent-comms", path: "/talent/comms", kind: "app", element: TalentComms, guard: "protected", allow: ["talent"] },
+  { id: "talent-onboarding", path: "/talent/onboarding", kind: "app", element: TalentOnboarding, guard: "protected", allow: ["talent"] },
 
   // Employer
   { id: "employer-dashboard", path: "/employer/dashboard", kind: "app", element: EmployerDashboard, guard: "protected", allow: ["employer"] },
