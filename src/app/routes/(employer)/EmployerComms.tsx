@@ -16,6 +16,7 @@ import {
 } from "@/hooks/useInternalComms";
 import { useMyOrgs, useDemoOrgId } from "@/hooks/useOrgs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMembership } from "@/hooks/useDemoMembership";
 import { CreateMessageDialog } from "@/components/comms/CreateMessageDialog";
 import { CreateGroupDialog } from "@/components/comms/CreateGroupDialog";
 import { GroupMembersManager } from "@/components/comms/GroupMembersManager";
