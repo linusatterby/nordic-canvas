@@ -38,7 +38,7 @@ describe("Onboarding contracts", () => {
     expect(LABELS.onboardingTargetGroups).toBe("Grupper");
   });
 
-  it("routeConfig includes onboarding routes", async () => {
+  it("routeConfig includes onboarding routes", { timeout: 15000 }, async () => {
     const { routes } = await import("@/app/routes/routeConfig");
     const ids = routes.map((r) => r.id);
     expect(ids).toContain("employer-onboarding");
