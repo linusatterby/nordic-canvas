@@ -100,7 +100,7 @@ export default function TalentOnboarding() {
                     <div className="flex items-center gap-2 mb-1">
                       {TYPE_ICONS[item.content_type] ?? <FileText className="h-4 w-4" />}
                       <h3 className="font-semibold text-foreground">{item.title}</h3>
-                      <Badge variant={done ? "success" : "outline"} size="sm">
+                      <Badge variant={done ? "verified" : "outline"} size="sm">
                         {done ? LABELS.onboardingCompleted : LABELS.onboardingNotStarted}
                       </Badge>
                     </div>
