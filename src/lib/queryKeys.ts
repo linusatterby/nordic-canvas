@@ -149,6 +149,7 @@ export const queryKeys = {
     all: ["orgs"] as const,
     my: () => ["myOrgs"] as const,
     defaultId: () => ["defaultOrgId"] as const,
+    demoDefault: () => ["demoDefaultOrgId"] as const,
   },
 
   // --- Ranking ---

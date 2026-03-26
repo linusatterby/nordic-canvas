@@ -6,12 +6,15 @@ import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { LABELS } from "@/config/labels";
 import { useInternalMessagesForUser } from "@/hooks/useInternalComms";
-import { useMyOrgs } from "@/hooks/useOrgs";
+import { useMyOrgs, useDemoOrgId } from "@/hooks/useOrgs";
+import { useAuth } from "@/contexts/AuthContext";
 import { Megaphone, Users } from "lucide-react";
 
 export default function TalentComms() {
+  const { isDemoMode } = useAuth();
   const { data: orgs } = useMyOrgs();
-  const orgId = orgs?.[0]?.id;
+  const { data: demoOrgId } = useDemoOrgId();
+  const orgId = orgs?.[0]?.id ?? (isDemoMode ? demoOrgId : undefined) ?? undefined;
   const { data: messages, isLoading } = useInternalMessagesForUser(orgId);
 
   if (!orgId) {

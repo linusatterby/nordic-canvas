@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listMyOrgs, getDefaultOrgId, createOrg, type OrgWithRole } from "@/lib/api/orgs";
+import { listMyOrgs, getDefaultOrgId, createOrg, listDemoOrgs, type OrgWithRole } from "@/lib/api/orgs";
 import { queryKeys } from "@/lib/queryKeys";
 
 /**
@@ -48,5 +48,20 @@ export function useCreateOrg() {
       queryClient.invalidateQueries({ queryKey: queryKeys.orgs.my() });
       queryClient.invalidateQueries({ queryKey: queryKeys.orgs.defaultId() });
     },
+  });
+}
+
+/**
+ * Hook to get first demo org ID (fallback for anonymous demo sessions)
+ */
+export function useDemoOrgId() {
+  return useQuery({
+    queryKey: queryKeys.orgs.demoDefault(),
+    queryFn: async () => {
+      const { orgs, error } = await listDemoOrgs();
+      if (error) throw error;
+      return orgs[0]?.id ?? null;
+    },
+    staleTime: 1000 * 300,
   });
 }
