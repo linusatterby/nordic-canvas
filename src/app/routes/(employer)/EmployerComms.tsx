@@ -29,9 +29,12 @@ export default function EmployerComms() {
   const { data: orgs } = useMyOrgs();
   const { data: demoOrgId } = useDemoOrgId();
   const orgId = orgs?.[0]?.id ?? (isDemoMode ? demoOrgId : undefined) ?? undefined;
-  useDemoMembership(orgId, isDemoMode);
-  const { data: messages, isLoading } = useInternalMessages(orgId);
-  const { data: groups } = useGroups(orgId);
+  const demoReady = useDemoMembership(orgId, isDemoMode);
+  const effectiveOrgId = demoReady ? orgId : undefined;
+  const { data: messages, isLoading } = useInternalMessages(effectiveOrgId);
+  const { data: groups } = useGroups(effectiveOrgId);
+  const createMsgMutation = useCreateMessage(effectiveOrgId);
+  const createGroupMutation = useCreateGroup(effectiveOrgId);
   const createMsgMutation = useCreateMessage(orgId);
   const createGroupMutation = useCreateGroup(orgId);
 
