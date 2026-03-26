@@ -114,6 +114,7 @@ const ALLOWED_FILES = new Set([
   "src/app/routes/(talent)/TalentActivity.tsx",
   "src/app/routes/(talent)/TalentInbox.tsx",
   "src/app/routes/(talent)/TalentHousing.tsx",
+  "src/app/routes/(talent)/TalentOnboarding.tsx",
 
   // ── Employer routes: reference talent types/variables ──
   "src/app/routes/(employer)/EmployerSwipeTalent.tsx",
