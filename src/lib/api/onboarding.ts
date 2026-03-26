@@ -163,6 +163,10 @@ export async function listOnboardingForUser(orgId: string): Promise<OnboardingIt
 
 // ── Progress ───────────────────────────────────────────────────
 export async function listProgressForUser(orgId: string): Promise<OnboardingProgress[]> {
+  const { data: session } = await supabase.auth.getSession();
+  const userId = session?.session?.user?.id;
+  if (!userId) return [];
+
   const { data: items } = await supabase
     .from("onboarding_items")
     .select("id")
@@ -174,7 +178,8 @@ export async function listProgressForUser(orgId: string): Promise<OnboardingProg
   const { data, error } = await supabase
     .from("onboarding_progress")
     .select("*")
-    .in("item_id", itemIds);
+    .in("item_id", itemIds)
+    .eq("user_id", userId);
   if (error) throw error;
 
   return (data ?? []) as OnboardingProgress[];
