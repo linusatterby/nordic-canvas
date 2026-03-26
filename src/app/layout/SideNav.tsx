@@ -16,6 +16,7 @@ import {
   FileText,
   UserSearch,
   Megaphone,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils/classnames";
 import { MatildusLogo } from "@/components/brand/MatildusLogo";
