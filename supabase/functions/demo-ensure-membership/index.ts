@@ -93,6 +93,7 @@ Deno.serve(async (req) => {
 
     // Idempotent upsert into org_members
     const memberRole = role ?? "admin";
+    console.log(`Ensuring membership: user=${userId}, org=${org_id}, role=${memberRole}`);
     const { error: upsertError } = await admin
       .from("org_members")
       .upsert(
@@ -101,11 +102,14 @@ Deno.serve(async (req) => {
       );
 
     if (upsertError) {
+      console.error("Upsert error:", upsertError.message);
       return new Response(
         JSON.stringify({ error: upsertError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("Membership ensured successfully");
 
     return new Response(
       JSON.stringify({ ok: true, org_id, user_id: userId, role: memberRole }),
