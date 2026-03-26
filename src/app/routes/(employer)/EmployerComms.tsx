@@ -34,6 +34,21 @@ export default function EmployerComms() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [managingGroup, setManagingGroup] = useState<InternalGroup | null>(null);
 
+  if (!orgId) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{LABELS.commsTitle}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{LABELS.commsSubtitle}</p>
+        </div>
+        <Card className="p-8 text-center">
+          <Megaphone className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <p className="text-muted-foreground">{LABELS.commsNoOrg}</p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
