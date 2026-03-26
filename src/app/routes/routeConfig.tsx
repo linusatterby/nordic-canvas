@@ -35,6 +35,7 @@ import EmployerInbox from "@/app/routes/(employer)/EmployerInbox";
 import EmployerApplications from "@/app/routes/(employer)/EmployerApplications";
 import EmployerCandidatePool from "@/app/routes/(employer)/EmployerCandidatePool";
 import EmployerComms from "@/app/routes/(employer)/EmployerComms";
+import EmployerOnboarding from "@/app/routes/(employer)/EmployerOnboarding";
 
 import HostHousing from "@/app/routes/(host)/HostHousing";
 import HostInbox from "@/app/routes/(host)/HostInbox";
