@@ -26,8 +26,8 @@ import type { InternalGroup } from "@/lib/api/internalComms";
 
 export default function EmployerComms() {
   const { isDemoMode } = useAuth();
-  const { data: orgs } = useMyOrgs();
-  const { data: demoOrgId } = useDemoOrgId();
+  const { data: orgs, isLoading: orgsLoading } = useMyOrgs();
+  const { data: demoOrgId, isLoading: demoOrgLoading } = useDemoOrgId();
   const orgId = orgs?.[0]?.id ?? (isDemoMode ? demoOrgId : undefined) ?? undefined;
   const demoReady = useDemoMembership(orgId, isDemoMode);
   const effectiveOrgId = demoReady ? orgId : undefined;
@@ -40,7 +40,10 @@ export default function EmployerComms() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [managingGroup, setManagingGroup] = useState<InternalGroup | null>(null);
 
-  if (!orgId) {
+  // Show loading while demo org is being resolved
+  const stillInitializing = isDemoMode && (orgsLoading || demoOrgLoading || !demoReady);
+
+  if (!orgId && !stillInitializing) {
     return (
       <div className="space-y-6">
         <div>
@@ -83,7 +86,7 @@ export default function EmployerComms() {
             </Button>
           </div>
 
-          {isLoading ? (
+          {isLoading || stillInitializing ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-24 w-full rounded-xl" />
